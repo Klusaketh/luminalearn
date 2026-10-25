@@ -1,0 +1,163 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Generative Adversarial Networks (GANs)",
+  "slug": "generative-adversarial-networks",
+  "short_description": "Minimax game theory, generators, discriminators, Wasserstein loss, and DCGAN.",
+  "description": "Theoretical framework and practical training of Generative Adversarial Networks, mode collapse mitigation, deep convolutional GANs, and conditional image synthesis.",
+  "icon_key": "wand-2",
+  "difficulty_level": "Advanced",
+  "display_order": 14,
+  "courses": [
+    {
+      "title": "Generative Adversarial Networks",
+      "slug": "gans-fundamentals",
+      "description": "Two-player minimax games, implicit density estimation, and generative image synthesis.",
+      "difficulty": "Advanced",
+      "estimated_hours": 7,
+      "modules": [
+        {
+          "title": "Generative Modeling",
+          "slug": "gan-generative-modeling",
+          "description": "Explicit vs implicit generative models, data distribution sampling.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Implicit Density Generative Frameworks",
+              "slug": "implicit-density-generative-frameworks",
+              "summary": "Sampling latent spaces and transforming distributions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Generator",
+          "slug": "gan-generator",
+          "description": "Latent vector mapping, transposed convolutions, and generator loss.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Generator Architecture & Latent Spaces",
+              "slug": "generator-architecture-latent-spaces",
+              "summary": "Transposed 2D convolutions and fractional stride upsampling.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Discriminator",
+          "slug": "gan-discriminator",
+          "description": "Binary real/fake classification, strided convolutions, and spectral norm.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Discriminator Classifier & Critic Network",
+              "slug": "discriminator-classifier-critic",
+              "summary": "Distinguishing true sample distribution from generated artifacts.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "GAN Training",
+          "slug": "gan-training",
+          "description": "Minimax objective, alternating gradient updates, and Nash equilibrium.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Minimax Two-Player Game Dynamics",
+              "slug": "minimax-game-dynamics",
+              "summary": "Alternating optimization steps and gradient saturation avoidance.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Loss Functions",
+          "slug": "gan-loss-functions",
+          "description": "Minimax cross-entropy, Non-saturating loss, Wasserstein distance.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Wasserstein Loss & Earth Mover Distance",
+              "slug": "wasserstein-loss-earth-mover",
+              "summary": "WGAN Lipschitz continuity constraint and gradient penalty (WGAN-GP).",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "DCGAN",
+          "slug": "gan-dcgan",
+          "description": "Deep Convolutional GAN architectural guidelines and batch normalization.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "DCGAN Architectural Principles",
+              "slug": "dcgan-architectural-principles",
+              "summary": "Replacing pooling with strided convolutions and leaky ReLU activations.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Conditional GAN",
+          "slug": "gan-conditional-gan",
+          "description": "Class-conditioned latent synthesis and label embedding concat.",
+          "estimated_minutes": 85,
+          "topics": [
+            {
+              "title": "Conditional Image Generation (cGAN)",
+              "slug": "conditional-image-generation",
+              "summary": "Conditioning generator and discriminator on category labels.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Image-to-Image Translation: pix2pix & CycleGAN",
+              "slug": "image-to-image-translation",
+              "summary": "Paired and unpaired translation with adversarial and cycle-consistency losses.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "GAN Challenges",
+          "slug": "gan-challenges",
+          "description": "Mode collapse, vanishing gradients, non-convergence, and evaluation FID.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Mode Collapse & Fréchet Inception Distance",
+              "slug": "mode-collapse-and-fid-metric",
+              "summary": "Identifying collapse states and measuring distribution fidelity with FID.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "GANs in Context",
+          "slug": "gan-in-context",
+          "description": "Where GANs sit among generative models, and how to use them responsibly.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "GANs, VAEs & Diffusion Models: Applications & Responsible Use",
+              "slug": "gans-vaes-diffusion-responsible-use",
+              "summary": "How GANs compare with other generative models, where they are used, and the risks of synthetic media.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

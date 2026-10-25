@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+// Auth requests carry their own credentials and must never trigger a token refresh (auth: false).
+import { API_BASE, apiFetch, readErrorDetail } from "./apiClient";
 
 export interface UserResponse {
   id: string;
@@ -50,15 +51,15 @@ class AuthService {
   }
 
   async login(email: string, password: string): Promise<TokenResponse> {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await apiFetch(`${API_BASE}/auth/login`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email, password }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Login failed." }));
-      throw new Error(err.detail || "Invalid email or password.");
+      throw new Error(await readErrorDetail(res, "Invalid email or password."));
     }
 
     return res.json();
@@ -69,7 +70,8 @@ class AuthService {
     role: "student" | "teacher" = "student",
     preferredModality?: "visual" | "auditory" | "read_write" | "kinesthetic"
   ): Promise<TokenResponse> {
-    const res = await fetch(`${API_BASE}/auth/google`, {
+    const res = await apiFetch(`${API_BASE}/auth/google`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({
@@ -80,60 +82,60 @@ class AuthService {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Google authentication failed." }));
-      throw new Error(err.detail || "Google authentication failed.");
+      throw new Error(await readErrorDetail(res, "Google authentication failed."));
     }
 
     return res.json();
   }
 
   async registerStudent(payload: StudentRegisterPayload): Promise<UserResponse> {
-    const res = await fetch(`${API_BASE}/auth/register/student`, {
+    const res = await apiFetch(`${API_BASE}/auth/register/student`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Registration failed." }));
-      throw new Error(err.detail || "Student registration failed.");
+      throw new Error(await readErrorDetail(res, "Student registration failed."));
     }
 
     return res.json();
   }
 
   async registerTeacher(payload: TeacherRegisterPayload): Promise<UserResponse> {
-    const res = await fetch(`${API_BASE}/auth/register/teacher`, {
+    const res = await apiFetch(`${API_BASE}/auth/register/teacher`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Registration failed." }));
-      throw new Error(err.detail || "Teacher registration failed.");
+      throw new Error(await readErrorDetail(res, "Teacher registration failed."));
     }
 
     return res.json();
   }
 
   async refreshToken(refreshToken: string): Promise<TokenResponse> {
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
+    const res = await apiFetch(`${API_BASE}/auth/refresh`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Token refresh failed." }));
-      throw new Error(err.detail || "Session expired. Please log in again.");
+      throw new Error(await readErrorDetail(res, "Session expired. Please log in again."));
     }
 
     return res.json();
   }
 
   async logout(token: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/logout`, {
+    const res = await apiFetch(`${API_BASE}/auth/logout`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(token),
     });
@@ -146,74 +148,74 @@ class AuthService {
   }
 
   async getMe(token: string): Promise<UserResponse> {
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    const res = await apiFetch(`${API_BASE}/auth/me`, {
+      auth: false,
       method: "GET",
       headers: this.getHeaders(token),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Failed to fetch user." }));
-      throw new Error(err.detail || "Unauthorized.");
+      throw new Error(await readErrorDetail(res, "Unauthorized."));
     }
 
     return res.json();
   }
 
   async forgotPassword(email: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+    const res = await apiFetch(`${API_BASE}/auth/forgot-password`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Request failed." }));
-      throw new Error(err.detail || "Failed to process forgot password request.");
+      throw new Error(await readErrorDetail(res, "Failed to process forgot password request."));
     }
 
     return res.json();
   }
 
   async resetPassword(token: string, new_password: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/reset-password`, {
+    const res = await apiFetch(`${API_BASE}/auth/reset-password`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ token, new_password }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Reset failed." }));
-      throw new Error(err.detail || "Failed to reset password.");
+      throw new Error(await readErrorDetail(res, "Failed to reset password."));
     }
 
     return res.json();
   }
 
   async verifyEmail(email: string, otp: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/verify-email`, {
+    const res = await apiFetch(`${API_BASE}/auth/verify-email`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email, otp }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Verification failed." }));
-      throw new Error(err.detail || "Failed to verify email code.");
+      throw new Error(await readErrorDetail(res, "Failed to verify email code."));
     }
 
     return res.json();
   }
 
   async resendOTP(email: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/verify-email/resend`, {
+    const res = await apiFetch(`${API_BASE}/auth/verify-email/resend`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Resend failed." }));
-      throw new Error(err.detail || "Failed to resend verification code.");
+      throw new Error(await readErrorDetail(res, "Failed to resend verification code."));
     }
 
     return res.json();
@@ -224,15 +226,15 @@ class AuthService {
   }
 
   async confirmVerifyEmail(token: string): Promise<MessageResponse> {
-    const res = await fetch(`${API_BASE}/auth/verify-email/confirm`, {
+    const res = await apiFetch(`${API_BASE}/auth/verify-email/confirm`, {
+      auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ token }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Confirmation failed." }));
-      throw new Error(err.detail || "Failed to confirm email verification.");
+      throw new Error(await readErrorDetail(res, "Failed to confirm email verification."));
     }
 
     return res.json();

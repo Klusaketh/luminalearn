@@ -1,0 +1,110 @@
+{
+  "category_slug": "mathematics",
+  "name": "Numerical Methods",
+  "slug": "numerical-methods",
+  "short_description": "Root finding, numerical integration, differential equations, and floating point errors.",
+  "description": "Numerical analysis for scientific computing: IEEE 754 floating point precision, root-finding (Newton-Raphson), interpolation, numerical quadrature, and Runge-Kutta ODE solvers.",
+  "icon_key": "calculator",
+  "difficulty_level": "Advanced",
+  "display_order": 22,
+  "courses": [
+    {
+      "title": "Numerical Methods & Scientific Computing",
+      "slug": "numerical-methods-fundamentals",
+      "description": "Iterative algorithms, error analysis, numerical differentiation, and matrix solvers.",
+      "difficulty": "Advanced",
+      "estimated_hours": 6,
+      "modules": [
+        {
+          "title": "Errors & Floating Point",
+          "slug": "nm-errors",
+          "description": "Where numerical error comes from and how it grows.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Errors, Floating-Point Arithmetic & Stability",
+              "slug": "numerical-errors-floating-point",
+              "summary": "Absolute and relative error, round-off and truncation, conditioning, and stability.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Root Finding & Non-linear Equations",
+          "slug": "num-root-finding",
+          "description": "Bisection method, secant method, and Newton-Raphson quadratic convergence.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Bisection & Secant Methods",
+              "slug": "bisection-secant-methods",
+              "summary": "Bracketing a root, convergence guarantees, and derivative-free iteration.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Newton-Raphson & Fixed-Point Iteration",
+              "slug": "newton-raphson-method",
+              "summary": "Derivative-based root approximation and convergence guarantees.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Interpolation",
+          "slug": "nm-interpolation",
+          "description": "Fitting polynomials through data points.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Polynomial Interpolation: Lagrange & Newton",
+              "slug": "polynomial-interpolation",
+              "summary": "Interpolating polynomials, divided differences, and interpolation error.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Numerical Integration & ODEs",
+          "slug": "num-integration-odes",
+          "description": "Trapezoidal rule, Simpson's 1/3 rule, and Euler/Runge-Kutta differential solvers.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Numerical Integration: Trapezoidal & Simpson's Rules",
+              "slug": "trapezoidal-simpson-rules",
+              "summary": "Newton-Cotes formulas, composite rules, and their error terms.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Runge-Kutta (RK4) Method",
+              "slug": "runge-kutta-rk4-solver",
+              "summary": "Fourth-order iterative stepping for initial value problems.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Linear Systems",
+          "slug": "nm-linear-systems",
+          "description": "Solving large linear systems by iteration.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Iterative Methods for Linear Systems",
+              "slug": "iterative-linear-systems",
+              "summary": "Jacobi and Gauss-Seidel iteration, convergence, and comparison with LU factorization.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

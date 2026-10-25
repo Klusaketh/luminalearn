@@ -34,7 +34,7 @@ class OTPService:
         try:
             val = json.loads(raw)
             return val if isinstance(val, dict) else None
-        except Exception:
+        except (ValueError, TypeError):
             return None
 
     async def generate_and_store_otp(
@@ -67,7 +67,8 @@ class OTPService:
                     )
             except HTTPException:
                 raise
-            except Exception as exc:
+            except (ValueError, TypeError, AttributeError) as exc:
+                # Corrupted or foreign state: overwrite it with a fresh OTP below.
                 logger.warning("Failed to decode previous OTP state: %s", exc)
 
         # 1. Generate cryptographically secure 6-digit OTP
@@ -113,7 +114,9 @@ class OTPService:
 
         try:
             state = json.loads(raw_state)
-        except Exception:
+            if not isinstance(state, dict):
+                raise TypeError("OTP state must be a JSON object.")
+        except (ValueError, TypeError):
             await redis.delete(key)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

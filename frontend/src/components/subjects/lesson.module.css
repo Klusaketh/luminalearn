@@ -1,0 +1,162 @@
+/* Long-form reading styles for Subjects lessons and overviews: comfortable measure, calm rhythm. */
+
+.prose {
+  color: #d5d8e8;
+  font-size: 1.0625rem;
+  line-height: 1.78;
+  overflow-wrap: anywhere;
+}
+
+.prose > * + * {
+  margin-top: 1.05em;
+}
+
+.prose h2 {
+  margin-top: 2.6em;
+  padding-top: 0.9em;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.95rem;
+  line-height: 1.2;
+  color: #ffffff;
+  scroll-margin-top: 6rem;
+}
+
+.prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prose h3 {
+  margin-top: 2em;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f2f3fa;
+  scroll-margin-top: 6rem;
+}
+
+.prose h4 {
+  margin-top: 1.6em;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: #e9eaf5;
+}
+
+.prose strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.prose a {
+  color: #c4b5fd;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose li::marker {
+  color: #a78bfa;
+}
+
+.prose blockquote {
+  border-left: 3px solid rgba(167, 139, 250, 0.6);
+  background: rgba(139, 92, 246, 0.07);
+  border-radius: 0 0.9rem 0.9rem 0;
+  padding: 0.85em 1.1em;
+  color: #e6e7f3;
+}
+
+.prose blockquote > * + * {
+  margin-top: 0.6em;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 2em 0;
+}
+
+.prose :not(pre) > code {
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.12em 0.4em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.88em;
+  color: #e9d5ff;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.prose thead {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.prose th {
+  padding: 0.65em 0.9em;
+  text-align: left;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.prose td {
+  padding: 0.6em 0.9em;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+}
+
+.prose :global(.katex) {
+  font-size: 1.06em;
+}
+
+.prose :global(.katex-display) {
+  margin: 0.4em 0;
+}
+
+.compact {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.compact > * + * {
+  margin-top: 0.8em;
+}
+
+@media (max-width: 640px) {
+  .prose {
+    font-size: 1rem;
+  }
+
+  .prose h2 {
+    font-size: 1.6rem;
+  }
+}

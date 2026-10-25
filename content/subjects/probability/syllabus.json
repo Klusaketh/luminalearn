@@ -1,0 +1,109 @@
+{
+  "category_slug": "mathematics",
+  "name": "Probability",
+  "slug": "probability",
+  "short_description": "Sample spaces, Bayes theorem, random variables, and expectation.",
+  "description": "Probability theory for computer science and data modeling: Kolmogorov axioms, conditional probability, Bayes rule, discrete/continuous random variables, and variance.",
+  "icon_key": "dice-5",
+  "difficulty_level": "Intermediate",
+  "display_order": 18,
+  "courses": [
+    {
+      "title": "Probability for Computing",
+      "slug": "probability-for-computing",
+      "description": "Sample spaces, conditional independence, random variables, and probability distributions.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 7,
+      "modules": [
+        {
+          "title": "Probability Axioms & Bayes Rule",
+          "slug": "prob-axioms-bayes",
+          "description": "Sample spaces, disjoint events, conditional probability, and Bayes Theorem.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Sample Spaces, Events & Probability Axioms",
+              "slug": "sample-spaces-axioms",
+              "summary": "Outcomes, events, the axioms, and computing probabilities by counting.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Conditional Probability & Bayes Theorem",
+              "slug": "conditional-prob-bayes-theorem",
+              "summary": "Prior probability, likelihood, posterior distribution, and independence.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Random Variables & Expectations",
+          "slug": "prob-random-variables",
+          "description": "PMF, PDF, cumulative distribution functions, expected value, and variance.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Random Variables & Distributions",
+              "slug": "random-variables-distributions",
+              "summary": "Discrete and continuous random variables, PMFs, PDFs, and CDFs.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Expectation, Variance & Moments",
+              "slug": "expectation-variance-moments",
+              "summary": "Linearity of expectation, covariance, and standard deviation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Common Distributions",
+          "slug": "prob-common-distributions",
+          "description": "The standard models and when each one applies.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Discrete Distributions: Bernoulli, Binomial, Geometric & Poisson",
+              "slug": "discrete-distributions",
+              "summary": "When each model applies, with its mean and variance.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Continuous Distributions: Uniform, Exponential & Normal",
+              "slug": "continuous-distributions",
+              "summary": "Densities, standardization, and the memoryless property.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Multiple Random Variables",
+          "slug": "prob-multiple-variables",
+          "description": "Several random quantities at once, and the behaviour of averages.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Joint Distributions, Covariance & Correlation",
+              "slug": "joint-distributions-covariance",
+              "summary": "Joint and marginal distributions, independence, and measuring linear association.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Law of Large Numbers & Probability Inequalities",
+              "slug": "law-of-large-numbers",
+              "summary": "Markov and Chebyshev bounds and why averages settle down.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

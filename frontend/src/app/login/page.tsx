@@ -2,18 +2,17 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { onboardingService } from "../../services/onboardingService";
+import { enterWorkspace } from "../../utils/postSignIn";
 import { Lock, Mail, Eye, EyeOff, GraduationCap, School, ShieldAlert, ArrowRight, CheckCircle2 } from "lucide-react";
 import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
 
 type RoleTab = "student" | "teacher" | "admin";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, user, isAuthenticated, accessToken, isLoading, error, clearError } = useAuthStore();
+  const { login, user, isAuthenticated, isLoading, error, clearError } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<RoleTab>("student");
   const [email, setEmail] = useState("");
@@ -29,37 +28,11 @@ function LoginForm() {
     }
   }, [searchParams]);
 
-  // Helper function to redirect based on user role and onboarding status
-  const redirectUser = async (userRole: string, token: string | null) => {
-    if (userRole === "admin") {
-      router.push("/dashboard/admin");
-      return;
-    }
-
-    if (userRole === "teacher") {
-      router.push("/dashboard/teacher");
-      return;
-    }
-
-    // Student role: check onboarding status
-    try {
-      if (token) {
-        await onboardingService.getLearnerProfile(token);
-        router.push("/dashboard");
-      } else {
-        router.push("/onboarding");
-      }
-    } catch {
-      // Profile not found -> Onboarding incomplete
-      router.push("/onboarding");
-    }
-  };
-
+  // The only place that navigates after sign-in (password or Google), so it happens exactly once.
+  const role = isAuthenticated ? user?.role : undefined;
   useEffect(() => {
-    if (isAuthenticated && user) {
-      redirectUser(user.role, accessToken);
-    }
-  }, [isAuthenticated, user, accessToken]);
+    if (role) void enterWorkspace(role, searchParams.get("redirect"));
+  }, [role, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,16 +46,9 @@ function LoginForm() {
     }
 
     try {
-      await login(email.trim().toLowerCase(), password);
-      const currentUser = useAuthStore.getState().user;
-      const currentToken = useAuthStore.getState().accessToken;
-      if (currentUser) {
-        await redirectUser(currentUser.role, currentToken);
-      } else {
-        router.push("/dashboard");
-      }
-    } catch (err: any) {
-      const msg = err.message || "Invalid credentials. Please check your details.";
+      await login(email.trim().toLowerCase(), password); // the effect above takes it from here
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : "Invalid credentials. Please check your details.";
       if (msg.includes("EMAIL_VERIFICATION_REQUIRED")) {
         setRequiresVerification(true);
         setFormError("Email verification is required before signing in.");
@@ -93,21 +59,18 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/15 blur-[140px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+    <div className="flex-1 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
 
       {/* Main Glassmorphic Container */}
       <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl z-10">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-3">
             <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
             LuminaLearn Platform
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="font-display leading-tight text-white text-4xl">
             Welcome Back
           </h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -262,8 +225,8 @@ function LoginForm() {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-800" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-900/90 px-3 text-slate-500 font-medium tracking-wider">
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-slate-900/90 px-3 text-slate-500 font-medium">
               Or continue with
             </span>
           </div>
@@ -303,7 +266,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="flex-1 text-slate-100 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }

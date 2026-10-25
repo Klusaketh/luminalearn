@@ -5,6 +5,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_active_user, get_db, get_redis
+from app.core.config import settings
 from app.models.user import User
 from app.schemas.auth import (
     EmailVerificationRequest,
@@ -79,7 +80,7 @@ async def login(
         value=token_pair.access_token,
         httponly=True,
         samesite="lax",
-        secure=False,  # Set to True in HTTPS production
+        secure=(settings.ENVIRONMENT == "production"),
         max_age=15 * 60
     )
     return token_pair
@@ -105,7 +106,7 @@ async def google_auth(
         value=token_pair.access_token,
         httponly=True,
         samesite="lax",
-        secure=False,  # Set to True in HTTPS production
+        secure=(settings.ENVIRONMENT == "production"),
         max_age=15 * 60
     )
     return token_pair
@@ -130,7 +131,7 @@ async def refresh_token(
         value=token_pair.access_token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=(settings.ENVIRONMENT == "production"),
         max_age=15 * 60
     )
     return token_pair
@@ -148,7 +149,12 @@ async def logout(
 ) -> Any:
     """Revoke user refresh tokens and clear auth cookie."""
     await auth_service.logout_user(str(current_user.id), redis)
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax",
+        secure=(settings.ENVIRONMENT == "production")
+    )
     return MessageResponse(message="Successfully logged out.")
 
 

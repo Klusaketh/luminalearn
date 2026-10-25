@@ -84,7 +84,14 @@ Copy `.env.example` to create your local environment configuration:
 cp .env.example .env
 ```
 
-### 3. Launch Local Development Stack via Docker Compose
+### 3. Run Locally (one command)
+From the project root, after installing backend (`backend/.venv`) and frontend (`frontend/node_modules`) dependencies:
+```bash
+npm run dev
+```
+This starts the API on `http://127.0.0.1:8001` and the web app on `http://localhost:3000` (or the next free port), and Ctrl+C stops both. The browser only ever calls the web app's own `/api/v1`, which the Next.js server forwards to the API. There is no CORS setup, and no API address in the browser that can drift.
+
+### 4. Or Launch the Stack via Docker Compose
 To launch PostgreSQL, Redis, FastAPI Backend, and Next.js Frontend concurrently:
 ```bash
 docker-compose -f docker/docker-compose.dev.yml up --build
@@ -92,9 +99,11 @@ docker-compose -f docker/docker-compose.dev.yml up --build
 
 Access local instances:
 - **Frontend App**: `http://localhost:3000`
-- **Backend API**: `http://localhost:8000`
-- **API Interactive Docs (Swagger)**: `http://localhost:8000/docs`
-- **Health Check Endpoint**: `http://localhost:8000/api/v1/health`
+- **Backend API**: `http://localhost:8001`
+- **API Interactive Docs (Swagger)**: `http://localhost:8001/docs`
+- **Health Check Endpoint**: `http://localhost:8001/api/v1/health`
+
+The workspace (subjects, tutor, quiz, dashboards) requires signing in, and the API enforces it on every request.
 
 ---
 

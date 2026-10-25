@@ -1,6 +1,10 @@
-import httpx
+import logging
 import secrets
+import uuid
+from collections.abc import Awaitable
+from typing import Any
 
+import jwt
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +28,17 @@ from app.schemas.auth import (
 from app.schemas.user import UserResponse
 from app.services.email_service import email_service
 from app.services.otp_service import otp_service
+
+logger = logging.getLogger(__name__)
+
+
+async def _cache_best_effort(operation: Awaitable[Any], action: str) -> Any:
+    """Token cache I/O is best-effort: a cache outage must never block signing in or out."""
+    try:
+        return await operation
+    except Exception as exc:  # noqa: BLE001 - any cache/transport failure degrades gracefully
+        logger.warning("Token cache unavailable while trying to %s: %s", action, exc)
+        return None
 
 
 class AuthService:
@@ -97,14 +112,29 @@ class AuthService:
         email: str,
         password: str
     ) -> User:
-        """Authenticate user credentials, rejecting unverified or inactive accounts."""
+        """Authenticate user credentials, rejecting unverified, inactive, or Google-only accounts."""
         user = await user_repository.get_by_email(db, email)
-        if not user or not verify_password(password, user.password_hash):
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password.",
                 headers={"WWW-Authenticate": "Bearer"}
             )
+
+        # Check if account was created via Google Sign-In and lacks a local password
+        if user.password_hash.startswith("!google_oauth_only_"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account was created via Google Sign-In. Please click 'Continue with Google', or reset your password if you wish to use password login."
+            )
+
+        if not verify_password(password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password.",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+
         if not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -127,16 +157,11 @@ class AuthService:
         refresh_token = create_refresh_token(subject=str(user.id))
 
         if redis:
-            try:
-                # Store refresh token in Redis (7 days TTL = 604800 seconds)
-                await redis.setex(
-                    f"refresh_token:{user.id}",
-                    604800,
-                    refresh_token
-                )
-            except Exception:
-                # Graceful fallback if Redis is unreachable in dev environment
-                pass
+            # Store refresh token in Redis (7 days TTL = 604800 seconds)
+            await _cache_best_effort(
+                redis.setex(f"refresh_token:{user.id}", 604800, refresh_token),
+                "store the refresh token",
+            )
 
         user_response = UserResponse.model_validate(user)
         return TokenResponse(
@@ -153,27 +178,20 @@ class AuthService:
         redis: Redis | None = None
     ) -> TokenResponse:
         """Validate Refresh Token and issue a new token pair."""
+        invalid = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token is expired or invalid."
+        )
         try:
             payload = decode_token(refresh_token)
-            if payload.get("type") != "refresh":
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token type for refresh endpoint."
-                )
-            user_id_str = payload.get("sub")
-            if not user_id_str:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token subject."
-                )
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Refresh token is expired or invalid."
-            )
-
-        import uuid
-        user_id = uuid.UUID(user_id_str)
+        except jwt.PyJWTError:
+            raise invalid from None
+        if payload.get("type") != "refresh" or not payload.get("sub"):
+            raise invalid
+        try:
+            user_id = uuid.UUID(str(payload["sub"]))
+        except ValueError:
+            raise invalid from None
         user = await user_repository.get_by_id(db, user_id)
         if not user or not user.is_active:
             raise HTTPException(
@@ -182,27 +200,19 @@ class AuthService:
             )
 
         if redis:
-            try:
-                stored_token = await redis.get(f"refresh_token:{user.id}")
-                if stored_token and stored_token != refresh_token:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Refresh token has been revoked or replaced."
-                    )
-            except HTTPException:
-                raise
-            except Exception:
-                pass
+            stored_token = await _cache_best_effort(redis.get(f"refresh_token:{user.id}"), "read the refresh token")
+            if stored_token and stored_token != refresh_token:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Refresh token has been revoked or replaced."
+                )
 
         return await self.generate_token_pair(user, redis)
 
     async def logout_user(self, user_id: str, redis: Redis | None = None) -> None:
         """Revoke refresh token upon user logout."""
         if redis:
-            try:
-                await redis.delete(f"refresh_token:{user_id}")
-            except Exception:
-                pass
+            await _cache_best_effort(redis.delete(f"refresh_token:{user_id}"), "revoke the refresh token")
 
     async def request_password_reset(
         self,
@@ -218,15 +228,11 @@ class AuthService:
 
         reset_token = secrets.token_urlsafe(32)
         if redis:
-            try:
-                # Store reset token in Redis (15 mins TTL = 900 seconds)
-                await redis.setex(
-                    f"reset_token:{reset_token}",
-                    900,
-                    str(user.id)
-                )
-            except Exception:
-                pass
+            # Store reset token in Redis (15 mins TTL = 900 seconds)
+            await _cache_best_effort(
+                redis.setex(f"reset_token:{reset_token}", 900, str(user.id)),
+                "store the password reset token",
+            )
 
         return reset_token
 
@@ -240,10 +246,7 @@ class AuthService:
         """Reset password using reset token."""
         user_id_str = None
         if redis:
-            try:
-                user_id_str = await redis.get(f"reset_token:{token}")
-            except Exception:
-                pass
+            user_id_str = await _cache_best_effort(redis.get(f"reset_token:{token}"), "read the password reset token")
 
         if not user_id_str:
             raise HTTPException(
@@ -251,8 +254,7 @@ class AuthService:
                 detail="Invalid or expired password reset token."
             )
 
-        import uuid
-        user_id = uuid.UUID(user_id_str)
+        user_id = uuid.UUID(str(user_id_str))
         user = await user_repository.get_by_id(db, user_id)
         if not user:
             raise HTTPException(
@@ -264,10 +266,7 @@ class AuthService:
         await user_repository.update_password(db, user, new_hash)
 
         if redis:
-            try:
-                await redis.delete(f"reset_token:{token}")
-            except Exception:
-                pass
+            await _cache_best_effort(redis.delete(f"reset_token:{token}"), "spend the password reset token")
 
     async def request_email_verification(
         self,
@@ -285,15 +284,11 @@ class AuthService:
 
         verify_token = secrets.token_urlsafe(32)
         if redis:
-            try:
-                # Store verification token in Redis (24 hours = 86400 seconds)
-                await redis.setex(
-                    f"verify_token:{verify_token}",
-                    86400,
-                    str(user.id)
-                )
-            except Exception:
-                pass
+            # Store verification token in Redis (24 hours = 86400 seconds)
+            await _cache_best_effort(
+                redis.setex(f"verify_token:{verify_token}", 86400, str(user.id)),
+                "store the email verification token",
+            )
 
         return verify_token
 
@@ -365,54 +360,80 @@ class AuthService:
     ) -> TokenResponse:
         """
         Authenticate or register a user via Google OAuth2 (Google Identity Services).
-        Users authenticated via Google are verified by definition (Google verifies email ownership).
-        Supports dev mock tokens formatted as 'mock-google-token:<email>:<name>' when running offline or in dev.
+        Uses official google.oauth2.id_token.verify_oauth2_token() with strict validation
+        of signature, audience, issuer, expiration, and email_verified claim.
+        Fail closed: Mock tokens are strictly rejected in non-development environments.
         """
-        email = None
-        full_name = None
+        email: str | None = None
+        full_name: str | None = None
         credential = payload.credential.strip()
 
-        # Check for dev mock token (enables rapid local testing without Google Cloud Console setup)
-        if credential.startswith("mock-google-token:") or credential.startswith("dev-google:"):
+        if not credential:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Missing Google authentication credential."
+            )
+
+        # Check for development mock token (strictly gated behind ENVIRONMENT == 'development' AND DEBUG == True)
+        is_mock_token = credential.startswith(("mock-google-token:", "dev-google:"))
+        if is_mock_token:
+            if settings.ENVIRONMENT != "development" or not settings.DEBUG:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Development mock tokens are strictly forbidden in this environment."
+                )
             parts = credential.split(":")
             email = parts[1].strip().lower() if len(parts) > 1 and parts[1].strip() else "google.learner@luminalearn.ai"
             full_name = parts[2].strip() if len(parts) > 2 and parts[2].strip() else "Google Learner"
         else:
-            try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.get(
-                        "https://oauth2.googleapis.com/tokeninfo",
-                        params={"id_token": credential}
-                    )
-                if resp.status_code != 200:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Invalid or expired Google authentication credential."
-                    )
-                token_data = resp.json()
+            # Cryptographic verification using official Google Auth library
+            from google.auth import exceptions as google_auth_exceptions
+            from google.auth.transport import requests as google_requests
+            from google.oauth2 import id_token as google_id_token
 
-                if settings.GOOGLE_CLIENT_ID and token_data.get("aud") != settings.GOOGLE_CLIENT_ID:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Google token audience mismatch."
-                    )
-
-                iss = token_data.get("iss", "")
-                if iss not in ["accounts.google.com", "https://accounts.google.com"]:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Invalid Google token issuer."
-                    )
-
-                email = token_data.get("email", "").strip().lower()
-                full_name = token_data.get("name") or token_data.get("given_name") or email.split("@")[0]
-            except HTTPException:
-                raise
-            except Exception as e:
+            client_id = settings.GOOGLE_CLIENT_ID
+            if not client_id:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Google token verification error: {str(e)}"
+                    detail="Google Client ID is not configured on this server."
                 )
+
+            try:
+                # verify_oauth2_token validates signature against Google certs, exp, iss, and aud
+                id_info = google_id_token.verify_oauth2_token(
+                    credential,
+                    google_requests.Request(),
+                    audience=client_id,
+                    clock_skew_in_seconds=10
+                )
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Invalid Google ID token: {e!s}"
+                )
+            except google_auth_exceptions.GoogleAuthError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Google token verification failed: {e!s}"
+                ) from e
+
+            # Strict issuer check
+            issuer = id_info.get("iss", "")
+            if issuer not in ["accounts.google.com", "https://accounts.google.com"]:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid Google token issuer."
+                )
+
+            # Enforce that Google confirms email ownership
+            if not id_info.get("email_verified", False):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Google account email address is not verified by Google."
+                )
+
+            email = id_info.get("email", "").strip().lower()
+            full_name = id_info.get("name") or id_info.get("given_name") or (email.split("@")[0] if email else "Google Learner")
 
         if not email:
             raise HTTPException(
@@ -420,10 +441,11 @@ class AuthService:
                 detail="Google credential did not provide a valid email address."
             )
 
-        # Lookup user by email
+        # Lookup user by verified email
         user = await user_repository.get_by_email(db, email)
         if user:
-            # If account exists but wasn't verified, Google OAuth proves email ownership
+            # Account exists: Google OAuth confirms ownership of the email.
+            # Preserve existing user.id, user.role, onboarding profile, and learning progress.
             if not user.is_verified:
                 await user_repository.update_verified_status(db, user, is_verified=True)
             if not user.is_active:
@@ -432,13 +454,15 @@ class AuthService:
                     detail="This account has been deactivated."
                 )
         else:
-            # Create new user automatically provisioned and verified
-            random_pw_hash = get_password_hash(secrets.token_urlsafe(32))
+            # Create new user automatically verified.
+            # Assign sentinel password hash that cannot be matched by any plain password.
+            google_password_sentinel = f"!google_oauth_only_{secrets.token_urlsafe(32)}"
+            # Never trust client-supplied admin role; restrict to student or teacher
             assigned_role = payload.role if payload.role in [UserRole.STUDENT, UserRole.TEACHER] else UserRole.STUDENT
             user = await user_repository.create(
                 db,
                 email=email,
-                password_hash=random_pw_hash,
+                password_hash=google_password_sentinel,
                 full_name=full_name or "Google Learner",
                 role=assigned_role,
                 preferred_modality=payload.preferred_modality or VARKModality.VISUAL,
@@ -449,3 +473,4 @@ class AuthService:
 
 
 auth_service = AuthService()
+

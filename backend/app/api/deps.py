@@ -1,10 +1,10 @@
 import uuid
 from collections.abc import AsyncGenerator, Callable
+from typing import Any
 
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import async_session_factory
@@ -28,7 +28,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def get_redis() -> Redis:
+async def get_redis() -> Any:
     """FastAPI Dependency yielding Redis client."""
     return redis_client
 
@@ -74,6 +74,30 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
 
+    return user
+
+
+async def user_from_access_token(db: AsyncSession, token: str | None) -> User | None:
+    """
+    Resolve an active, verified user from an access token without raising.
+    Used where an HTTP exception cannot be raised (the voice WebSocket handshake):
+    None means the session must be refused.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+    except jwt.PyJWTError:
+        return None
+    if payload.get("type") != "access":
+        return None
+    try:
+        user_id = uuid.UUID(str(payload.get("sub")))
+    except ValueError:
+        return None
+    user = await user_repository.get_by_id(db, user_id=user_id)
+    if user is None or not user.is_active or not user.is_verified:
+        return None
     return user
 
 

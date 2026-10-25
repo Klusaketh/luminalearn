@@ -1,231 +1,236 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import {
-  contentService,
-  SubjectDetail,
-  CourseDetail,
-} from "@/services/contentService";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Clock,
-  Layers,
-  GraduationCap,
-  AlertCircle,
-  RefreshCw,
-  ChevronRight,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, BookMarked, CheckCircle2, ChevronRight, Clock, GraduationCap, Layers, Library, ListTree, RefreshCw } from "lucide-react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
+import { contentService, type SubjectSyllabus } from "@/services/contentService";
+import { SyllabusTree } from "@/components/subjects/SyllabusTree";
+import { DifficultyBadge, SubjectIcon } from "@/components/subjects/SubjectIcon";
+import { LessonMarkdown } from "@/components/subjects/LessonMarkdown";
+import { glossaryEntries, listItems, overviewSections } from "@/components/subjects/lessonFormat";
+
+function Stat({ icon: Icon, value, label }: { icon: typeof Layers; value: string | number; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <Icon className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+      <span className="tabular text-sm text-slate-300">
+        <span className="font-semibold text-white">{value}</span> {label}
+      </span>
+    </div>
+  );
+}
+
+function SidePanel({ title, icon: Icon, children }: { title: string; icon: typeof Layers; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+        <Icon className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+        {title}
+      </h2>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
 
 export default function SubjectDetailPage() {
   const params = useParams();
   const subjectSlug = params.subjectSlug as string;
-
-  const [subject, setSubject] = useState<SubjectDetail | null>(null);
-  const [courseDetails, setCourseDetails] = useState<Record<string, CourseDetail>>({});
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [subject, setSubject] = useState<SubjectSyllabus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadSubjectData = async () => {
+  const loadSubjectData = useCallback(async () => {
     if (!subjectSlug) return;
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const data = await contentService.getSubject(subjectSlug);
-      setSubject(data);
-
-      // Load full details for courses to show module outlines
-      if (data.courses && data.courses.length > 0) {
-        const detailsPromises = data.courses.map((c) =>
-          contentService.getCourse(c.slug).catch(() => null)
-        );
-        const results = await Promise.all(detailsPromises);
-        const map: Record<string, CourseDetail> = {};
-        results.forEach((c) => {
-          if (c) map[c.slug] = c;
-        });
-        setCourseDetails(map);
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to load subject details.");
+      setSubject(await contentService.getSyllabus(subjectSlug));
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to load subject details.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadSubjectData();
   }, [subjectSlug]);
 
+  useEffect(() => {
+    void loadSubjectData();
+  }, [loadSubjectData]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void loadSubjectData();
+  });
+
+  useEffect(() => {
+    if (subject) document.title = `${subject.name} · Subjects · LuminaLearn AI`;
+  }, [subject]);
+
+  const overview = useMemo(() => overviewSections(subject?.description ?? ""), [subject]);
+  const objectives = listItems(overview.sections["What you will learn"] ?? "");
+  const prerequisites = listItems(overview.sections["Prerequisites"] ?? "");
+  const glossary = glossaryEntries(overview.sections["Glossary"] ?? "");
+  const reading = overview.sections["Further reading"];
+  const firstLesson = subject?.courses.flatMap((c) => c.modules.flatMap((m) => m.topics.flatMap((t) => t.lessons)))[0];
+
   return (
-    <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative overflow-hidden">
-      {/* Ambient Glow */}
-        <div className="absolute top-1/6 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
+    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-slate-400">
+        <Link href="/subjects" className="hover:text-white">
+          Subjects
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5 text-slate-600" aria-hidden="true" />
+        <span className="text-slate-300" aria-current="page">
+          {subject?.name ?? "Subject"}
+        </span>
+      </nav>
 
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 relative z-10">
-          <Link href="/subjects" className="hover:text-indigo-400 transition-colors flex items-center gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            All Subjects
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-slate-300 font-semibold">{subject?.name || subjectSlug}</span>
+      {isLoading && (
+        <div className="mt-8 space-y-4" role="status" aria-live="polite">
+          <span className="sr-only">Loading subject</span>
+          <div className="h-12 w-1/2 animate-pulse rounded-xl bg-white/[0.05]" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-white/[0.04]" />
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="h-80 animate-pulse rounded-3xl bg-white/[0.03]" />
+            <div className="h-80 animate-pulse rounded-3xl bg-white/[0.03]" />
+          </div>
         </div>
+      )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="p-16 rounded-2xl bg-slate-900/40 border border-slate-800 flex flex-col items-center justify-center gap-4 text-center">
-            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 font-mono animate-pulse">
-              Loading syllabus and course structures...
-            </p>
-          </div>
-        )}
+      {!isLoading && errorMessage && (
+        <div role="alert" className="mx-auto mt-10 flex max-w-xl items-center justify-between gap-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 p-5 text-sm text-rose-100">
+          <span className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+            {errorMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => void loadSubjectData()}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-rose-500/20 px-3 py-1.5 font-semibold text-white hover:bg-rose-500/30"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Retry
+          </button>
+        </div>
+      )}
 
-        {/* Error State */}
-        {!isLoading && errorMessage && (
-          <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center justify-between gap-4 max-w-xl mx-auto">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-            <button
-              onClick={loadSubjectData}
-              className="px-3.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-semibold flex items-center gap-1.5 transition-colors shrink-0"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* Subject Header Banner */}
-        {!isLoading && subject && (
-          <div className="space-y-8 relative z-10">
-            <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-2xl space-y-4">
+      {!isLoading && subject && (
+        <>
+          <header className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  {subject.category_name || "Academic Subject"}
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-200">
+                  <SubjectIcon iconKey={subject.icon_key} />
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-                  Difficulty: {subject.difficulty_level}
-                </span>
+                {subject.category_name && <span className="text-sm text-slate-400">{subject.category_name}</span>}
+                <DifficultyBadge level={subject.difficulty_level} />
               </div>
-
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                {subject.name}
-              </h1>
-
-              <p className="text-sm sm:text-base text-slate-300 max-w-3xl leading-relaxed">
-                {subject.description || subject.short_description}
-              </p>
+              <h1 className="mt-4 font-display text-4xl leading-tight text-white sm:text-6xl">{subject.name}</h1>
+              {subject.short_description && <p className="mt-3 text-lg leading-relaxed text-slate-300">{subject.short_description}</p>}
+              <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
+                <Stat icon={Layers} value={subject.module_count} label="modules" />
+                <Stat icon={ListTree} value={subject.topic_count} label="topics" />
+                <Stat icon={BookMarked} value={subject.lesson_count} label="lessons" />
+                <Stat icon={Clock} value={`~${subject.estimated_hours}`} label="hours" />
+              </div>
             </div>
+            <div className="flex flex-wrap gap-3">
+              {firstLesson && (
+                <Link
+                  href={`/lessons/${firstLesson.id}`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-space-950 outline-none transition-transform hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-indigo-300"
+                >
+                  Start with the first lesson <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              )}
+              <a href="#syllabus" className="inline-flex items-center rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-slate-100 outline-none hover:border-white/30 focus-visible:ring-2 focus-visible:ring-indigo-300">
+                View syllabus
+              </a>
+            </div>
+          </header>
 
-            {/* Courses Section */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-indigo-400" />
-                  Available Courses & Syllabus
+          <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="min-w-0 space-y-12">
+              {overview.intro && (
+                <section aria-labelledby="overview-heading" className="max-w-3xl">
+                  <h2 id="overview-heading" className="font-display text-3xl text-white">
+                    About this subject
+                  </h2>
+                  <LessonMarkdown markdown={overview.intro} className="mt-4" />
+                </section>
+              )}
+
+              <section id="syllabus" aria-labelledby="syllabus-heading" className="scroll-mt-24">
+                <h2 id="syllabus-heading" className="font-display text-3xl text-white">
+                  Syllabus
                 </h2>
-                <span className="text-xs text-slate-500 font-mono">
-                  {subject.courses.length} {subject.courses.length === 1 ? "Course" : "Courses"}
-                </span>
-              </div>
-
-              {subject.courses.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-400">
-                  No courses currently authored for this subject.
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {subject.courses.map((course) => {
-                    const detail = courseDetails[course.slug];
-                    const modules = detail ? detail.modules : [];
-                    const totalTopics = modules.reduce(
-                      (acc, m) => acc + (m.topics ? m.topics.length : 0),
-                      0
-                    );
-
-                    return (
-                      <div
-                        key={course.id}
-                        className="rounded-2xl bg-slate-900/60 border border-slate-800/80 overflow-hidden shadow-lg space-y-6 p-6 sm:p-8"
-                      >
-                        {/* Course Card Header */}
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className="text-indigo-400 font-semibold uppercase tracking-wider">
-                                Course Track
-                              </span>
-                              <span className="text-slate-600">•</span>
-                              <span className="text-slate-400 flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5" />
-                                ~{course.estimated_hours} Hours
-                              </span>
-                              <span className="text-slate-600">•</span>
-                              <span className="text-slate-400 flex items-center gap-1">
-                                <Layers className="w-3.5 h-3.5" />
-                                {modules.length} Modules ({totalTopics} Topics)
-                              </span>
-                            </div>
-                            <h3 className="text-2xl font-bold text-white">
-                              {course.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
-                              {course.description || "Structured learning module curriculum."}
-                            </p>
-                          </div>
-
-                          <Link
-                            href={`/courses/${course.slug}`}
-                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 shrink-0 group self-start md:self-auto"
-                          >
-                            Open Course
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </Link>
-                        </div>
-
-                        {/* Module Syllabus Breakdown */}
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                            <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
-                            Curriculum Module Outline
-                          </h4>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {modules.map((mod, idx) => (
-                              <div
-                                key={mod.id}
-                                className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-start gap-3"
-                              >
-                                <span className="w-6 h-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono font-bold flex items-center justify-center shrink-0">
-                                  {String(idx + 1).padStart(2, "0")}
-                                </span>
-                                <div className="space-y-1 min-w-0">
-                                  <h5 className="text-xs font-bold text-slate-200 truncate">
-                                    {mod.title}
-                                  </h5>
-                                  <p className="text-[11px] text-slate-400">
-                                    {mod.topics ? mod.topics.length : 0} Topics • ~{mod.estimated_minutes} mins
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                {subject.courses.length === 0 ? (
+                  <p className="mt-4 text-slate-400">No course has been published for this subject yet.</p>
+                ) : (
+                  subject.courses.map((course) => (
+                    <div key={course.id} className="mt-5">
+                      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="text-lg font-semibold text-white">{course.title}</h3>
+                        <span className="text-sm text-slate-400">
+                          {course.difficulty} · ~{course.estimated_hours} hours
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      {course.description && <p className="-mt-2 mb-4 max-w-3xl text-[15px] leading-relaxed text-slate-400">{course.description}</p>}
+                      <SyllabusTree modules={course.modules} />
+                    </div>
+                  ))
+                )}
+              </section>
+
+              {glossary.length > 0 && (
+                <section aria-labelledby="glossary-heading">
+                  <h2 id="glossary-heading" className="font-display text-3xl text-white">
+                    Glossary
+                  </h2>
+                  <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {glossary.map((entry) => (
+                      <div key={entry.term} className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-4">
+                        <dt className="font-semibold text-white">{entry.term}</dt>
+                        <dd className="mt-1 text-[15px] leading-relaxed text-slate-300">{entry.definition}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
               )}
             </div>
+
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+              {objectives.length > 0 && (
+                <SidePanel title="What you will learn" icon={GraduationCap}>
+                  <ul className="space-y-2.5">
+                    {objectives.map((item) => (
+                      <li key={item} className="flex gap-2.5 text-sm leading-relaxed text-slate-300">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </SidePanel>
+              )}
+              {prerequisites.length > 0 && (
+                <SidePanel title="Before you start" icon={ListTree}>
+                  <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-300 marker:text-indigo-300">
+                    {prerequisites.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </SidePanel>
+              )}
+              {reading && (
+                <SidePanel title="Further reading" icon={Library}>
+                  <LessonMarkdown markdown={reading} compact />
+                </SidePanel>
+              )}
+            </aside>
           </div>
-        )}
-      </main>
+        </>
+      )}
+    </main>
   );
 }

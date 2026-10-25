@@ -1,7 +1,9 @@
 # Multi-Stage Build for LuminaLearn AI FastAPI Backend
+# Build context is the repository root: the backend imports the shared ai/ and ml/ packages.
+#   docker build -f backend/Dockerfile -t luminalearn-backend .
 FROM python:3.11-slim as builder
 
-WORKDIR /app
+WORKDIR /srv
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -10,14 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --no-root
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11-slim as final
 
-WORKDIR /app
+WORKDIR /srv/backend
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 # Create non-root user (appuser UID 10001) for security compliance
 RUN groupadd -g 10001 appgroup && \
@@ -26,9 +29,11 @@ RUN groupadd -g 10001 appgroup && \
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-COPY . .
+COPY backend /srv/backend
+COPY ai /srv/ai
+COPY ml /srv/ml
 
-RUN chown -R appuser:appgroup /app
+RUN chown -R appuser:appgroup /srv
 USER appuser
 
 EXPOSE 8000

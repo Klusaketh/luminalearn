@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { Mail, Lock, User, Eye, EyeOff, School, ShieldAlert, ArrowRight, BookOpen } from "lucide-react";
 import { GoogleAuthButton } from "../../../components/auth/GoogleAuthButton";
+import { enterWorkspace } from "../../../utils/postSignIn";
 
 export default function TeacherRegistrationPage() {
   const router = useRouter();
-  const { registerTeacher, isAuthenticated, isLoading, error, clearError } = useAuthStore();
+  const { registerTeacher, user, isAuthenticated, isLoading, error, clearError } = useAuthStore();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,11 +19,11 @@ export default function TeacherRegistrationPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Already signed in (or just signed in with Google): continue into the workspace, once.
+  const role = isAuthenticated ? user?.role : undefined;
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard/teacher");
-    }
-  }, [isAuthenticated, router]);
+    if (role) void enterWorkspace(role, null);
+  }, [role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,20 +54,18 @@ export default function TeacherRegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-purple-600/15 blur-[150px] rounded-full pointer-events-none" />
+    <div className="flex-1 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
 
       {/* Main Container */}
       <div className="w-full max-w-lg bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl z-10">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-3">
             <School className="w-3.5 h-3.5" />
             Educator Account Registration
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="font-display leading-tight text-white text-4xl">
             Empower Your Teaching
           </h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -178,8 +177,8 @@ export default function TeacherRegistrationPage() {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-800" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-900/90 px-3 text-slate-500 font-medium tracking-wider">
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-slate-900/90 px-3 text-slate-500 font-medium">
               Or sign up with
             </span>
           </div>

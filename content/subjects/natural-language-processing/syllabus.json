@@ -1,0 +1,131 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Natural Language Processing",
+  "slug": "natural-language-processing",
+  "short_description": "Tokenization, language models, word embeddings, sequence-to-sequence, and transformers.",
+  "description": "Modern computational linguistics covering Byte-Pair Encoding tokenization, Word2Vec, GloVe, recurrent language models, BERT masked modeling, and GPT autoregressive architectures.",
+  "icon_key": "message-square",
+  "difficulty_level": "Advanced",
+  "display_order": 15,
+  "courses": [
+    {
+      "title": "Natural Language Processing",
+      "slug": "nlp-fundamentals",
+      "description": "Computational linguistics, text representation, transformer language models, and generation.",
+      "difficulty": "Advanced",
+      "estimated_hours": 8,
+      "modules": [
+        {
+          "title": "Text Processing & Tokenization",
+          "slug": "nlp-tokenization",
+          "description": "Subword tokenization, BPE, WordPiece, and vocabulary mapping.",
+          "estimated_minutes": 85,
+          "topics": [
+            {
+              "title": "Text Normalization, Bag-of-Words & TF-IDF",
+              "slug": "text-normalization-tfidf",
+              "summary": "Tokenizing and normalizing text and turning documents into weighted term vectors.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Subword Tokenization (BPE & WordPiece)",
+              "slug": "subword-tokenization-bpe",
+              "summary": "Vocabulary construction and handling out-of-vocabulary words.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Language Modeling & Classification",
+          "slug": "nlp-language-modeling",
+          "description": "Classical statistical methods that still underpin modern NLP.",
+          "estimated_minutes": 145,
+          "topics": [
+            {
+              "title": "N-gram Language Models & Perplexity",
+              "slug": "ngram-language-models",
+              "summary": "Estimating word probabilities from counts, smoothing, and evaluating with perplexity.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Text Classification & Sentiment Analysis",
+              "slug": "text-classification-sentiment",
+              "summary": "Naive Bayes and logistic regression on text features, with evaluation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Sequence Labeling: POS Tagging & NER",
+              "slug": "sequence-labeling-pos-ner",
+              "summary": "Tagging every token: hidden Markov models, Viterbi decoding, and BIO labels.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Word Embeddings",
+          "slug": "nlp-word-embeddings",
+          "description": "Distributed semantic representations, Skip-Gram, CBOW, and GloVe.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Word2Vec & Distributed Semantics",
+              "slug": "word2vec-distributed-semantics",
+              "summary": "Vector space analogies, cosine similarity, and negative sampling.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Sequence-to-Sequence Models",
+          "slug": "nlp-seq2seq",
+          "description": "Mapping one sequence to another, the origin of attention.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Seq2Seq, Attention & Machine Translation",
+              "slug": "seq2seq-attention",
+              "summary": "Encoder-decoder networks, the attention mechanism, and evaluating translations with BLEU.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Pre-trained Language Models",
+          "slug": "nlp-pretrained-models",
+          "description": "BERT encoder architecture, GPT decoder generation, and fine-tuning paradigms.",
+          "estimated_minutes": 155,
+          "topics": [
+            {
+              "title": "Encoder vs Decoder Transformer Models",
+              "slug": "encoder-vs-decoder-models",
+              "summary": "Masked language modeling (BERT) vs causal autoregression (GPT).",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Large Language Models: Pretraining, Fine-Tuning & Prompting",
+              "slug": "llm-pretraining-prompting",
+              "summary": "How LLMs are trained and adapted, prompting techniques, evaluation, and known failure modes.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            },
+            {
+              "title": "Embeddings & Retrieval-Augmented Generation",
+              "slug": "embeddings-rag",
+              "summary": "Sentence embeddings, vector search, and grounding generation in retrieved documents.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

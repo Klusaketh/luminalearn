@@ -16,20 +16,18 @@ export default function TeacherDashboardPage() {
 
   return (
     <ProtectedRoute allowedRoles={["teacher", "admin"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="flex-1 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
 
         <div className="max-w-7xl mx-auto w-full space-y-8 relative z-10 flex-1">
           
           {/* Welcome Banner */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border border-purple-500/30 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold">
                 <School className="w-3.5 h-3.5" />
                 Educator Portal Dashboard
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="font-display leading-tight text-white text-3xl sm:text-5xl">
                 Welcome, <span className="bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">{user?.full_name || "Educator"}</span>!
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
@@ -57,7 +55,7 @@ export default function TeacherDashboardPage() {
                   <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
                     <Users className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold">
                     Coming Soon
                   </span>
                 </div>
@@ -77,7 +75,7 @@ export default function TeacherDashboardPage() {
                   <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
                     <BookOpen className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold">
                     Coming Soon
                   </span>
                 </div>
@@ -97,7 +95,7 @@ export default function TeacherDashboardPage() {
                   <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
                     <BrainCircuit className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                     Coming Soon
                   </span>
                 </div>

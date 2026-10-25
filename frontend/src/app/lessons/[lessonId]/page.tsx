@@ -1,268 +1,278 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { AlertCircle, ArrowLeft, ArrowRight, ChevronRight, Clock, ListChecks, Lock, MailCheck, RefreshCw, Target } from "lucide-react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { contentService, LessonDetail } from "@/services/contentService";
-import {
-  ArrowLeft,
-  Clock,
-  AlertCircle,
-  RefreshCw,
-  ChevronRight,
-  Target,
-  Lock,
-  MailCheck,
-} from "lucide-react";
+import { contentService, type LessonDetail } from "@/services/contentService";
+import { LessonMarkdown } from "@/components/subjects/LessonMarkdown";
+import { PracticeSet } from "@/components/subjects/PracticeSet";
+import { LessonToc } from "@/components/subjects/LessonToc";
+import { DifficultyBadge } from "@/components/subjects/SubjectIcon";
+import { extractHeadings, splitLesson } from "@/components/subjects/lessonFormat";
+
+type AccessState = "ok" | "unauthenticated" | "unverified";
+
+function Breadcrumbs({ lesson }: { lesson: LessonDetail | null }) {
+  return (
+    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-slate-400">
+      <Link href="/subjects" className="hover:text-white">
+        Subjects
+      </Link>
+      {lesson?.subject_slug && (
+        <>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-600" aria-hidden="true" />
+          <Link href={`/subjects/${lesson.subject_slug}`} className="hover:text-white">
+            {lesson.subject_name}
+          </Link>
+        </>
+      )}
+      {lesson?.module_title && (
+        <>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-600" aria-hidden="true" />
+          <span>{lesson.module_title}</span>
+        </>
+      )}
+      {lesson?.topic_title && (
+        <>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-600" aria-hidden="true" />
+          <Link href={`/topics/${lesson.topic_id}`} className="text-slate-300 hover:text-white" aria-current="page">
+            {lesson.topic_title}
+          </Link>
+        </>
+      )}
+    </nav>
+  );
+}
+
+function AccessNotice({ state }: { state: Exclude<AccessState, "ok"> }) {
+  const unverified = state === "unverified";
+  return (
+    <div className="glass mx-auto max-w-lg rounded-3xl p-8 text-center">
+      <span className={`mx-auto flex h-12 w-12 items-center justify-center rounded-2xl ${unverified ? "bg-amber-400/10 text-amber-200" : "bg-indigo-500/10 text-indigo-200"}`}>
+        {unverified ? <MailCheck className="h-6 w-6" aria-hidden="true" /> : <Lock className="h-6 w-6" aria-hidden="true" />}
+      </span>
+      <h1 className="mt-4 font-display text-3xl text-white">{unverified ? "Verify your email to read lessons" : "Sign in to read lessons"}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-slate-300">
+        {unverified ? "Confirm the 6-digit code we emailed you, then come back to this lesson." : "Lessons are part of your LuminaLearn workspace."}
+      </p>
+      <Link
+        href={unverified ? "/verify-email" : "/login"}
+        className="mt-6 inline-flex rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-space-950 outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+      >
+        {unverified ? "Verify email" : "Sign in"}
+      </Link>
+    </div>
+  );
+}
 
 export default function LessonViewerPage() {
   const params = useParams();
   const lessonId = params.lessonId as string;
   const { user, accessToken, isAuthenticated } = useAuthStore();
-
   const [lesson, setLesson] = useState<LessonDetail | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [accessState, setAccessState] = useState<"ok" | "unauthenticated" | "unverified">("ok");
+  const [accessState, setAccessState] = useState<AccessState>("ok");
 
-  const loadLesson = async () => {
+  const loadLesson = useCallback(async () => {
     if (!lessonId) return;
     setIsLoading(true);
     setErrorMessage(null);
     setAccessState("ok");
-
     if (!isAuthenticated || !accessToken) {
       setIsLoading(false);
       setAccessState("unauthenticated");
       return;
     }
-
-    if (user && !user.is_verified) {
+    if (user && user.is_verified === false) {
       setIsLoading(false);
       setAccessState("unverified");
       return;
     }
-
     try {
-      const data = await contentService.getLesson(lessonId, accessToken);
-      setLesson(data);
-    } catch (err: any) {
-      if (err.message === "AUTHENTICATION_REQUIRED") {
-        setAccessState("unauthenticated");
-      } else if (err.message === "EMAIL_VERIFICATION_REQUIRED") {
-        setAccessState("unverified");
-      } else {
-        setErrorMessage(err.message || "Failed to load lesson content.");
-      }
+      setLesson(await contentService.getLesson(lessonId, accessToken));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      if (message === "AUTHENTICATION_REQUIRED") setAccessState("unauthenticated");
+      else if (message === "EMAIL_VERIFICATION_REQUIRED") setAccessState("unverified");
+      else setErrorMessage(message || "Failed to load lesson content.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadLesson();
   }, [lessonId, accessToken, isAuthenticated, user]);
 
+  useEffect(() => {
+    void loadLesson();
+  }, [loadLesson]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void loadLesson();
+  });
+
+  const blocks = useMemo(() => (lesson ? splitLesson(lesson.content) : []), [lesson]);
+  const headings = useMemo(() => (lesson ? extractHeadings(lesson.content) : []), [lesson]);
+  const nav = lesson?.navigation ?? null;
+
+  useEffect(() => {
+    if (lesson) document.title = `${lesson.title} · ${lesson.subject_name ?? "Subjects"} · LuminaLearn AI`;
+  }, [lesson]);
+
   return (
-    <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative overflow-hidden">
-      {/* Ambient Glow */}
-        <div className="absolute top-1/6 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
+    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <Breadcrumbs lesson={lesson} />
 
-        {/* Breadcrumb Navigation */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 relative z-10">
-          <Link href="/subjects" className="hover:text-indigo-400 transition-colors">
-            Subjects
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          {lesson?.subject_slug ? (
-            <Link
-              href={`/subjects/${lesson.subject_slug}`}
-              className="hover:text-indigo-400 transition-colors"
-            >
-              {lesson.subject_name || "Subject"}
-            </Link>
-          ) : (
-            <span>Subject</span>
-          )}
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          {lesson?.course_slug ? (
-            <Link
-              href={`/courses/${lesson.course_slug}`}
-              className="hover:text-indigo-400 transition-colors"
-            >
-              {lesson.course_title || "Course"}
-            </Link>
-          ) : (
-            <span>Course</span>
-          )}
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          {lesson?.topic_id ? (
-            <Link
-              href={`/topics/${lesson.topic_id}`}
-              className="hover:text-indigo-400 transition-colors"
-            >
-              {lesson.topic_title || "Topic"}
-            </Link>
-          ) : (
-            <span>Topic</span>
-          )}
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-slate-300 font-semibold">{lesson?.title || "Lesson"}</span>
+      {isLoading && (
+        <div className="mt-8 space-y-4" role="status" aria-live="polite">
+          <span className="sr-only">Loading lesson</span>
+          <div className="h-10 w-2/3 animate-pulse rounded-xl bg-white/[0.05]" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-white/[0.04]" />
+          <div className="mt-8 h-64 animate-pulse rounded-3xl bg-white/[0.03]" />
         </div>
+      )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="p-16 rounded-2xl bg-slate-900/40 border border-slate-800 flex flex-col items-center justify-center gap-4 text-center">
-            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 font-mono animate-pulse">
-              Retrieving lesson content...
-            </p>
-          </div>
-        )}
+      {!isLoading && accessState !== "ok" && (
+        <div className="mt-10">
+          <AccessNotice state={accessState} />
+        </div>
+      )}
 
-        {/* Unauthenticated Access Guard */}
-        {!isLoading && accessState === "unauthenticated" && (
-          <div className="p-8 sm:p-12 rounded-2xl bg-slate-900/80 border border-indigo-500/30 text-center space-y-5 max-w-lg mx-auto shadow-2xl relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
-              <Lock className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">Student Sign-In Required</h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Academic lessons and interactive concept materials require an active LuminaLearn student account.
-              </p>
-            </div>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/login"
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30"
-              >
-                Sign In to Read
-              </Link>
-              <Link
-                href="/register"
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-all border border-slate-700"
-              >
-                Create Account
-              </Link>
-            </div>
-          </div>
-        )}
+      {!isLoading && accessState === "ok" && errorMessage && (
+        <div role="alert" className="mx-auto mt-10 flex max-w-xl items-center justify-between gap-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 p-5 text-sm text-rose-100">
+          <span className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+            {errorMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => void loadLesson()}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-rose-500/20 px-3 py-1.5 font-semibold text-white hover:bg-rose-500/30"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Retry
+          </button>
+        </div>
+      )}
 
-        {/* Unverified Email Guard (Sprint 6.2A invariant) */}
-        {!isLoading && accessState === "unverified" && (
-          <div className="p-8 sm:p-12 rounded-2xl bg-slate-900/80 border border-amber-500/30 text-center space-y-5 max-w-lg mx-auto shadow-2xl relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-              <MailCheck className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">Email Verification Required</h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Under Sprint 6.2A security requirements, your account must be email OTP verified before accessing academic curriculum lessons.
-              </p>
-            </div>
-            <div className="pt-2">
-              <Link
-                href="/verify-email"
-                className="inline-flex px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition-all shadow-lg shadow-amber-600/30"
-              >
-                Verify Email with OTP
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* General Error State */}
-        {!isLoading && accessState === "ok" && errorMessage && (
-          <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center justify-between gap-4 max-w-xl mx-auto">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-            <button
-              onClick={loadLesson}
-              className="px-3.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-semibold flex items-center gap-1.5 transition-colors shrink-0"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* Active Lesson Content Viewer */}
-        {!isLoading && accessState === "ok" && lesson && (
-          <article className="space-y-8 relative z-10">
-            {/* Lesson Title Header */}
-            <header className="p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-2xl space-y-4">
-              <div className="flex flex-wrap items-center gap-3 text-xs">
-                {lesson.topic_title && (
-                  <span className="px-3 py-1 rounded-full font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    Topic: {lesson.topic_title}
+      {!isLoading && accessState === "ok" && lesson && (
+        <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <article className="min-w-0">
+            <header className="max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2.5 text-sm text-slate-400">
+                {lesson.topic_difficulty && <DifficultyBadge level={lesson.topic_difficulty} />}
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" aria-hidden="true" />
+                  About {lesson.estimated_minutes} minutes
+                </span>
+                {nav && (
+                  <span className="tabular">
+                    Lesson {nav.position} of {nav.total}
                   </span>
                 )}
-                <span className="text-slate-400 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-indigo-400" />
-                  Estimated Study Time: ~{lesson.estimated_minutes} Minutes
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase bg-slate-800 text-slate-300 border border-slate-700">
-                  {lesson.lesson_type}
-                </span>
               </div>
-
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-                {lesson.title}
-              </h1>
-
-              {lesson.summary && (
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl">
-                  {lesson.summary}
-                </p>
-              )}
+              <h1 className="mt-3 font-display text-4xl leading-tight text-white sm:text-5xl">{lesson.title}</h1>
+              {lesson.summary && <p className="mt-3 text-lg leading-relaxed text-slate-300">{lesson.summary}</p>}
             </header>
 
-            {/* Learning Objectives Checklist */}
-            {lesson.learning_objectives && lesson.learning_objectives.length > 0 && (
-              <div className="p-6 rounded-2xl bg-indigo-950/20 border border-indigo-500/30 space-y-3 shadow-lg">
-                <div className="flex items-center gap-2 text-indigo-300 text-xs font-bold uppercase tracking-wider">
-                  <Target className="w-4 h-4 text-indigo-400" />
-                  Learning Objectives
-                </div>
-                <ul className="space-y-2">
-                  {lesson.learning_objectives.map((obj, oIdx) => (
-                    <li key={oIdx} className="flex items-start gap-2.5 text-xs text-slate-300">
-                      <span className="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                        ✓
-                      </span>
-                      <span>{obj}</span>
+            {lesson.learning_objectives.length > 0 && (
+              <section aria-labelledby="objectives-heading" className="mt-8 max-w-3xl rounded-2xl border border-indigo-400/20 bg-indigo-500/[0.06] p-5 sm:p-6">
+                <h2 id="objectives-heading" className="flex items-center gap-2 text-sm font-semibold text-indigo-100">
+                  <Target className="h-4 w-4" aria-hidden="true" />
+                  By the end of this lesson you can
+                </h2>
+                <ul className="mt-3 space-y-2">
+                  {lesson.learning_objectives.map((objective) => (
+                    <li key={objective} className="flex gap-2.5 text-[15px] leading-relaxed text-slate-200">
+                      <ListChecks className="mt-1 h-4 w-4 shrink-0 text-indigo-300" aria-hidden="true" />
+                      {objective}
                     </li>
                   ))}
                 </ul>
-              </div>
+              </section>
             )}
 
-            {/* Markdown Body Viewer */}
-            <div className="p-6 sm:p-10 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-2xl">
-              <div className="prose prose-invert max-w-none space-y-6 text-slate-300 text-sm sm:text-base leading-relaxed whitespace-pre-line font-sans">
-                {lesson.content}
-              </div>
+            {headings.length > 0 && (
+              <details className="mt-6 max-w-3xl rounded-2xl border border-white/[0.08] p-4 lg:hidden">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-200">On this page</summary>
+                <div className="mt-3">
+                  <LessonToc headings={headings} />
+                </div>
+              </details>
+            )}
+
+            <div className="mt-10 max-w-3xl">
+              {blocks.map((block, index) =>
+                block.kind === "markdown" ? (
+                  <LessonMarkdown key={index} markdown={block.text} />
+                ) : (
+                  <PracticeSet key={index} questions={block.questions} />
+                )
+              )}
             </div>
 
-            {/* Navigation Footnotes */}
-            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-              <Link
-                href={lesson.topic_id ? `/topics/${lesson.topic_id}` : "/subjects"}
-                className="flex items-center gap-1.5 hover:text-indigo-400 transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Return to Topic
-              </Link>
-              <span className="font-mono text-[11px]">
-                LuminaLearn AI Academic Content Layer V1
-              </span>
-            </div>
+            {nav && (nav.previous || nav.next) && (
+              <nav aria-label="Lesson navigation" className="mt-14 grid max-w-3xl gap-3 border-t border-white/[0.08] pt-8 sm:grid-cols-2">
+                {nav.previous ? (
+                  <Link
+                    href={`/lessons/${nav.previous.lesson_id}`}
+                    className="group rounded-2xl border border-white/[0.08] p-4 outline-none transition-colors hover:border-indigo-300/40 focus-visible:ring-2 focus-visible:ring-indigo-300"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                      <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Previous · {nav.previous.module_title}
+                    </span>
+                    <span className="mt-1 block font-medium text-slate-100 group-hover:text-white">{nav.previous.topic_title}</span>
+                  </Link>
+                ) : (
+                  <span aria-hidden="true" />
+                )}
+                {nav.next && (
+                  <Link
+                    href={`/lessons/${nav.next.lesson_id}`}
+                    className="group rounded-2xl border border-white/[0.08] p-4 text-right outline-none transition-colors hover:border-indigo-300/40 focus-visible:ring-2 focus-visible:ring-indigo-300"
+                  >
+                    <span className="flex items-center justify-end gap-1.5 text-xs text-slate-400">
+                      Next · {nav.next.module_title} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </span>
+                    <span className="mt-1 block font-medium text-slate-100 group-hover:text-white">{nav.next.topic_title}</span>
+                  </Link>
+                )}
+              </nav>
+            )}
           </article>
-        )}
-      </main>
+
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-8">
+              <LessonToc headings={headings} />
+              {nav && nav.module_topics.length > 1 && (
+                <nav aria-label={`Topics in ${lesson.module_title ?? "this module"}`} className="text-sm">
+                  <p className="mb-2 text-xs font-semibold text-slate-400">In {lesson.module_title}</p>
+                  <ul className="space-y-1">
+                    {nav.module_topics.map((topic) => (
+                      <li key={topic.topic_id}>
+                        {topic.lesson_id && !topic.is_current ? (
+                          <Link href={`/lessons/${topic.lesson_id}`} className="block rounded-lg px-2 py-1.5 text-slate-300 hover:bg-white/[0.04] hover:text-white">
+                            {topic.title}
+                          </Link>
+                        ) : (
+                          <span
+                            aria-current={topic.is_current ? "page" : undefined}
+                            className={`block rounded-lg px-2 py-1.5 ${topic.is_current ? "bg-indigo-500/10 font-medium text-white" : "text-slate-500"}`}
+                          >
+                            {topic.title}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
+    </main>
   );
 }

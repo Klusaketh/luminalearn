@@ -1,0 +1,229 @@
+{
+  "category_slug": "programming",
+  "name": "Python",
+  "slug": "python",
+  "short_description": "Clean modern Python programming from syntax fundamentals to OOP and algorithms.",
+  "description": "Complete Python programming curriculum spanning dynamic typing, scoping, data structures, object-oriented design, functional features, context managers, and core libraries.",
+  "icon_key": "file-code",
+  "difficulty_level": "Beginner",
+  "display_order": 7,
+  "courses": [
+    {
+      "title": "Python Programming",
+      "slug": "python-programming",
+      "description": "Comprehensive journey from foundational syntax to object-oriented programming and standard libraries.",
+      "difficulty": "Beginner",
+      "estimated_hours": 11,
+      "modules": [
+        {
+          "title": "Fundamentals",
+          "slug": "python-fundamentals",
+          "description": "Python interpreter model, dynamic typing, primitive types, and operators.",
+          "estimated_minutes": 60,
+          "topics": [
+            {
+              "title": "Python Variables & Data Types",
+              "slug": "python-variables-data-types",
+              "summary": "Dynamic references, integers, floats, booleans, and mutability distinctions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Type Casting & Operators",
+              "slug": "python-type-casting-operators",
+              "summary": "Implicit vs explicit casting, arithmetic and boolean operators.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 25
+            }
+          ]
+        },
+        {
+          "title": "Control Flow",
+          "slug": "python-control-flow",
+          "description": "Conditionals, truthy/falsy evaluation, for and while iteration.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Conditional Branching & Loops",
+              "slug": "python-conditionals-and-loops",
+              "summary": "If-elif-else statements, while loops, for loops with range, break and continue.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Functions",
+          "slug": "python-functions",
+          "description": "Function definitions, parameter binding (*args, **kwargs), closures, and lambda.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Defining Functions & Scope Resolution",
+              "slug": "python-defining-functions-scope",
+              "summary": "Def syntax, default arguments, LEGB scope rules, and first-class functions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Iterators, Generators & Decorators",
+          "slug": "python-advanced-functions",
+          "description": "Lazy iteration and functions that build or wrap other functions.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Iterators & Generators",
+              "slug": "python-iterators-generators",
+              "summary": "The iteration protocol, generator functions, and lazy pipelines.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Closures & Decorators",
+              "slug": "python-closures-decorators",
+              "summary": "Functions that capture state and functions that wrap other functions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Collections",
+          "slug": "python-collections",
+          "description": "Lists, tuples, dictionaries, sets, and comprehension expressions.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Lists, Dictionaries & Comprehensions",
+              "slug": "python-lists-dicts-comprehensions",
+              "summary": "List slicing, dict hash tables, set operations, and list/dict comprehensions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Tuples, Sets & Choosing a Collection",
+              "slug": "python-tuples-sets",
+              "summary": "Immutable tuples, set algebra, hashability, and picking the right container.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Strings",
+          "slug": "python-strings",
+          "description": "String formatting (f-strings), slicing, and common methods.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "String Formatting & Methods",
+              "slug": "python-string-formatting",
+              "summary": "F-strings, split/join methods, and immutable byte representations.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "OOP",
+          "slug": "python-oop",
+          "description": "Classes, instance variables, dunder methods, inheritance, and encapsulation.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Classes, Inheritance & Polymorphism",
+              "slug": "python-classes-inheritance",
+              "summary": "__init__, self convention, super(), method overriding, and duck typing.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Exception Handling",
+          "slug": "python-exception-handling",
+          "description": "Try, except, else, finally blocks and custom exception hierarchies.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Try-Except Blocks & Custom Exceptions",
+              "slug": "python-exceptions-hierarchy",
+              "summary": "Handling built-in errors and raising domain-specific exceptions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Files",
+          "slug": "python-files",
+          "description": "File modes, context managers (with statement), JSON serialization.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "File I/O & Context Managers",
+              "slug": "python-file-io-context-managers",
+              "summary": "Open modes, auto-closing resources, and JSON loading/dumping.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Modules & Packages",
+          "slug": "python-modules-and-packages",
+          "description": "Import system, __name__ == '__main__', packages, and virtual environments.",
+          "estimated_minutes": 75,
+          "topics": [
+            {
+              "title": "Module System & Package Imports",
+              "slug": "python-module-system-imports",
+              "summary": "Import mechanics, sys.path resolution, and package structuring.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            },
+            {
+              "title": "Standard Library Essentials",
+              "slug": "python-standard-library",
+              "summary": "collections, itertools, math, datetime, pathlib, and json in everyday programs.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Testing & Debugging",
+          "slug": "python-testing-debugging",
+          "description": "Checking that code works and finding out why it does not.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Unit Testing & Debugging",
+              "slug": "python-unit-testing-debugging",
+              "summary": "Writing tests with unittest and pytest, assertions, and systematic debugging.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Basic Algorithms",
+          "slug": "python-basic-algorithms",
+          "description": "Standard Python algorithmic patterns, bisect, collections.Counter, and sorting keys.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Algorithmic Patterns in Python",
+              "slug": "python-algorithmic-patterns",
+              "summary": "Custom sort keys, defaultdict, Counter, and deque idioms.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

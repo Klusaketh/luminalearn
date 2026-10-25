@@ -1,0 +1,229 @@
+================================================================================
+LUMINALEARN AI (PROJECT AURORA) — MASTER PROJECT INFORMATION & STATUS REPORT
+================================================================================
+Status: Production Monorepo Active | 143/143 Passing Automated Tests (100%)
+Architecture: FastAPI Microservices + Next.js 14 App Router + Resilient Fallback
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & VISION
+--------------------------------------------------------------------------------
+LuminaLearn AI is an enterprise-grade, AI-first adaptive learning ecosystem 
+designed to revolutionize online education.
+
+The Problem:
+Traditional Learning Management Systems (LMS) such as Coursera or Udemy deliver 
+static, linear video courses. They treat all learners identically, regardless of 
+aptitude, pace, or background. Students get stuck, experience cognitive overload, 
+or lose engagement.
+
+The Solution:
+LuminaLearn AI continuously diagnoses each learner's cognitive pace, conceptual 
+gaps, and preferred VARK learning modality (Visual, Auditory, Read/Write, 
+Kinesthetic) to construct a 100% personalized learning trajectory.
+
+Core Pillars:
+1. Socratic AI Agent Framework: Never gives away direct answers. Guides learners 
+   through scaffolded step-by-step questioning, hint ladders, and conceptual 
+   self-discovery.
+2. Cognitive Personalization (VARK Adapters): Dynamically calibrates content 
+   presentation (visual diagrams, audio summaries, structured text breakdowns, 
+   or interactive simulations).
+3. Resilient Hybrid Infrastructure: Engineered with zero-downtime local fallback 
+   mechanisms (SQLite + In-Memory Caching) alongside enterprise PostgreSQL + Redis.
+4. Universal Accessibility (WCAG 2.1 AAA): Native architecture designed for screen 
+   readers, high-contrast modes, dyslexia-friendly typography, and multi-modal 
+   speech interfaces.
+5. Explainable AI (XAI) & Learning Analytics: Transparent student mastery mapping, 
+   decay curves (Ebbinghaus spacing effect), and retention forecasts for students, 
+   parents, and educators.
+
+--------------------------------------------------------------------------------
+2. COMPLETE TECHNOLOGY STACK SPECIFICATION
+--------------------------------------------------------------------------------
+- Frontend Framework: Next.js 14.2+ (App Router, React 18, Server Components)
+- Frontend Language: TypeScript 5.4+ (Strict typing, zero runtime type errors)
+- Styling & System: Tailwind CSS 3.4+ + Lucide Icons (Dark glassmorphism)
+- Client State: Zustand 4.5+ (Reactive global store for auth & user state)
+- Math & Code Rendering: KaTeX & Prism (LaTeX equations & syntax highlighting)
+- Backend Microservices: FastAPI 0.110+ (Asynchronous ASGI REST API, OpenAPI docs)
+- Backend Language: Python 3.11+ (Async runtime, AI/ML execution runtime)
+- ORM & Database Layer: Async SQLAlchemy 2.0+ (Dynamic UUID compilation)
+- Primary Database: PostgreSQL 16.2+ (Enterprise relational database)
+- Fallback Database: SQLite aiosqlite 0.22+ (Zero-config local database fallback)
+- Primary Cache & Store: Redis 7.2+ (Token revocation, session cache, rate limiting)
+- Fallback Cache: Thread-Safe Python Dict with TTL (OTP & password reset fallback)
+- Security & Auth: Argon2id, Bcrypt, PyJWT (15-min Access / 7-day Refresh tokens)
+- AI LLM Foundation: Google Gemini (google-genai SDK; Flash models with fallback, Gemini TTS)
+- Automated Verification: Ruff, Mypy, Pytest (100% passing)
+- Containerization: Docker & Docker Compose 26.0+
+
+--------------------------------------------------------------------------------
+3. COMPREHENSIVE INVENTORY OF COMPLETED WORK
+--------------------------------------------------------------------------------
+3.1. Adaptive Zero-Downtime Resilience Engine
+- Cross-Database ORM (backend/app/core/database.py):
+  Connects to PostgreSQL 16 by default via asyncpg. Automatically falls back to 
+  embedded SQLite (luminalearn.db) when PostgreSQL is unreachable or USE_SQLITE=true.
+  Uses sqlalchemy.Uuid(as_uuid=True) which compiles to UUID on PostgreSQL and 
+  CHAR(32)/VARCHAR(36) on SQLite.
+- Resilient Cache Client (backend/app/core/redis.py):
+  Connects to Redis 7.2+. Automatically falls back to a thread-safe Python dictionary 
+  cache with microsecond TTL expiration handling if Redis is offline.
+
+3.2. Full-Stack Identity, Authentication & Security
+- JWT Token Pair System (backend/app/api/v1/auth.py):
+  Issues 15-minute Access Tokens and 7-day Refresh Tokens. Passwords hashed using 
+  Argon2id/Bcrypt. HTTP-Only secure cookies and Authorization: Bearer support.
+- Email OTP Verification System:
+  6-digit numeric OTP generation stored as keyed HMAC-SHA256 hashes (never plaintext).
+  10-minute expiration TTL, 60-second resend cooldown timer, 5-attempt brute-force limit.
+- Google OAuth Integration (backend/app/api/v1/auth.py):
+  Server-side cryptographic token validation using Google's public certs.
+  Development mock modal for testing without a Google Cloud Console client ID.
+- Role-Based Access Control (RBAC):
+  User roles: student, teacher, admin. require_role(...) dependency injection.
+
+3.3. Diagnostic VARK Cognitive Onboarding Subsystem
+- 16-question diagnostic questionnaire evaluating learner preferences across Visual, 
+  Auditory, Read/Write, and Kinesthetic axes.
+- Stores student pace preference, academic interests, and modality scores in StudentProfile.
+
+3.4. Academic Content Hierarchy Engine
+- 5-tier relational structure: Category -> Subject -> Course -> Module -> Topic -> Lesson.
+- Master Academic Content Seeder (scripts/seed_academic_content.py):
+  Over 2,980 lines of rich academic content across 4 Disciplines, 22 Subjects, 
+  22 Courses, 146 Modules, 165 Topics, and 12 Lessons.
+- Academic API Endpoints (backend/app/api/v1/content.py):
+  Filters by category slug, difficulty, and search. Verified email access guards.
+
+3.5. Adaptive Quizzing & Bayesian Knowledge Tracing (Sprint 1)
+- Database Schema (backend/app/models/quiz.py):
+  QuizSession, QuizQuestion, QuizAttempt, StudentTopicMastery.
+  Unique constraint uq_session_question_user_attempt enforces strict idempotency.
+- Bayesian Knowledge Tracing (BKT) Engine (ml/models/knowledge_tracer.py):
+  Real-time posterior mastery probability calculation:
+  * If Correct:   P(Lt|Corr) = [P(Lt-1) * (1-P(S))] / [P(Lt-1)*(1-P(S)) + (1-P(Lt-1))*P(G)]
+  * If Incorrect: P(Lt|Incorr) = [P(Lt-1) * P(S)] / [P(Lt-1)*P(S) + (1-P(Lt-1))*(1-P(G))]
+  * Transition:   P(Lt+1) = P(Lt) + (1 - P(Lt)) * P(T)
+- Item Response Theory (IRT 2PL Model):
+  P(correct|theta) = 1 / (1 + exp(-a * (theta - b))) with numerical overflow guards.
+
+3.6. Next.js 14 Frontend Web Client
+- 10 Key Pages Implemented:
+  1. Landing Page (/)
+  2. Login Screen (/login)
+  3. Register Screen (/register)
+  4. Onboarding Quiz (/onboarding)
+  5. Student Dashboard (/dashboard)
+  6. Academic Subject Catalog (/subjects)
+  7. Lesson Viewer (/lessons/[lessonId])
+  8. Socratic AI Tutor Workspace with live voice (/tutor)
+  9. Adaptive Quiz Studio (/quiz)
+  10. Password Recovery & Email Verification (/verify-email, /reset-password)
+- Zustand global store (useAuthStore.ts) handles background token refresh & auto-login.
+
+3.7. Multi-Agent Socratic Faculty & Real-Time Voice (Sprint 2)
+- Resilient Gemini gateway (ai/llm/gemini_gateway.py): ordered model fallback, per-model
+  circuit breaker, first-token deadlines, offline switch. Gemini 1.5 models are retired;
+  defaults are gemini-3.5-flash with fallbacks, and Gemini TTS models for speech.
+- Supervisor + 4 specialists (ai/agents/): Socratic Tutor (3-tier hint ladder, never gives
+  the answer), Concept Explainer (VARK), Analogy Specialist, Code Diagnostic (ast analysis).
+  Every specialist has a deterministic offline engine, so tutoring works without Gemini.
+- Streaming answer-leak guardrail; grounded curriculum RAG (hybrid dense + BM25) with
+  citations; course notes ingested from ai/rag/documents/.
+- POST /api/v1/tutor/chat/stream (SSE), GET /api/v1/tutor/status, POST /api/v1/tutor/speak.
+- WS /api/v1/voice/session: full-duplex voice with barge-in (interrupt cancels in-flight
+  generation and TTS immediately; stale audio frames are dropped by turn id).
+- Ebbinghaus retention forecaster (ml/models/retention_forecaster.py); quiz mastery radar.
+- Frontend: Aurora design system, canvas voice orb, live tutor workspace, quiz overhaul.
+
+3.8. Private Workspace & Connection Hardening
+- Same-origin API: the browser calls the frontend's /api/v1 only; a Next.js route handler
+  proxies it to BACKEND_URL (a rewrite carries the voice WebSocket). No API address in client
+  code, no CORS, and a stopped backend returns one clear 503 instead of "Failed to fetch".
+- Sign-in required for the whole workspace (everything except /, /login, /register/*,
+  password reset and email verification): edge middleware redirects with a safe return path,
+  a client gate verifies the session, and the API enforces it on tutor, voice (token in the
+  first frame, close code 4401), catalog and onboarding routes.
+- Session engine: one shared session check and one shared refresh (refresh tokens are
+  single-use), renewal just before the 15-minute access token expires, retry once on 401,
+  tabs kept in sync, and no sign-out when the server is merely unreachable.
+- Loops closed: refresh bounce through /login, ?redirect=/login ping-pong, cached prefetch
+  redirects after sign-in (full page load at sign-in/out), double navigation after Google
+  sign-in, refresh-on-401 recursion (auth calls never auto-refresh), voice turns that crashed
+  and left the orb "thinking" forever.
+- Port guard: `python -m app` refuses a busy BACKEND_PORT, and a running server logs an error
+  when another program answers on its port (Splunk owns 8000 on this machine).
+- `npm run dev` at the repo root starts backend and frontend on matching ports.
+- Reconnect banner probes the server with backoff; pages showing a load error reload by
+  themselves when it returns.
+
+--------------------------------------------------------------------------------
+4. CURRENT SYSTEM HEALTH & METRICS (verified 2026-10-25)
+--------------------------------------------------------------------------------
+- Frontend: 23 routes + edge middleware, next build passes; tsc and next lint report 0 issues.
+- Browser audit (headless Edge, 375px and 1440px): no hydration warnings, console errors
+  or horizontal overflow; live tutor, quiz and voice flows exercised end to end.
+- Workspace end-to-end suite: 19/19 checks (sign-in gate, proxy, SSE, voice socket auth,
+  token refresh, loop probes, backend outage and self-recovery, sign-out, forged cookie).
+- Automated Test Suite: 143 passed, 0 failed (~3s; AI runs on offline engines in tests).
+- Static Type Verification: mypy app reports 0 errors (45 source files).
+- Python Code Quality: ruff check reports 0 violations in backend/ and at the repo root.
+- Database & Cache Resilience: SQLite fallback when PostgreSQL is unreachable (non-production),
+  Redis circuit breaker with in-memory fallback and write-back on recovery.
+- Local dev ports: backend 8001 (BACKEND_PORT = frontend BACKEND_URL), frontend 3000.
+- The browser calls only the frontend's /api/v1; Next.js proxies it (and the voice WebSocket) to the backend.
+- Workspace pages require a session: edge middleware + client gate + API auth on every route.
+
+--------------------------------------------------------------------------------
+5. AUTOMATED TEST SUITE BREAKDOWN (143/143 PASSING)
+--------------------------------------------------------------------------------
+- tests/test_auth_security.py:            6 passed  (Security invariants & tokens)
+- tests/test_google_auth.py:              3 passed  (OAuth registration & login)
+- tests/test_otp_auth.py:                11 passed  (HMAC-SHA256 hashing & cooldowns)
+- tests/test_content_engine.py:          18 passed  (5-tier content hierarchy & sign-in guards)
+- tests/test_bkt_engine.py:              15 passed  (BKT math & IRT 2PL calibration)
+- tests/test_quiz_engine.py:              9 passed  (Dynamic quizzes & idempotency)
+- tests/test_socratic_agents.py:         28 passed  (Routing, guardrails, specialists, graph)
+- tests/test_gemini_gateway.py:          10 passed  (Fallback, breaker, deadlines, speech)
+- tests/test_tutor_api.py:               12 passed  (Sign-in, SSE contract, personalization, limits)
+- tests/test_voice_session.py:           13 passed  (Auth handshake, turns, barge-in, crash recovery)
+- tests/test_retention_and_resilience.py: 11 passed (Forecaster, radar, Redis, RAG)
+- tests/test_port_guard.py:               7 passed  (Busy and shadowed port detection)
+TOTAL: 143 passed, 0 failed.
+
+--------------------------------------------------------------------------------
+6. UPCOMING ROADMAP (NEXT SPRINTS)
+--------------------------------------------------------------------------------
+- Sprint 3: Educator Command Center & Vector Store
+  * Educator analytics dashboard with class bottleneck and misconception heatmaps
+  * Optional Qdrant / Gemini-embedding backend for large document corpora
+- Sprint 4: QA Hardening & Cloud Production Release
+  * Playwright E2E suite in CI and axe-core accessibility checks
+  * GitHub Actions CI/CD and production Docker deployment
+  * Next.js 15+/React 19 upgrade (clears the remaining Next 14 advisories)
+
+--------------------------------------------------------------------------------
+7. QUICKSTART COMMANDS
+--------------------------------------------------------------------------------
+Start Everything (from the project root; Ctrl+C stops both):
+  npm run dev
+  -> API http://127.0.0.1:8001, web app http://localhost:3000 (or the next free port)
+
+Or Start Separately:
+  cd backend
+  .\.venv\Scripts\Activate.ps1
+  python -m app        (BACKEND_PORT from backend/.env; refuses a port already in use)
+  cd ../frontend
+  npm run dev          (its /api/v1 proxy forwards to BACKEND_URL in frontend/.env.local)
+  Never run uvicorn on 8000 here: the Splunk service answers on that port.
+
+Run All Backend Tests:
+  cd backend
+  pytest -v
+
+Run Linter & Typecheck:
+  cd backend
+  ruff check .
+  mypy app
+================================================================================

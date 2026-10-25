@@ -66,12 +66,13 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 # Install dependencies:
 pip install -r requirements.txt aiosqlite email-validator
-# Launch backend development server:
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# Launch backend development server (BACKEND_PORT from backend/.env, default 8001):
+python -m app
 ```
 
-- **Backend API**: `http://127.0.0.1:8000`
-- **Swagger Documentation**: `http://127.0.0.1:8000/docs`
+- **Backend API**: `http://127.0.0.1:8001`
+- **Swagger Documentation**: `http://127.0.0.1:8001/docs`
+- Shortcut: `npm run dev` from the project root starts the backend and the frontend together.
 
 > **Note on Resilient Mode**: If PostgreSQL and Redis are not running locally, the backend automatically uses **SQLite (`aiosqlite`)** and the **In-Memory Cache**. All authentication, signup, login, and onboarding features work out-of-the-box!
 
@@ -86,6 +87,7 @@ npm run dev
 ```
 
 - **Frontend App**: `http://localhost:3000`
+- The browser only talks to the frontend: its `/api/v1` proxy forwards to `BACKEND_URL` in `frontend/.env.local`. Workspace pages (subjects, tutor, quiz, dashboard) require signing in.
 
 #### Step 4: Verification & Building
 
@@ -208,7 +210,7 @@ mypy app
 
 - [x] Monorepo cloned and `.env` configured.
 - [x] Python virtual environment created and packages installed.
-- [x] Backend running cleanly at `http://127.0.0.1:8000` with Swagger docs available.
+- [x] Backend running cleanly at `http://127.0.0.1:8001` with Swagger docs available.
 - [x] Next.js frontend running cleanly at `http://localhost:3000`.
 - [x] Verification tests passed for student registration, login, and password recovery.
 - [x] Code standard check (`ruff`, `mypy`, `npm run build`) passing with zero errors.

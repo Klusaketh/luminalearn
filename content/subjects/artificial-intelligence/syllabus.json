@@ -1,0 +1,177 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Artificial Intelligence",
+  "slug": "artificial-intelligence",
+  "short_description": "Intelligent agents, uninformed/informed search, logic reasoning, and planning.",
+  "description": "Foundations of classical AI covering rational agents, state-space search (A* search, minimax), knowledge representation, first-order logic, automated planning, and ethical considerations.",
+  "icon_key": "brain",
+  "difficulty_level": "Intermediate",
+  "display_order": 11,
+  "courses": [
+    {
+      "title": "AI Fundamentals",
+      "slug": "ai-fundamentals",
+      "description": "State space exploration, heuristic search, logic, and intelligent agent environments.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 9,
+      "modules": [
+        {
+          "title": "Introduction to AI",
+          "slug": "ai-intro",
+          "description": "History of AI, Turing test, strong vs weak AI, and agent architectures.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Foundations of Artificial Intelligence",
+              "slug": "foundations-of-ai",
+              "summary": "Rationality, Turing test, and AI winter cycles.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Intelligent Agents",
+          "slug": "ai-intelligent-agents",
+          "description": "PEAS framework (Performance, Environment, Actuators, Sensors) and agent types.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "PEAS Model & Agent Taxonomies",
+              "slug": "peas-model-agent-taxonomies",
+              "summary": "Simple reflex, model-based, goal-based, and utility-based agents.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Search",
+          "slug": "ai-search-algorithms",
+          "description": "Uninformed search (BFS, DFS), informed heuristic search (A*, greedy best-first).",
+          "estimated_minutes": 150,
+          "topics": [
+            {
+              "title": "Problem Formulation & Uninformed Search",
+              "slug": "uninformed-search",
+              "summary": "State spaces, breadth-first, depth-first, uniform-cost, and iterative-deepening search.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "A* Search & Admissible Heuristics",
+              "slug": "a-star-heuristic-search",
+              "summary": "Evaluation function f(n) = g(n) + h(n), consistency, and optimality proofs.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Constraint Satisfaction Problems",
+              "slug": "constraint-satisfaction",
+              "summary": "Variables, domains, and constraints; backtracking with forward checking; arc consistency.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Adversarial Search",
+          "slug": "ai-adversarial-search",
+          "description": "Planning against an opponent in two-player games.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Minimax & Alpha-Beta Pruning",
+              "slug": "minimax-alpha-beta",
+              "summary": "Game trees, the minimax value, and pruning branches that cannot matter.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Knowledge Representation",
+          "slug": "ai-knowledge-representation",
+          "description": "Ontologies, semantic networks, frames, and conceptual graphs.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Ontologies & Semantic Frameworks",
+              "slug": "ontologies-semantic-frameworks",
+              "summary": "Structuring domain relationships and conceptual dependencies.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Reasoning",
+          "slug": "ai-reasoning",
+          "description": "Propositional logic, first-order predicate calculus, resolution refutation.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Propositional Logic & Inference",
+              "slug": "propositional-logic-inference",
+              "summary": "Syntax, truth tables, entailment, CNF, and resolution in propositional logic.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "First-Order Logic & Resolution",
+              "slug": "first-order-logic-resolution",
+              "summary": "Unification, clausal normal form, and automated deduction.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Reasoning Under Uncertainty",
+          "slug": "ai-uncertainty",
+          "description": "Representing and reasoning with uncertain knowledge.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Bayesian Networks & Probabilistic Inference",
+              "slug": "bayesian-networks",
+              "summary": "Conditional independence, network structure, and computing posteriors by enumeration.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Planning",
+          "slug": "ai-planning",
+          "description": "Classical planning, STRIPS representation, and partial-order planning.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "STRIPS & Forward/Backward State Search",
+              "slug": "strips-planning",
+              "summary": "Preconditions, actions, add/delete lists, and goal state satisfaction.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "AI Ethics",
+          "slug": "ai-ethics",
+          "description": "Algorithmic bias, transparency, explainability, safety, and alignment.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Bias, Fairness & Explainability in AI",
+              "slug": "bias-fairness-explainability",
+              "summary": "Auditing disparate impact, XAI interpretability, and alignment principles.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

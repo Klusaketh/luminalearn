@@ -1,13 +1,13 @@
 import json
 import time
 import uuid
+
 import pytest
 from httpx import AsyncClient
 
 from app.core.redis import redis_client
 from app.core.security import generate_secure_otp, hash_otp, verify_otp_hash
 from app.services.email_service import MockEmailProvider
-from app.services.otp_service import otp_service
 
 
 @pytest.mark.asyncio
@@ -303,10 +303,9 @@ async def test_protected_route_enforcement_rejects_unverified_token(
     async_client: AsyncClient
 ):
     """If an unverified user token somehow reached a protected route, it must be rejected with 403."""
-    from app.core.security import create_access_token
-    from app.repositories.user_repository import user_repository
     from app.core.database import async_session_factory
-    from app.core.security import get_password_hash
+    from app.core.security import create_access_token, get_password_hash
+    from app.repositories.user_repository import user_repository
 
     # Create unverified user directly in DB
     email = f"unverified_token_{uuid.uuid4().hex[:6]}@example.com"

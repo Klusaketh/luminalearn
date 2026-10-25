@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { onboardingService, LearnerProfile } from "@/services/onboardingService";
+import { quizService, type TopicMasterySummary } from "@/services/quizService";
+import { KnowledgeRadar } from "@/components/quiz/KnowledgeRadar";
 import {
   GraduationCap,
   Sparkles,
   ArrowRight,
   BrainCircuit,
   BookOpen,
-  Award,
   BarChart3,
   Clock,
   Target,
@@ -19,17 +21,19 @@ import {
   Compass,
   AlertCircle,
   RefreshCw,
-  Zap
+  Zap,
+  Mic
 } from "lucide-react";
 
 export default function StudentDashboardPage() {
   const { user, accessToken } = useAuthStore();
 
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
+  const [masteries, setMasteries] = useState<TopicMasterySummary[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadStudentData = async () => {
+  const loadStudentData = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
@@ -37,34 +41,39 @@ export default function StudentDashboardPage() {
         const data = await onboardingService.getLearnerProfile(accessToken);
         setProfile(data);
       }
-    } catch (err: any) {
+    } catch {
       // 404 or missing profile means onboarding is required
       setProfile(null);
     } finally {
       setIsLoading(false);
     }
-  };
+    if (accessToken) {
+      quizService.getMasteries(accessToken).then(setMasteries).catch(() => setMasteries([]));
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     loadStudentData();
-  }, [accessToken]);
+  }, [loadStudentData]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void loadStudentData();
+  });
 
   return (
     <ProtectedRoute allowedRoles={["student"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
-
+      <div className="text-slate-100 p-4 sm:p-6 lg:p-8 relative font-sans flex flex-col flex-1">
         <div className="max-w-7xl mx-auto w-full space-y-8 relative z-10 flex-1">
           
           {/* Welcome Banner */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
                 <GraduationCap className="w-3.5 h-3.5" />
                 Student Learning Dashboard
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="font-display leading-tight text-white text-3xl sm:text-5xl">
                 Welcome back, <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">{user?.full_name || "Student"}</span>!
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
@@ -234,81 +243,71 @@ export default function StudentDashboardPage() {
             </div>
           )}
 
-          {/* Feature Roadmap Grid */}
-          <div className="space-y-4 pt-4">
-            <h2 className="text-lg font-bold text-white">
-              Ecosystem Modules & Tools
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* AI Tutor Card */}
-              <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 relative overflow-hidden group">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600/15 text-indigo-400 flex items-center justify-center">
-                    <BrainCircuit className="w-5 h-5" />
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
-                    Coming Soon
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">AI Socratic Tutor</h3>
-                <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                  Interactive real-time chat agent guiding problem solving with step-by-step Socratic inquiry.
-                </p>
-                <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                  <span>Status: In Development</span>
-                  <span>v1.2 Release</span>
-                </div>
+          {/* Learning tools */}
+          <div className="grid grid-cols-1 gap-6 pt-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-white">Keep learning</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {[
+                  {
+                    href: "/tutor",
+                    icon: Mic,
+                    tone: "text-indigo-300 bg-indigo-500/15",
+                    title: "Socratic tutor",
+                    body: "Talk or type through a problem. The faculty guides you with questions and hints, never the answer.",
+                    cta: "Open the tutor",
+                  },
+                  {
+                    href: "/quiz",
+                    icon: BrainCircuit,
+                    tone: "text-cyan-300 bg-cyan-500/15",
+                    title: "Adaptive quiz",
+                    body: "Calibrated questions that update your Bayesian mastery and name your misconceptions.",
+                    cta: "Start a quiz",
+                  },
+                  {
+                    href: "/subjects",
+                    icon: BookOpen,
+                    tone: "text-amber-300 bg-amber-500/15",
+                    title: "Subject catalog",
+                    body: "22 subjects with course tracks, syllabus modules and verified lessons.",
+                    cta: "Browse subjects",
+                  },
+                ].map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <Link
+                      key={card.href}
+                      href={card.href}
+                      className="glass group flex flex-col rounded-3xl p-5 transition-colors hover:border-white/20 focus-visible:ring-2 focus-visible:ring-indigo-300"
+                    >
+                      <span className={`mb-4 flex h-10 w-10 items-center justify-center rounded-2xl ${card.tone}`}>
+                        <Icon className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <h3 className="text-base font-semibold text-white">{card.title}</h3>
+                      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-300">{card.body}</p>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300 group-hover:text-indigo-200">
+                        {card.cta}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
-
-              {/* Courses Card (Now Live) */}
-              <Link
-                href="/subjects"
-                className="p-6 rounded-2xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-indigo-500/40 relative overflow-hidden group transition-all block shadow-lg"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-600/15 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                    Catalog Live
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
-                  Academic Content Engine
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                  Explore 22 academic subjects, course tracks, syllabus modules, and verified curriculum lessons.
-                </p>
-                <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-indigo-400 font-semibold">
-                  <span>Browse All 22 Subjects</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
-
-
-              {/* Achievements Card */}
-              <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 relative overflow-hidden group">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-amber-600/15 text-amber-400 flex items-center justify-center">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
-                    Coming Soon
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">Gamified Achievements</h3>
-                <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                  Earn study streaks, concept mastery badges, and level up your adaptive learning profile.
-                </p>
-                <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                  <span>Status: Designing</span>
-                  <span>v1.4 Release</span>
-                </div>
-              </div>
-
             </div>
+            <section aria-label="Mastery by topic" className="glass rounded-3xl p-5">
+              <h2 className="text-sm font-semibold text-white">Mastery by topic</h2>
+              <p className="mt-1 text-xs text-slate-400">Bayesian Knowledge Tracing from your quiz answers.</p>
+              <div className="mt-4">
+                {masteries.length > 0 ? (
+                  <KnowledgeRadar items={masteries} />
+                ) : (
+                  <p className="rounded-2xl bg-white/[0.02] px-4 py-6 text-center text-sm text-slate-400">
+                    Finish an adaptive quiz to see your mastery here.
+                  </p>
+                )}
+              </div>
+            </section>
           </div>
 
         </div>

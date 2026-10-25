@@ -40,3 +40,9 @@ target-version = "py310"
 [tool.ruff.lint]
 ignore = ["B008"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["app", "ai", "ml"]
+
+# Editor type checking: resolve the monorepo's shared ai/ and ml/ packages
+[tool.ty.environment]
+extra-paths = [".."]

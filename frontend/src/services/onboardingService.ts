@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+import { API_BASE, apiFetch, readErrorDetail } from "./apiClient";
 
 export interface DiagnosticQuestion {
   id: number;
@@ -65,7 +65,7 @@ class OnboardingService {
   }
 
   async getDiagnosticQuestions(): Promise<DiagnosticQuestion[]> {
-    const res = await fetch(`${API_BASE}/onboarding/questions`, {
+    const res = await apiFetch(`${API_BASE}/onboarding/questions`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -81,22 +81,21 @@ class OnboardingService {
     payload: OnboardingSubmitPayload,
     token?: string
   ): Promise<LearnerProfile> {
-    const res = await fetch(`${API_BASE}/onboarding/submit`, {
+    const res = await apiFetch(`${API_BASE}/onboarding/submit`, {
       method: "POST",
       headers: this.getHeaders(token),
       body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Submission failed." }));
-      throw new Error(err.detail || "Failed to submit onboarding responses.");
+      throw new Error(await readErrorDetail(res, "Failed to submit onboarding responses."));
     }
 
     return res.json();
   }
 
   async getLearnerProfile(token?: string): Promise<LearnerProfile> {
-    const res = await fetch(`${API_BASE}/onboarding/profile`, {
+    const res = await apiFetch(`${API_BASE}/onboarding/profile`, {
       method: "GET",
       headers: this.getHeaders(token),
     });
@@ -109,7 +108,7 @@ class OnboardingService {
   }
 
   async getPersonalizedRoadmap(token?: string): Promise<PersonalizedRoadmap> {
-    const res = await fetch(`${API_BASE}/onboarding/roadmap`, {
+    const res = await apiFetch(`${API_BASE}/onboarding/roadmap`, {
       method: "GET",
       headers: this.getHeaders(token),
     });

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
-from app.repositories.content_repository import content_repository
+from app.repositories.content_repository import SubjectCounts, content_repository
 from app.schemas.content import (
     ContentCategorySummary,
     CourseDetail,
@@ -16,11 +16,22 @@ from app.schemas.content import (
     ModuleDetail,
     SubjectDetail,
     SubjectSummary,
+    SubjectSyllabus,
+    SyllabusCourse,
+    SyllabusLesson,
+    SyllabusModule,
+    SyllabusTopic,
     TopicDetail,
     TopicSummary,
 )
+from app.services.content_navigation import lesson_navigation, topic_navigation
 
-router = APIRouter(prefix="/content", tags=["Academic Content Engine"])
+# The catalog is part of the signed-in workspace: every route requires a verified session.
+router = APIRouter(
+    prefix="/content",
+    tags=["Academic Content Engine"],
+    dependencies=[Depends(get_current_active_user)],
+)
 
 
 @router.get(
@@ -54,7 +65,7 @@ async def list_categories(
 async def list_subjects(
     category_slug: str | None = Query(None, description="Filter by category slug"),
     difficulty: str | None = Query(None, description="Filter by difficulty level"),
-    search: str | None = Query(None, description="Search term across name and description"),
+    search: str | None = Query(None, description="Search term across subject names, summaries, modules, and topics"),
     db: AsyncSession = Depends(get_db)
 ) -> Any:
     """Retrieve academic subjects with optional category, difficulty, or search filters."""
@@ -64,6 +75,7 @@ async def list_subjects(
         difficulty=difficulty,
         search=search
     )
+    counts = await content_repository.get_subject_counts(db)
     return [
         SubjectSummary(
             id=s.id,
@@ -76,7 +88,11 @@ async def list_subjects(
             icon_key=s.icon_key,
             difficulty_level=s.difficulty_level,
             display_order=s.display_order,
-            course_count=len(s.courses) if s.courses else 0
+            course_count=len(s.courses) if s.courses else 0,
+            module_count=counts.get(s.id, SubjectCounts()).modules,
+            topic_count=counts.get(s.id, SubjectCounts()).topics,
+            lesson_count=counts.get(s.id, SubjectCounts()).lessons,
+            topic_titles=counts.get(s.id, SubjectCounts()).topic_titles,
         )
         for s in subjects
     ]
@@ -125,6 +141,81 @@ async def get_subject(
             )
             for c in (subject.courses or [])
         ]
+    )
+
+
+@router.get(
+    "/subjects/{subject_slug}/syllabus",
+    response_model=SubjectSyllabus,
+    summary="Get a Subject's Full Syllabus (Courses, Modules, Topics, Lessons)"
+)
+async def get_subject_syllabus(
+    subject_slug: str,
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    """The whole learning tree for the subject page in one request; lesson bodies are not included."""
+    subject = await content_repository.get_subject_syllabus(db, slug=subject_slug)
+    if not subject:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Subject '{subject_slug}' not found."
+        )
+
+    courses = [
+        SyllabusCourse(
+            id=c.id,
+            title=c.title,
+            slug=c.slug,
+            description=c.description,
+            difficulty=c.difficulty,
+            estimated_hours=c.estimated_hours,
+            display_order=c.display_order,
+            modules=[
+                SyllabusModule(
+                    id=m.id,
+                    title=m.title,
+                    slug=m.slug,
+                    description=m.description,
+                    estimated_minutes=m.estimated_minutes,
+                    display_order=m.display_order,
+                    topics=[
+                        SyllabusTopic(
+                            id=t.id,
+                            title=t.title,
+                            slug=t.slug,
+                            summary=t.summary,
+                            difficulty=t.difficulty,
+                            estimated_minutes=t.estimated_minutes,
+                            display_order=t.display_order,
+                            lessons=[
+                                SyllabusLesson(id=les.id, title=les.title, slug=les.slug, estimated_minutes=les.estimated_minutes)
+                                for les in t.lessons
+                            ],
+                        )
+                        for t in m.topics
+                    ],
+                )
+                for m in c.modules
+            ],
+        )
+        for c in subject.courses
+        if c.is_active
+    ]
+    return SubjectSyllabus(
+        id=subject.id,
+        name=subject.name,
+        slug=subject.slug,
+        category_name=subject.category.name if subject.category else None,
+        category_slug=subject.category.slug if subject.category else None,
+        short_description=subject.short_description,
+        description=subject.description,
+        icon_key=subject.icon_key,
+        difficulty_level=subject.difficulty_level,
+        module_count=sum(len(c.modules) for c in courses),
+        topic_count=sum(len(m.topics) for c in courses for m in c.modules),
+        lesson_count=sum(len(t.lessons) for c in courses for m in c.modules for t in m.topics),
+        estimated_hours=sum(c.estimated_hours for c in courses),
+        courses=courses,
     )
 
 
@@ -316,6 +407,9 @@ async def get_topic(
             detail=f"Topic '{topic_id}' not found."
         )
 
+    subject = topic.module.course.subject if (topic.module and topic.module.course) else None
+    tree = await content_repository.get_subject_syllabus(db, slug=subject.slug) if subject else None
+
     return TopicDetail(
         id=topic.id,
         module_id=topic.module_id,
@@ -343,7 +437,8 @@ async def get_topic(
                 lesson_type=les.lesson_type
             )
             for les in (topic.lessons or [])
-        ]
+        ],
+        navigation=topic_navigation(tree, topic.id) if tree else None,
     )
 
 
@@ -405,11 +500,14 @@ async def get_lesson(
     module = topic.module if topic else None
     course = module.course if module else None
     subject = course.subject if course else None
+    tree = await content_repository.get_subject_syllabus(db, slug=subject.slug) if subject else None
 
     return LessonDetail(
         id=lesson.id,
         topic_id=lesson.topic_id,
         topic_title=topic.title if topic else None,
+        topic_summary=topic.summary if topic else None,
+        topic_difficulty=topic.difficulty if topic else None,
         module_id=module.id if module else None,
         module_title=module.title if module else None,
         course_id=course.id if course else None,
@@ -424,5 +522,6 @@ async def get_lesson(
         learning_objectives=lesson.learning_objectives or [],
         estimated_minutes=lesson.estimated_minutes,
         display_order=lesson.display_order,
-        lesson_type=lesson.lesson_type
+        lesson_type=lesson.lesson_type,
+        navigation=lesson_navigation(tree, lesson.id) if tree else None,
     )

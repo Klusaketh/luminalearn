@@ -20,7 +20,8 @@ router = APIRouter(prefix="/onboarding", tags=["Student Onboarding & Diagnostics
 @router.get(
     "/questions",
     response_model=list[DiagnosticQuestion],
-    summary="Get Diagnostic Assessment Questions"
+    summary="Get Diagnostic Assessment Questions",
+    dependencies=[Depends(get_current_active_user)],
 )
 async def get_diagnostic_questions() -> Any:
     """Fetch the 10 diagnostic assessment questions."""

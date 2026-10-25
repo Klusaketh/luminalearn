@@ -1,0 +1,199 @@
+{
+  "category_slug": "computer-science",
+  "name": "Computer Networks",
+  "slug": "computer-networks",
+  "short_description": "OSI and TCP/IP protocol stacks, IP routing, transport guarantees, and application protocols.",
+  "description": "Comprehensive network architecture course spanning physical signaling, data link framing, IPv4/IPv6 subnetting, routing protocols (OSPF, BGP), reliable transport (TCP/UDP), and DNS/HTTP application layers.",
+  "icon_key": "network",
+  "difficulty_level": "Intermediate",
+  "display_order": 4,
+  "courses": [
+    {
+      "title": "Computer Networks Fundamentals",
+      "slug": "computer-networks-fundamentals",
+      "description": "Layered network protocols, reliable packet delivery, IP routing, and sockets.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 11,
+      "modules": [
+        {
+          "title": "Network Models",
+          "slug": "cn-network-models",
+          "description": "OSI 7-layer model vs TCP/IP 4-layer model, encapsulation, and packet headers.",
+          "estimated_minutes": 80,
+          "topics": [
+            {
+              "title": "Network Fundamentals, Topologies & Performance",
+              "slug": "network-fundamentals-performance",
+              "summary": "Topologies, circuit and packet switching, and delay, throughput, and the bandwidth-delay product.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "OSI vs TCP/IP Protocol Stacks",
+              "slug": "osi-vs-tcp-ip-models",
+              "summary": "Protocol layering, encapsulation, and header multiplexing.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Physical Layer",
+          "slug": "cn-physical-layer",
+          "description": "Bandwidth, Nyquist/Shannon capacity theorems, transmission media.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Channel Capacity & Transmission Media",
+              "slug": "channel-capacity-transmission",
+              "summary": "Signal attenuation, SNR, and Shannon limit bounds.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Data Link Layer",
+          "slug": "cn-data-link-layer",
+          "description": "Framing, error detection (CRC), flow control, and CSMA/CD Ethernet.",
+          "estimated_minutes": 140,
+          "topics": [
+            {
+              "title": "Framing, CRC & CSMA/CD Protocol",
+              "slug": "framing-crc-csma-cd",
+              "summary": "Bit stuffing, cyclic redundancy checks, and MAC broadcast domains.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Error Correction & Sliding-Window Protocols",
+              "slug": "error-correction-sliding-window",
+              "summary": "Hamming codes, stop-and-wait, Go-Back-N, and Selective Repeat ARQ.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            },
+            {
+              "title": "Ethernet, MAC Addressing & Switching",
+              "slug": "ethernet-mac-switching",
+              "summary": "Ethernet frames, MAC addresses, learning switches, and VLANs.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Network Layer",
+          "slug": "cn-network-layer",
+          "description": "Datagram forwarding, routing algorithms, virtual circuits.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Routing Concepts & Distance Vector vs Link State",
+              "slug": "routing-concepts-link-state",
+              "summary": "Dijkstra algorithm in OSPF and Bellman-Ford in RIP.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "IP Addressing",
+          "slug": "cn-ip-addressing",
+          "description": "IPv4 subnetting, CIDR prefix notation, NAT, and IPv6 headers.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "IPv4 Subnetting & CIDR Calculation",
+              "slug": "ipv4-subnetting-cidr",
+              "summary": "Network masks, usable host ranges, and broadcast boundaries.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "IPv6, ARP, ICMP & DHCP",
+              "slug": "ipv6-arp-icmp-dhcp",
+              "summary": "IPv6 addressing and the support protocols that make IP work on a real network.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Routing",
+          "slug": "cn-routing-protocols",
+          "description": "Autonomous systems, intra-domain routing (OSPF), and inter-domain routing (BGP).",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "BGP & Inter-Domain Autonomous Routing",
+              "slug": "bgp-inter-domain-routing",
+              "summary": "Path vector routing and AS peering policies.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Transport Layer",
+          "slug": "cn-transport-layer",
+          "description": "Port multiplexing, reliability, flow control, and congestion avoidance.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "TCP 3-Way Handshake & Flow Control",
+              "slug": "tcp-handshake-flow-control",
+              "summary": "SYN/ACK flags, sequence numbers, and sliding window flow control.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "TCP / UDP",
+          "slug": "cn-tcp-udp",
+          "description": "Connection-oriented vs datagram transport comparison, AIMD congestion control.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "TCP Congestion Control vs UDP Low Latency",
+              "slug": "tcp-congestion-vs-udp",
+              "summary": "Slow start, congestion avoidance, fast retransmit, and UDP datagrams.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Application Layer",
+          "slug": "cn-application-layer",
+          "description": "DNS hierarchy, HTTP/1.1 vs HTTP/2/3, TLS encryption handshakes.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "DNS & Modern HTTP Protocols",
+              "slug": "dns-and-http-protocols",
+              "summary": "Recursive DNS resolution, HTTP keep-alive, multiplexing, and QUIC.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Network Security Basics",
+          "slug": "cn-network-security-basics",
+          "description": "Symmetric/asymmetric cryptography, firewalls, and DDoS mitigation.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "TLS Handshake & Firewall Architectures",
+              "slug": "tls-handshake-firewalls",
+              "summary": "Public key exchange, certificate authorities, and packet filtering.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

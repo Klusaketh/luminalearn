@@ -1,0 +1,358 @@
+{
+  "category_slug": "computer-science",
+  "name": "Data Structures & Algorithms",
+  "slug": "data-structures-and-algorithms",
+  "short_description": "Master algorithmic complexity, memory representation, and classic data structures.",
+  "description": "Comprehensive curriculum covering algorithmic complexity analysis, linear structures, trees, graphs, dynamic programming, and optimization techniques.",
+  "icon_key": "code-2",
+  "difficulty_level": "Intermediate",
+  "display_order": 1,
+  "courses": [
+    {
+      "title": "Data Structures & Algorithms Core",
+      "slug": "dsa-core",
+      "description": "In-depth study of memory layout, algorithmic analysis, and problem-solving strategies.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 26,
+      "modules": [
+        {
+          "title": "Complexity Analysis",
+          "slug": "dsa-complexity-analysis",
+          "description": "Asymptotic bounds, time-space trade-offs, and recurrence relations.",
+          "estimated_minutes": 120,
+          "topics": [
+            {
+              "title": "Big-O, Big-Omega & Theta Notations",
+              "slug": "asymptotic-notations",
+              "summary": "Mathematical definitions of asymptotic upper, lower, and tight bounds.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Space Complexity & Memory Trade-offs",
+              "slug": "space-complexity-tradeoffs",
+              "summary": "Evaluating auxiliary memory allocations versus computational runtime.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Amortized Analysis",
+              "slug": "amortized-analysis",
+              "summary": "Analyzing average time per operation across a worst-case sequence.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Arrays",
+          "slug": "dsa-arrays",
+          "description": "Contiguous memory structures, multi-dimensional addressing, and linear scanning.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Static vs Dynamic Arrays",
+              "slug": "static-vs-dynamic-arrays",
+              "summary": "Contiguous storage, resizing amortized cost, and index arithmetic.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Sliding Window & Two-Pointers",
+              "slug": "sliding-window-two-pointers",
+              "summary": "Subarray scanning techniques for linear algorithmic optimizations.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Strings",
+          "slug": "dsa-strings",
+          "description": "Character encoding, immutable buffer operations, and substring indexing.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "String Manipulation & Encodings",
+              "slug": "string-manipulation-encodings",
+              "summary": "ASCII, UTF-8 buffer layouts and in-place transformations.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Pattern Matching Basics",
+              "slug": "pattern-matching-basics",
+              "summary": "Naive and KMP prefix functions for string search.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Linked Lists",
+          "slug": "dsa-linked-lists",
+          "description": "Node pointer structures, dynamic allocation, and non-contiguous collections.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Singly & Doubly Linked Lists",
+              "slug": "singly-doubly-linked-lists",
+              "summary": "Pointer manipulation, head/tail sentinels, and node insertion/deletion.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Fast & Slow Pointer Techniques",
+              "slug": "fast-slow-pointers",
+              "summary": "Cycle detection (Floyd's algorithm) and middle node retrieval.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Stacks",
+          "slug": "dsa-stacks",
+          "description": "LIFO abstract data type, call stack simulation, and parenthetical parsing.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Stack ADT & Implementations",
+              "slug": "stack-adt-implementations",
+              "summary": "Array-backed vs node-backed LIFO containers.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Monotonic Stacks & Parentheses",
+              "slug": "monotonic-stacks",
+              "summary": "Monotonic stacks for next-greater element and expression evaluation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Queues",
+          "slug": "dsa-queues",
+          "description": "FIFO sequencing, ring buffers, and deque implementations.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Circular Queues & Deque",
+              "slug": "circular-queues-deque",
+              "summary": "Modulo index pointer wrapping and double-ended queues.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Priority Queues Overview",
+              "slug": "priority-queues-overview",
+              "summary": "Ordered retrieval using heap structures.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Hashing",
+          "slug": "dsa-hashing",
+          "description": "Direct addressing, hash collision resolution, and hash table sizing.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Hash Functions & Collision Handling",
+              "slug": "hash-functions-collisions",
+              "summary": "Separate chaining, open addressing, and load factor thresholding.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Trees",
+          "slug": "dsa-trees",
+          "description": "Hierarchical structures, tree traversals, and balance guarantees.",
+          "estimated_minutes": 225,
+          "topics": [
+            {
+              "title": "Binary Tree Traversals",
+              "slug": "binary-tree-traversals",
+              "summary": "Pre-order, In-order, Post-order, and Level-order BFS visits.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Binary Search Trees (BST)",
+              "slug": "binary-search-trees",
+              "summary": "Ordering invariants, logarithmic lookups, and deletions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Balanced Search Trees (AVL & Red-Black)",
+              "slug": "balanced-search-trees",
+              "summary": "Height balance, rotations, and the O(log n) guarantee of AVL and red-black trees.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Tries & Prefix Search",
+              "slug": "tries-prefix-search",
+              "summary": "Character-indexed trees for prefix queries, autocomplete, and dictionary lookups.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Heaps",
+          "slug": "dsa-heaps",
+          "description": "Complete binary trees with heap properties for priority management.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Min & Max Heap Implementation",
+              "slug": "heap-implementation",
+              "summary": "Array-backed complete trees, sift-up, and sift-down operations.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Graphs",
+          "slug": "dsa-graphs",
+          "description": "Vertices, edges, traversal algorithms, and shortest paths.",
+          "estimated_minutes": 225,
+          "topics": [
+            {
+              "title": "Graph Representations",
+              "slug": "graph-representations",
+              "summary": "Adjacency matrix vs adjacency list space-time comparison.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Breadth-First Search & Depth-First Search",
+              "slug": "bfs-dfs-traversals",
+              "summary": "Queue-driven BFS and recursive DFS cycle detection.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Shortest Paths: Dijkstra & Bellman-Ford",
+              "slug": "shortest-path-algorithms",
+              "summary": "Single-source shortest paths with non-negative and with negative edge weights.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Minimum Spanning Trees & Disjoint Sets",
+              "slug": "mst-disjoint-sets",
+              "summary": "Kruskal's and Prim's algorithms and the union-find structure behind Kruskal.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 60
+            }
+          ]
+        },
+        {
+          "title": "Searching",
+          "slug": "dsa-searching",
+          "description": "Sequential scanning and binary partitioning search strategies.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Binary Search & Invariants",
+              "slug": "binary-search-invariants",
+              "summary": "Half-interval elimination on monotonic domains.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Sorting",
+          "slug": "dsa-sorting",
+          "description": "Quadratic, logarithmic, and linear time sorting algorithms.",
+          "estimated_minutes": 110,
+          "topics": [
+            {
+              "title": "Elementary & Linear-Time Sorting",
+              "slug": "elementary-linear-sorting",
+              "summary": "Insertion, selection, and bubble sort, the comparison lower bound, and counting and radix sort.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Merge Sort & QuickSort",
+              "slug": "mergesort-quicksort",
+              "summary": "Divide-and-conquer partitioning, pivot selection, and stability.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            }
+          ]
+        },
+        {
+          "title": "Recursion",
+          "slug": "dsa-recursion",
+          "description": "Self-referential functions, base cases, and activation call frames.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Call Stack & Recurrence Trees",
+              "slug": "call-stack-recurrence-trees",
+              "summary": "Stack frame unwinding and Master Theorem analysis.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Backtracking",
+              "slug": "backtracking-search",
+              "summary": "Systematic search with pruning: subsets, permutations, and N-Queens.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Greedy Algorithms",
+          "slug": "dsa-greedy",
+          "description": "Local optimal choice heuristics and correctness proofs.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Greedy Choice & Optimal Substructure",
+              "slug": "greedy-choice-property",
+              "summary": "Interval scheduling and fractional knapsack problem solving.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Dynamic Programming",
+          "slug": "dsa-dynamic-programming",
+          "description": "Optimal substructure, overlapping subproblems, memoization, and tabulation.",
+          "estimated_minutes": 120,
+          "topics": [
+            {
+              "title": "Memoization vs Tabulation",
+              "slug": "memoization-vs-tabulation",
+              "summary": "Top-down recursive caching vs bottom-up iterative DP table construction.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "0/1 Knapsack Problem",
+              "slug": "knapsack-01-problem",
+              "summary": "State transition equation and 2D DP matrix space optimization.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 60
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

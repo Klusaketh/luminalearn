@@ -1,0 +1,102 @@
+{
+  "category_slug": "mathematics",
+  "name": "Linear Algebra",
+  "slug": "linear-algebra",
+  "short_description": "Vector spaces, matrix transformations, determinants, eigenvalues, and SVD.",
+  "description": "Core linear algebra powering graphics and AI: vector arithmetic, dot products, matrix multiplication, linear independence, rank, nullity, determinants, eigenvalues, and SVD decomposition.",
+  "icon_key": "grid",
+  "difficulty_level": "Intermediate",
+  "display_order": 20,
+  "courses": [
+    {
+      "title": "Linear Algebra Fundamentals",
+      "slug": "linear-algebra-fundamentals",
+      "description": "Vector spaces, linear maps, matrix determinants, and spectral eigenvalue decomposition.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 6,
+      "modules": [
+        {
+          "title": "Linear Systems",
+          "slug": "la-linear-systems",
+          "description": "Solving systems of linear equations, the starting point of linear algebra.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Systems of Linear Equations & Gaussian Elimination",
+              "slug": "gaussian-elimination",
+              "summary": "Row reduction, echelon forms, and when a system has zero, one, or infinitely many solutions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Determinants & Matrix Inverses",
+              "slug": "determinants-inverses",
+              "summary": "Computing determinants, their properties, and inverting matrices.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Vectors & Matrix Operations",
+          "slug": "la-vectors-and-matrices",
+          "description": "Vector dot products, norms, matrix multiplication, transpose, and rank.",
+          "estimated_minutes": 140,
+          "topics": [
+            {
+              "title": "Vector Spaces & Matrix Multiplication",
+              "slug": "vector-spaces-matrix-mult",
+              "summary": "Basis, dimension, column spaces, and matrix transformation geometry.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Linear Independence, Basis, Dimension & Rank",
+              "slug": "independence-basis-rank",
+              "summary": "Spanning sets, bases, dimension, and the rank-nullity theorem.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Linear Transformations",
+              "slug": "linear-transformations",
+              "summary": "Linear maps, their matrices, kernels and images, and composition.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Orthogonality",
+          "slug": "la-orthogonality",
+          "description": "Angles, projections, and best approximate solutions.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Orthogonality, Projections & Least Squares",
+              "slug": "orthogonality-least-squares",
+              "summary": "Inner products, orthogonal projections, Gram-Schmidt, and least-squares solutions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Eigenvalues & Eigenvectors",
+          "slug": "la-eigenvalues-eigenvectors",
+          "description": "Characteristic polynomial, diagonal matrices, and spectral theorem.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Eigenvalue Decomposition & SVD",
+              "slug": "eigenvalue-decomposition-svd",
+              "summary": "Singular value decomposition (SVD) and geometric stretch factors.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

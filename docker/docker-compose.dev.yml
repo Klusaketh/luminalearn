@@ -36,8 +36,8 @@ services:
 
   backend:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: lumina_backend_dev
     restart: always
     environment:
@@ -50,25 +50,30 @@ services:
       POSTGRES_DB: luminalearn_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      USE_SQLITE: "false"
     ports:
-      - "8000:8000"
+      - "8001:8000"  # host 8001: 8000 is often taken by other tools (e.g. Splunk)
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ../backend:/app
+      - ../backend:/srv/backend
+      - ../ai:/srv/ai
+      - ../ml:/srv/ml
 
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://backend:8000
     container_name: lumina_frontend_dev
     restart: always
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      BACKEND_URL: http://backend:8000  # the browser only ever talks to the frontend
     ports:
       - "3000:3000"
     depends_on:

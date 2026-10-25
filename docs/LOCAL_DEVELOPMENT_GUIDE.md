@@ -121,7 +121,9 @@ REDIS_PASSWORD=""
 Create `frontend/.env.local`:
 ```ini
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_API_URL="http://localhost:8000/api/v1"
+# Server-only: where the Next.js server forwards /api/v1 and the voice WebSocket.
+# The browser never calls the backend directly, so it needs no API URL and no CORS setup.
+BACKEND_URL="http://127.0.0.1:8001"
 ```
 
 ---
@@ -268,20 +270,21 @@ docker-compose -f docker/docker-compose.dev.yml up --build -d
 
 2. Start the FastAPI development server:
    ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   python -m app
    ```
+   It listens on `BACKEND_HOST:BACKEND_PORT` from `backend/.env` (default `127.0.0.1:8001`) and refuses to start if another program already holds that port. If you start uvicorn by hand on a port that another program answers on (Splunk owns 8000 on some machines), the server logs an error saying so.
+
+   Shortcut: `npm run dev` from the project root starts this server and the frontend together.
 
 3. **Expected Console Output**:
    ```
-   INFO:     Will watch for changes in these directories: ['/path/to/LUMINALEARN AI/backend']
-   INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-   INFO:     Started reloader process [PID] using StatReload
+   INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
    INFO:     Application startup complete.
    ```
 
 4. **Verification Links**:
-   - **Health Endpoint**: `http://localhost:8000/api/v1/health`
-   - **Swagger Interactive API Documentation**: `http://localhost:8000/docs`
+   - **Health Endpoint**: `http://localhost:8001/api/v1/health`
+   - **Swagger Interactive API Documentation**: `http://localhost:8001/docs`
 
 ---
 
@@ -306,7 +309,9 @@ docker-compose -f docker/docker-compose.dev.yml up --build -d
     ✓ Ready in 1.4s
    ```
 
-4. Open your browser and navigate to `http://localhost:3000`.
+4. Open your browser and navigate to `http://localhost:3000`. Workspace pages (subjects, tutor, quiz, dashboards) ask you to sign in first.
+
+If the backend isn't running, pages show "Reconnecting to the LuminaLearn server…" and recover by themselves once it starts. The Next.js terminal names the address it tried.
 
 ---
 
@@ -334,10 +339,7 @@ Suppose your local IP is `192.168.1.50`:
    BACKEND_CORS_ORIGINS=["http://localhost:3000","http://192.168.1.50:3000"]
    ```
 
-2. Update `frontend/.env.local`:
-   ```ini
-   NEXT_PUBLIC_API_URL="http://192.168.1.50:8000/api/v1"
-   ```
+2. Keep `BACKEND_URL="http://127.0.0.1:8001"` in `frontend/.env.local`. Other devices only talk to the frontend, which forwards API calls on this computer.
 
 3. Start Frontend bound to all hosts:
    ```bash
@@ -346,7 +348,7 @@ Suppose your local IP is `192.168.1.50`:
 
 ### Step 3: Access URLs from Any Device on the Network:
 - **Mobile / Tablet Frontend URL**: `http://192.168.1.50:3000`
-- **Backend API URL**: `http://192.168.1.50:8000/docs`
+- The API stays private to this computer. Devices reach it through the frontend's `/api/v1`.
 
 ---
 
@@ -354,7 +356,7 @@ Suppose your local IP is `192.168.1.50`:
 
 | Step | Feature / Component | Test Procedure | Expected Result | Pass / Fail |
 | :---: | :--- | :--- | :--- | :---: |
-| 1 | **Health Check** | Navigate to `http://localhost:8000/api/v1/health` | Returns status 200 with `"status": "healthy"` | `[ PASS ]` |
+| 1 | **Health Check** | Navigate to `http://localhost:3000/api/v1/health` (through the proxy) | Returns status 200 with `"status": "healthy"` | `[ PASS ]` |
 | 2 | **Database Integrity** | Execute `SELECT count(*) FROM users;` in PostgreSQL | Returns valid count without syntax error | `[ PASS ]` |
 | 3 | **Redis Connectivity** | Run `redis-cli ping` | Returns `PONG` | `[ PASS ]` |
 | 4 | **Student Register** | Register via `http://localhost:3000/register/student` | Creates user record with VARK preference | `[ PASS ]` |
@@ -370,23 +372,13 @@ Suppose your local IP is `192.168.1.50`:
 
 ## 11. 🚨 Common Errors & Troubleshooting Guide
 
-### 1. Port 3000 or 8000 Already in Use
-- **Symptom**: `Error: listen EADDRINUSE: address already in use :::3000` or `[Errno 98] Address already in use`.
-- **Fix**: Identify and terminate the blocking process:
-  - **Windows**:
-    ```powershell
-    netstat -ano | findstr :8000
-    taskkill /PID <PID_NUMBER> /F
-    ```
-  - **macOS / Linux**:
-    ```bash
-    lsof -i :8000
-    kill -9 <PID_NUMBER>
-    ```
+### 1. Port Already in Use, or "Failed to fetch"
+- **Symptom**: `python -m app` reports that the port is in use, the uvicorn log says the port "is answered by another program", or pages keep showing "Reconnecting to the LuminaLearn server…".
+- **Cause**: The backend is not running on the port the frontend forwards to (`BACKEND_URL`), or another program holds that port. On Windows two programs can listen on one port and the other one gets the traffic: the Splunk service does this on 8000.
+- **Fix**: Start everything with `npm run dev` from the project root: it starts the backend on `BACKEND_PORT` and points the frontend at that same port. To use a different port, set `BACKEND_PORT` in `backend/.env` and `BACKEND_URL` in `frontend/.env.local` to match. Check what holds a port before stopping anything: `netstat -ano | findstr :8001`, then `tasklist /FI "PID eq <PID>"`. The holder may be a system service.
 
-### 2. CORS Error (Blocked by CORS Policy)
-- **Symptom**: Browser console error: `Access to fetch at 'http://localhost:8000' from origin 'http://localhost:3000' has been blocked by CORS policy`.
-- **Fix**: Open `backend/app/core/config.py` or `backend/.env` and ensure `BACKEND_CORS_ORIGINS` includes your frontend origin URL (e.g., `["http://localhost:3000"]`). Restart Uvicorn.
+### 2. CORS Errors
+- The browser never calls the backend directly (the frontend proxies `/api/v1`), so CORS errors should not occur. If you see one, some code is calling the backend URL directly instead of using `apiFetch` from `src/services/apiClient.ts`.
 
 ### 3. PostgreSQL Connection Refused
 - **Symptom**: `asyncpg.exceptions.CannotConnectNowError` or `ConnectionRefusedError`.

@@ -1,7 +1,8 @@
 import uuid
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -13,6 +14,26 @@ from app.models.content import (
     Subject,
     Topic,
 )
+
+# Lesson bodies run to many kilobytes: tree views load only the columns they display.
+_LESSON_LISTING = (
+    Lesson.id,
+    Lesson.topic_id,
+    Lesson.title,
+    Lesson.slug,
+    Lesson.summary,
+    Lesson.estimated_minutes,
+    Lesson.display_order,
+    Lesson.lesson_type,
+)
+
+
+@dataclass
+class SubjectCounts:
+    modules: int = 0
+    topics: int = 0
+    lessons: int = 0
+    topic_titles: list[str] = field(default_factory=list)
 
 
 class ContentRepository:
@@ -76,17 +97,77 @@ class ContentRepository:
             stmt = stmt.where(Subject.difficulty_level.ilike(f"%{difficulty}%"))
 
         if search:
+            # Names and topics, not the long overview: a subject that merely mentions a term
+            # in passing would otherwise crowd out the subject that teaches it.
             search_pattern = f"%{search.strip()}%"
+            taught_here = (
+                select(Course.subject_id)
+                .join(Module, Module.course_id == Course.id)
+                .join(Topic, Topic.module_id == Module.id)
+                .where(or_(Topic.title.ilike(search_pattern), Module.title.ilike(search_pattern)))
+            )
             stmt = stmt.where(
                 or_(
                     Subject.name.ilike(search_pattern),
                     Subject.short_description.ilike(search_pattern),
-                    Subject.description.ilike(search_pattern),
+                    Subject.id.in_(taught_here),
                 )
             )
 
         result = await db.execute(stmt)
         return result.scalars().all()
+
+    async def get_subject_counts(self, db: AsyncSession) -> dict[uuid.UUID, SubjectCounts]:
+        """Module, topic, and lesson counts plus topic titles per subject, from active courses only."""
+        counts: dict[uuid.UUID, SubjectCounts] = {}
+        active = Course.is_active.is_(True)
+        module_rows = await db.execute(
+            select(Course.subject_id, func.count(Module.id))
+            .join(Module, Module.course_id == Course.id)
+            .where(active)
+            .group_by(Course.subject_id)
+        )
+        for subject_id, total in module_rows:
+            counts.setdefault(subject_id, SubjectCounts()).modules = total
+        lesson_rows = await db.execute(
+            select(Course.subject_id, func.count(Lesson.id))
+            .join(Module, Module.course_id == Course.id)
+            .join(Topic, Topic.module_id == Module.id)
+            .join(Lesson, Lesson.topic_id == Topic.id)
+            .where(active)
+            .group_by(Course.subject_id)
+        )
+        for subject_id, total in lesson_rows:
+            counts.setdefault(subject_id, SubjectCounts()).lessons = total
+        topic_rows = await db.execute(
+            select(Course.subject_id, Topic.title)
+            .join(Module, Module.course_id == Course.id)
+            .join(Topic, Topic.module_id == Module.id)
+            .where(active)
+            .order_by(Course.display_order, Module.display_order, Topic.display_order)
+        )
+        for subject_id, title in topic_rows:
+            entry = counts.setdefault(subject_id, SubjectCounts())
+            entry.topics += 1
+            entry.topic_titles.append(title)
+        return counts
+
+    async def get_subject_syllabus(self, db: AsyncSession, slug: str) -> Subject | None:
+        """Subject with its full course -> module -> topic -> lesson tree (lesson bodies not loaded)."""
+        stmt = (
+            select(Subject)
+            .options(
+                selectinload(Subject.category),
+                selectinload(Subject.courses)
+                .selectinload(Course.modules)
+                .selectinload(Module.topics)
+                .selectinload(Topic.lessons)
+                .load_only(*_LESSON_LISTING),
+            )
+            .where(Subject.slug == slug)
+        )
+        result = await db.execute(stmt)
+        return result.scalars().first()
 
     async def get_subject_by_slug(
         self,
@@ -120,6 +201,7 @@ class ContentRepository:
                 selectinload(Course.modules)
                 .selectinload(Module.topics)
                 .selectinload(Topic.lessons)
+                .load_only(*_LESSON_LISTING)
             )
             .where(Subject.slug == subject_slug)
             .order_by(Course.display_order.asc())
@@ -142,6 +224,7 @@ class ContentRepository:
                 selectinload(Course.modules)
                 .selectinload(Module.topics)
                 .selectinload(Topic.lessons)
+                .load_only(*_LESSON_LISTING)
             )
             .where(Course.slug == course_slug)
         )
@@ -157,7 +240,7 @@ class ContentRepository:
         stmt = (
             select(Module)
             .join(Course)
-            .options(selectinload(Module.topics).selectinload(Topic.lessons))
+            .options(selectinload(Module.topics).selectinload(Topic.lessons).load_only(*_LESSON_LISTING))
             .where(Course.slug == course_slug)
             .order_by(Module.display_order.asc())
         )
@@ -174,7 +257,7 @@ class ContentRepository:
             select(Module)
             .options(
                 selectinload(Module.course),
-                selectinload(Module.topics).selectinload(Topic.lessons)
+                selectinload(Module.topics).selectinload(Topic.lessons).load_only(*_LESSON_LISTING)
             )
             .where(Module.id == module_id)
         )
@@ -189,7 +272,7 @@ class ContentRepository:
         """Fetch all topics for a module."""
         stmt = (
             select(Topic)
-            .options(selectinload(Topic.lessons))
+            .options(selectinload(Topic.lessons).load_only(*_LESSON_LISTING))
             .where(Topic.module_id == module_id)
             .order_by(Topic.display_order.asc())
         )
@@ -206,7 +289,7 @@ class ContentRepository:
             select(Topic)
             .options(
                 selectinload(Topic.module).selectinload(Module.course).selectinload(Course.subject),
-                selectinload(Topic.lessons)
+                selectinload(Topic.lessons).load_only(*_LESSON_LISTING)
             )
             .where(Topic.id == topic_id)
         )

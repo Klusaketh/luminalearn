@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -20,7 +21,7 @@ export default function PersonalizedRoadmapPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const fetchRoadmap = async () => {
+  const fetchRoadmap = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
@@ -33,28 +34,31 @@ export default function PersonalizedRoadmapPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken]);
 
   useEffect(() => {
     fetchRoadmap();
-  }, [accessToken]);
+  }, [fetchRoadmap]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void fetchRoadmap();
+  });
 
   return (
     <ProtectedRoute allowedRoles={["student"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="flex-1 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
 
         <div className="max-w-4xl mx-auto w-full space-y-8 relative z-10 flex-1">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-2">
                 <Compass className="w-3.5 h-3.5" />
                 Adaptive Learning Pathway
               </div>
-              <h1 className="text-3xl font-extrabold text-white">Personalized Roadmap</h1>
+              <h1 className="font-display leading-tight text-white text-4xl">Personalized Roadmap</h1>
               <p className="text-xs sm:text-sm text-slate-400">
                 Custom structured study modules generated for {user?.full_name}
               </p>
@@ -155,7 +159,7 @@ export default function PersonalizedRoadmapPage() {
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-white">{mod.title}</h4>
                           {mod.is_key_focus && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white uppercase tracking-wider">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white">
                               Priority Focus
                             </span>
                           )}

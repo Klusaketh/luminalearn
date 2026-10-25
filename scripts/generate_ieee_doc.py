@@ -1,10 +1,10 @@
-import docx
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
-from docx.oxml import OxmlElement, parse_xml
-from docx.oxml.ns import nsdecls, qn
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
+from docx.shared import Inches, Pt, RGBColor
+
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -27,12 +27,12 @@ def add_callout_box(doc, text_list, bg_color="F1F5F9", border_color="3B82F6"):
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
     tbl.autofit = False
-    
+
     cell = tbl.cell(0, 0)
     cell.width = Inches(6.5)
     set_cell_background(cell, bg_color)
     set_cell_margins(cell, top=140, bottom=140, left=200, right=200)
-    
+
     tcPr = cell._tc.get_or_add_tcPr()
     borders = parse_xml(f'''
         <w:tcBorders {nsdecls("w")}>
@@ -43,7 +43,7 @@ def add_callout_box(doc, text_list, bg_color="F1F5F9", border_color="3B82F6"):
         </w:tcBorders>
     ''')
     tcPr.append(borders)
-    
+
     p = cell.paragraphs[0]
     p.paragraph_format.space_before = Pt(2)
     p.paragraph_format.space_after = Pt(2)
@@ -58,7 +58,7 @@ def add_callout_box(doc, text_list, bg_color="F1F5F9", border_color="3B82F6"):
         run.font.name = 'Consolas'
         run.font.size = Pt(9.5)
         run.font.color.rgb = RGBColor(0x1E, 0x29, 0x3B)
-    
+
     doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
 def format_table_header(row, col_widths, bg_color="1E293B"):
@@ -91,7 +91,7 @@ def format_table_row(row, col_widths, bg_color="FFFFFF", is_even=False):
 
 def build_ieee_document():
     doc = Document()
-    
+
     # Page setup - Standard Letter, 0.75 in margins
     sections = doc.sections
     for section in sections:
@@ -142,7 +142,7 @@ def build_ieee_document():
     run_abs_title.font.name = 'Times New Roman'
     run_abs_title.font.size = Pt(10)
     run_abs_title.font.bold = True
-    
+
     run_abs_body = p_abs.add_run(
         "Contemporary Learning Management Systems (LMS) predominantly employ static, linear instructional paths "
         "that fail to accommodate student cognitive diversity, resulting in divergent retention rates and low completion metrics. "
@@ -168,7 +168,7 @@ def build_ieee_document():
     run_kw_title.font.size = Pt(9.5)
     run_kw_title.font.bold = True
     run_kw_title.font.italic = True
-    
+
     run_kw_body = p_kw.add_run("Adaptive Learning Systems, Intelligent Tutoring Systems (ITS), Socratic Dialogue, VARK Modality, Bayesian Knowledge Tracing (BKT), Large Language Models, FastAPI, Next.js, Explainable AI (XAI), High-Availability Fallback Architecture.")
     run_kw_body.font.name = 'Times New Roman'
     run_kw_body.font.size = Pt(9.5)
@@ -300,7 +300,7 @@ def build_ieee_document():
     t_stack = doc.add_table(rows=1, cols=4)
     t_stack.alignment = WD_TABLE_ALIGNMENT.CENTER
     widths = [Inches(1.5), Inches(1.8), Inches(1.2), Inches(2.5)]
-    
+
     hdr = t_stack.rows[0]
     hdr.cells[0].paragraphs[0].text = "Domain Layer"
     hdr.cells[1].paragraphs[0].text = "Technology / Framework"
@@ -408,7 +408,7 @@ def build_ieee_document():
     t_phase = doc.add_table(rows=1, cols=4)
     t_phase.alignment = WD_TABLE_ALIGNMENT.CENTER
     w_phase = [Inches(1.2), Inches(2.3), Inches(1.2), Inches(2.3)]
-    
+
     h_phase = t_phase.rows[0]
     h_phase.cells[0].paragraphs[0].text = "Phase"
     h_phase.cells[1].paragraphs[0].text = "Name & Scope"
@@ -450,7 +450,7 @@ def build_ieee_document():
     t_comp = doc.add_table(rows=1, cols=4)
     t_comp.alignment = WD_TABLE_ALIGNMENT.CENTER
     w_comp = [Inches(1.6), Inches(1.6), Inches(1.6), Inches(2.2)]
-    
+
     h_comp = t_comp.rows[0]
     h_comp.cells[0].paragraphs[0].text = "Dimension"
     h_comp.cells[1].paragraphs[0].text = "Traditional LMS"

@@ -1,0 +1,248 @@
+{
+  "category_slug": "computer-science",
+  "name": "Operating Systems",
+  "slug": "operating-systems",
+  "short_description": "Kernels, concurrency, CPU scheduling, virtual memory, and hardware interaction.",
+  "description": "Core principles of operating system architecture, process management, multi-threading, concurrency synchronization, virtual memory paging, and storage file systems.",
+  "icon_key": "cpu",
+  "difficulty_level": "Intermediate",
+  "display_order": 2,
+  "courses": [
+    {
+      "title": "Operating Systems Fundamentals",
+      "slug": "operating-systems-fundamentals",
+      "description": "System architecture, hardware abstraction, concurrency synchronization, and memory hierarchies.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 15,
+      "modules": [
+        {
+          "title": "Introduction",
+          "slug": "os-introduction",
+          "description": "Role of the OS, dual-mode operation, system calls, and kernel architectures.",
+          "estimated_minutes": 60,
+          "topics": [
+            {
+              "title": "OS Roles & Kernel Architectures",
+              "slug": "os-roles-kernel-architectures",
+              "summary": "Monolithic, microkernel, and hybrid kernel designs.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            },
+            {
+              "title": "System Calls & Dual-Mode Execution",
+              "slug": "system-calls-dual-mode",
+              "summary": "User mode vs kernel mode transitions and trap handling.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Processes & Threads",
+          "slug": "os-processes-and-threads",
+          "description": "Process state transitions, PCB descriptors, threads, and context switching.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Process Control Block & Lifecycle",
+              "slug": "process-control-block-lifecycle",
+              "summary": "New, Ready, Running, Waiting, Terminated states and PCB contents.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Kernel vs User Threads",
+              "slug": "kernel-vs-user-threads",
+              "summary": "Thread control blocks, POSIX pthreads, and 1:1 vs M:N thread models.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "CPU Scheduling",
+          "slug": "os-cpu-scheduling",
+          "description": "Dispatchers, preemptive algorithms, turnaround and response time metrics.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Scheduling Criteria & Dispatcher",
+              "slug": "scheduling-criteria-dispatcher",
+              "summary": "Throughput, turnaround, waiting, and response times.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Preemptive Scheduling Algorithms",
+              "slug": "preemptive-scheduling-algorithms",
+              "summary": "Round Robin, Shortest Remaining Time First (SRTF), and Priority scheduling.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Synchronization",
+          "slug": "os-synchronization",
+          "description": "Race conditions, critical sections, Peterson's algorithm, mutexes, and semaphores.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Critical Section Problem & Mutexes",
+              "slug": "critical-section-problem",
+              "summary": "Mutual exclusion, progress, and bounded waiting requirements.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Semaphores & Condition Variables",
+              "slug": "semaphores-condition-variables",
+              "summary": "Counting and binary semaphores, classic dining philosophers problem.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Deadlocks",
+          "slug": "os-deadlocks",
+          "description": "Four necessary conditions, resource allocation graphs, Banker's algorithm.",
+          "estimated_minutes": 125,
+          "topics": [
+            {
+              "title": "Deadlock Characterization & Prevention",
+              "slug": "deadlock-characterization",
+              "summary": "Mutual exclusion, hold and wait, no preemption, circular wait.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Banker's Algorithm & Avoidance",
+              "slug": "bankers-algorithm",
+              "summary": "Safe state verification and resource request algorithm.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Deadlock Detection & Recovery",
+              "slug": "deadlock-detection-recovery",
+              "summary": "Wait-for graphs, the detection algorithm, and recovery by termination or preemption.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Memory Management",
+          "slug": "os-memory-management",
+          "description": "Base/limit registers, logical to physical translation, internal/external fragmentation.",
+          "estimated_minutes": 135,
+          "topics": [
+            {
+              "title": "Address Binding & Dynamic Relocation",
+              "slug": "address-binding-relocation",
+              "summary": "Compile time, load time, and execution time address mapping.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Paging & Page Tables",
+              "slug": "paging-page-tables",
+              "summary": "Frames, pages, TLB (Translation Lookaside Buffer) hit rates.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Segmentation & Fragmentation",
+              "slug": "segmentation-fragmentation",
+              "summary": "Variable-sized segments, internal versus external fragmentation, and compaction.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Virtual Memory",
+          "slug": "os-virtual-memory",
+          "description": "Demand paging, page faults, replacement algorithms (FIFO, LRU, Optimal).",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Demand Paging & Page Fault Handling",
+              "slug": "demand-paging-page-faults",
+              "summary": "Hardware page fault interrupt service routines and disk swap space.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Page Replacement Algorithms",
+              "slug": "page-replacement-algorithms",
+              "summary": "FIFO, Least Recently Used (LRU), and Second Chance algorithms.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "File Systems",
+          "slug": "os-file-systems",
+          "description": "Inodes, directory structures, contiguous, linked, and indexed disk allocations.",
+          "estimated_minutes": 85,
+          "topics": [
+            {
+              "title": "File System Structure & Inodes",
+              "slug": "file-system-structure-inodes",
+              "summary": "Metadata storage, inode pointer structures, and open file tables.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "File Allocation & Directory Structures",
+              "slug": "file-allocation-directories",
+              "summary": "Contiguous, linked, and indexed allocation, free-space management, and directory organisation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "I/O Systems",
+          "slug": "os-io-systems",
+          "description": "Device controllers, polling vs interrupts, DMA channels, and disk scheduling.",
+          "estimated_minutes": 80,
+          "topics": [
+            {
+              "title": "Direct Memory Access (DMA) & Interrupts",
+              "slug": "dma-and-interrupts",
+              "summary": "Offloading CPU cycle load via hardware DMA controllers.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Disk Scheduling Algorithms",
+              "slug": "disk-scheduling-algorithms",
+              "summary": "FCFS, SSTF, SCAN, C-SCAN, and LOOK compared by total head movement.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Protection & Security",
+          "slug": "os-protection-security",
+          "description": "Protection domains, access control, and the operating-system defences against attack.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Access Control & OS Security Fundamentals",
+              "slug": "access-control-os-security",
+              "summary": "Access matrices, ACLs and capabilities, least privilege, and common attack classes.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ LuminaLearn AI — Database Seed Automation Script.
 Populates initial knowledge graph micro-concept nodes for local development testing.
 """
 import asyncio
+
 from app.core.database import AsyncSessionLocal
 
 

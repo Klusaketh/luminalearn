@@ -25,10 +25,10 @@ class QuestionAnswer(BaseModel):
 
 
 class OnboardingSubmitRequest(BaseModel):
-    goals: list[str] = Field(..., min_items=1, description="List of selected learning goals")
-    interests: list[str] = Field(..., min_items=1, description="List of selected interests")
-    selected_subjects: list[str] = Field(..., min_items=1, description="List of subjects to learn first")
-    answers: list[QuestionAnswer] = Field(..., min_items=1, description="List of diagnostic quiz answers")
+    goals: list[str] = Field(..., min_length=1, description="List of selected learning goals")
+    interests: list[str] = Field(..., min_length=1, description="List of selected interests")
+    selected_subjects: list[str] = Field(..., min_length=1, description="List of subjects to learn first")
+    answers: list[QuestionAnswer] = Field(..., min_length=1, description="List of diagnostic quiz answers")
 
 
 class LearnerProfileResponse(BaseModel):

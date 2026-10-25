@@ -1,0 +1,108 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Computer Vision",
+  "slug": "computer-vision",
+  "short_description": "Digital image representation, filtering, edge detection, object detection, and segmentation.",
+  "description": "Core computer vision algorithms spanning spatial filtering, morphological operations, convolutional backbones (ResNet), object detection (YOLO), and semantic segmentation (U-Net).",
+  "icon_key": "eye",
+  "difficulty_level": "Advanced",
+  "display_order": 16,
+  "courses": [
+    {
+      "title": "Computer Vision Fundamentals",
+      "slug": "computer-vision-fundamentals",
+      "description": "Image processing, feature descriptors, convolutional backbones, and object detection.",
+      "difficulty": "Advanced",
+      "estimated_hours": 8,
+      "modules": [
+        {
+          "title": "Image Formation & Filtering",
+          "slug": "cv-image-filtering",
+          "description": "Color spaces, Gaussian blurring, Sobel gradients, and Canny edge detection.",
+          "estimated_minutes": 185,
+          "topics": [
+            {
+              "title": "Digital Images, Color Spaces & Histograms",
+              "slug": "digital-images-color-histograms",
+              "summary": "Pixels, sampling and quantization, RGB, HSV and grayscale, and histogram equalization.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Spatial Convolution & Edge Detection",
+              "slug": "spatial-convolution-edge-detection",
+              "summary": "Image gradients, non-maximum suppression, and hysteresis thresholding.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Feature Detection & Description",
+              "slug": "feature-detection-description",
+              "summary": "Harris corners, scale-invariant features, descriptors, and matching.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Geometric Transformations & Camera Models",
+              "slug": "geometric-transformations-camera",
+              "summary": "Affine and projective transforms, homographies, and the pinhole camera.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Deep Vision Backbones",
+          "slug": "cv-vision-backbones",
+          "description": "VGG, ResNet residual connections, and feature pyramid networks.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "ResNet & Residual Skip Connections",
+              "slug": "resnet-residual-skip-connections",
+              "summary": "Identity shortcuts, degradation problem resolution, and deep feature maps.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Vision Transformers (ViT)",
+              "slug": "vision-transformers",
+              "summary": "Image patches as tokens: applying self-attention to images.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Object Detection & Segmentation",
+          "slug": "cv-detection-segmentation",
+          "description": "Bounding box regression, IoU, non-max suppression, YOLO, and U-Net.",
+          "estimated_minutes": 150,
+          "topics": [
+            {
+              "title": "Single-Shot Object Detection (YOLO)",
+              "slug": "single-shot-object-detection",
+              "summary": "Grid anchor boxes, class probabilities, and intersection-over-union.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Detection Metrics & Two-Stage Detectors",
+              "slug": "detection-metrics-two-stage",
+              "summary": "IoU, precision-recall, mAP, non-maximum suppression, and the R-CNN family.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Semantic & Instance Segmentation",
+              "slug": "semantic-instance-segmentation",
+              "summary": "Per-pixel classification with fully convolutional networks, U-Net, and Mask R-CNN.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+import { API_BASE, apiFetch } from "./apiClient";
 
 export interface ContentCategorySummary {
   id: string;
@@ -21,6 +21,11 @@ export interface SubjectSummary {
   difficulty_level: string;
   display_order: number;
   course_count: number;
+  module_count: number;
+  topic_count: number;
+  lesson_count: number;
+  /** Every topic title, in syllabus order, so the catalog can search topics. */
+  topic_titles: string[];
 }
 
 export interface SubjectDetail {
@@ -114,6 +119,21 @@ export interface TopicDetail {
   difficulty: string;
   display_order: number;
   lessons: LessonSummary[];
+  navigation: TopicNavigation | null;
+}
+
+export interface TopicNavLink {
+  topic_id: string;
+  title: string;
+  module_title: string;
+  lesson_id: string | null;
+}
+
+export interface TopicNavigation {
+  previous: TopicNavLink | null;
+  next: TopicNavLink | null;
+  position: number;
+  total: number;
 }
 
 export interface LessonSummary {
@@ -127,10 +147,35 @@ export interface LessonSummary {
   lesson_type: string;
 }
 
+export interface LessonNavLink {
+  lesson_id: string;
+  lesson_title: string;
+  topic_id: string;
+  topic_title: string;
+  module_title: string;
+}
+
+export interface ModuleTopicLink {
+  topic_id: string;
+  title: string;
+  lesson_id: string | null;
+  is_current: boolean;
+}
+
+export interface LessonNavigation {
+  previous: LessonNavLink | null;
+  next: LessonNavLink | null;
+  position: number;
+  total: number;
+  module_topics: ModuleTopicLink[];
+}
+
 export interface LessonDetail {
   id: string;
   topic_id: string;
   topic_title: string | null;
+  topic_summary: string | null;
+  topic_difficulty: string | null;
   module_id: string | null;
   module_title: string | null;
   course_id: string | null;
@@ -146,6 +191,64 @@ export interface LessonDetail {
   estimated_minutes: number;
   display_order: number;
   lesson_type: string;
+  navigation: LessonNavigation | null;
+}
+
+export interface SyllabusLesson {
+  id: string;
+  title: string;
+  slug: string;
+  estimated_minutes: number;
+}
+
+export interface SyllabusTopic {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  difficulty: string;
+  estimated_minutes: number;
+  display_order: number;
+  lessons: SyllabusLesson[];
+}
+
+export interface SyllabusModule {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  estimated_minutes: number;
+  display_order: number;
+  topics: SyllabusTopic[];
+}
+
+export interface SyllabusCourse {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  difficulty: string;
+  estimated_hours: number;
+  display_order: number;
+  modules: SyllabusModule[];
+}
+
+/** A subject with its full course -> module -> topic -> lesson tree (no lesson bodies). */
+export interface SubjectSyllabus {
+  id: string;
+  name: string;
+  slug: string;
+  category_name: string | null;
+  category_slug: string | null;
+  short_description: string | null;
+  description: string | null;
+  icon_key: string | null;
+  difficulty_level: string;
+  module_count: number;
+  topic_count: number;
+  lesson_count: number;
+  estimated_hours: number;
+  courses: SyllabusCourse[];
 }
 
 class ContentService {
@@ -159,29 +262,9 @@ class ContentService {
     return headers;
   }
 
-  private async fetchWithTimeout(
-    url: string,
-    options: RequestInit = {},
-    timeoutMs = 8000
-  ): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-      });
-      return response;
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        throw new Error(
-          "Unable to connect to the academic content server. Request timed out."
-        );
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeoutId);
-    }
+  /** Catalog reads use the signed-in session and give up after 8 seconds. */
+  private fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 8000): Promise<Response> {
+    return apiFetch(url, { ...options, timeoutMs });
   }
 
   async getCategories(): Promise<ContentCategorySummary[]> {
@@ -200,18 +283,20 @@ class ContentService {
     difficulty?: string;
     search?: string;
   }): Promise<SubjectSummary[]> {
-    const url = new URL(`${API_BASE}/content/subjects`);
+    const query = new URLSearchParams();
     if (params?.category_slug) {
-      url.searchParams.append("category_slug", params.category_slug);
+      query.append("category_slug", params.category_slug);
     }
     if (params?.difficulty) {
-      url.searchParams.append("difficulty", params.difficulty);
+      query.append("difficulty", params.difficulty);
     }
     if (params?.search) {
-      url.searchParams.append("search", params.search);
+      query.append("search", params.search);
     }
 
-    const res = await this.fetchWithTimeout(url.toString(), {
+    const queryString = query.toString();
+    const suffix = queryString ? `?${queryString}` : "";
+    const res = await this.fetchWithTimeout(`${API_BASE}/content/subjects${suffix}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -232,6 +317,18 @@ class ContentService {
     if (!res.ok) {
       if (res.status === 404) throw new Error("Subject not found.");
       throw new Error("Failed to load subject details.");
+    }
+    return res.json();
+  }
+
+  async getSyllabus(slug: string): Promise<SubjectSyllabus> {
+    const res = await this.fetchWithTimeout(`${API_BASE}/content/subjects/${encodeURIComponent(slug)}/syllabus`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) {
+      if (res.status === 404) throw new Error("Subject not found.");
+      throw new Error("Failed to load the subject syllabus.");
     }
     return res.json();
   }

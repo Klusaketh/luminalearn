@@ -1,0 +1,125 @@
+{
+  "category_slug": "mathematics",
+  "name": "Calculus",
+  "slug": "calculus",
+  "short_description": "Limits, derivatives, partial derivatives, integrals, and gradient vectors.",
+  "description": "Single-variable and multivariable calculus: limits, continuous functions, differentiation rules, chain rule, partial derivatives, gradients, and Taylor series.",
+  "icon_key": "function-square",
+  "difficulty_level": "Intermediate",
+  "display_order": 21,
+  "courses": [
+    {
+      "title": "Calculus for Engineering & AI",
+      "slug": "calculus-for-engineering",
+      "description": "Differentiation, integration, multivariable partial derivatives, and gradient fields.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 7,
+      "modules": [
+        {
+          "title": "Limits & Continuity",
+          "slug": "calc-limits",
+          "description": "The idea every other part of calculus is built on.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Limits & Continuity",
+              "slug": "limits-continuity",
+              "summary": "The limit concept, limit laws, one-sided limits, and continuity.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Differentiation & Chain Rule",
+          "slug": "calc-differentiation",
+          "description": "Instantaneous rate of change, product rule, quotient rule, and multivariate chain rule.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Derivatives & The Chain Rule",
+              "slug": "derivatives-and-chain-rule",
+              "summary": "Analytical differentiation and composing multivariate functions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Applications of Derivatives",
+              "slug": "applications-of-derivatives",
+              "summary": "Optimization, curve sketching, related rates, and L'Hopital's rule.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Integration",
+          "slug": "calc-integration",
+          "description": "Accumulation, area, and the link between derivatives and integrals.",
+          "estimated_minutes": 105,
+          "topics": [
+            {
+              "title": "Integrals & the Fundamental Theorem of Calculus",
+              "slug": "integrals-fundamental-theorem",
+              "summary": "Riemann sums, definite integrals, antiderivatives, and the Fundamental Theorem.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Integration Techniques & Applications",
+              "slug": "integration-techniques",
+              "summary": "Substitution, integration by parts, partial fractions, and areas and volumes.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Sequences & Series",
+          "slug": "calc-series",
+          "description": "Infinite sums and approximating functions by polynomials.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Sequences, Series & Taylor Expansions",
+              "slug": "sequences-series-taylor",
+              "summary": "Convergence tests, power series, and Taylor polynomials.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Multivariable Gradients & Optimization",
+          "slug": "calc-gradients-optimization",
+          "description": "Partial derivatives, Jacobian matrix, Hessian matrix, and critical points.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Gradients, Jacobians & Hessians",
+              "slug": "gradients-jacobians-hessians",
+              "summary": "Direction of steepest ascent, saddle points, and curvature tensors.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Differential Equations",
+          "slug": "calc-differential-equations",
+          "description": "Equations that describe how quantities change.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "First-Order Differential Equations",
+              "slug": "first-order-odes",
+              "summary": "Separable and linear equations, growth and decay models, and slope fields.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

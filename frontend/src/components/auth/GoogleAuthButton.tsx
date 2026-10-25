@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { onboardingService } from "../../services/onboardingService";
 
 interface GoogleAuthButtonProps {
   role?: "student" | "teacher";
@@ -24,7 +22,6 @@ export function GoogleAuthButton({
   text = "Continue with Google",
   className = "",
 }: GoogleAuthButtonProps) {
-  const router = useRouter();
   const { loginWithGoogle, isLoading } = useAuthStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -34,38 +31,18 @@ export function GoogleAuthButton({
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  // Handle post-authentication redirection
-  const handleAuthSuccess = useCallback(async (user: any, token: string | null) => {
-    if (user.role === "teacher") {
-      router.push("/dashboard/teacher");
-      return;
-    }
-
-    try {
-      if (token) {
-        await onboardingService.getLearnerProfile(token);
-        router.push("/dashboard");
-      } else {
-        router.push("/onboarding");
-      }
-    } catch {
-      router.push("/onboarding");
-    }
-  }, [router]);
-
   const handleCredentialResponse = useCallback(async (credential: string) => {
     setIsProcessing(true);
     setAuthError(null);
     try {
-      const user = await loginWithGoogle(credential, role, preferredModality);
-      const token = useAuthStore.getState().accessToken;
-      await handleAuthSuccess(user, token);
+      // Signing in is all this button does: the page it sits on navigates once the session exists.
+      await loginWithGoogle(credential, role, preferredModality);
     } catch (err: any) {
       setAuthError(err.message || "Google authentication failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
-  }, [loginWithGoogle, role, preferredModality, handleAuthSuccess]);
+  }, [loginWithGoogle, role, preferredModality]);
 
   useEffect(() => {
     if (!googleClientId) return;
@@ -101,17 +78,38 @@ export function GoogleAuthButton({
   }, [googleClientId, handleCredentialResponse]);
 
   const handleClick = () => {
+    setAuthError(null);
     if (googleClientId && window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
+      setIsProcessing(true);
+      try {
+        window.google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setIsProcessing(false);
+            console.warn("Google One Tap prompt was not displayed or was skipped:", notification);
+          }
+        });
+      } catch (err) {
+        setIsProcessing(false);
+        setAuthError("Unable to open Google Sign-In prompt. Please ensure popups and cookies are enabled.");
+      }
     } else {
-      // If client ID is not yet configured in env, show instant dev login modal
-      setShowDevModal(true);
+      if (process.env.NODE_ENV === "production") {
+        setAuthError("Google Sign-In is currently being configured for this deployment. Please use email and password authentication.");
+      } else {
+        // In local development, show explicit dev simulation modal if Client ID is missing
+        setShowDevModal(true);
+      }
     }
   };
 
   const handleDevSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!devEmail.trim()) return;
+    if (process.env.NODE_ENV === "production") {
+      setAuthError("Development mock tokens are strictly forbidden in production.");
+      setShowDevModal(false);
+      return;
+    }
     const cred = `dev-google:${devEmail.trim()}:${devName.trim() || devEmail.split("@")[0]}`;
     setShowDevModal(false);
     handleCredentialResponse(cred);
@@ -156,33 +154,38 @@ export function GoogleAuthButton({
         </div>
       )}
 
-      {/* Dev Mode Instant Google Auth Modal (when NEXT_PUBLIC_GOOGLE_CLIENT_ID not set) */}
+      {/* Dev Mode Instant Google Auth Modal (strictly development testing) */}
       {showDevModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                />
-              </svg>
-              <h4 className="text-sm font-bold text-white">Google Sign-In</h4>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <h4 className="text-sm font-bold text-white">Google Sign-In</h4>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                Dev Test
+              </span>
             </div>
             <p className="text-xs text-slate-400">
-              Enter your Google email to authenticate directly or test your account.
+              Google Client ID not yet set in environment. Simulate Google Sign-In for local development:
             </p>
             <form onSubmit={handleDevSubmit} className="space-y-3">
               <div>

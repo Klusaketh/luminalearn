@@ -25,20 +25,17 @@ export default function AdminPortalPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] bg-blue-600/10 blur-[160px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-indigo-600/10 blur-[140px] rounded-full pointer-events-none" />
+      <div className="flex-1 text-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans flex flex-col">
 
         <div className="max-w-7xl mx-auto w-full space-y-8 relative z-10 flex-1">
           {/* Top Admin Header */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-blue-500/30 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                 LuminaLearn AI • Master Administration Console
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              <h1 className="font-display leading-tight text-white text-3xl sm:text-4xl">
                 Admin Portal: <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">{user?.full_name || "System Administrator"}</span>
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">

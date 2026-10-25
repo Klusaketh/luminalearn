@@ -246,3 +246,71 @@ CREATE TABLE IF NOT EXISTS lessons (
 
 CREATE INDEX idx_lessons_topic_id ON lessons(topic_id);
 CREATE INDEX idx_lessons_slug ON lessons(slug);
+
+-- ------------------------------------------------------------------------------
+-- 13. QUIZ SESSIONS TABLE (SPRINT 1 ADAPTIVE QUIZZING)
+-- Tracks active adaptive test sessions, student topic, and final mastery scores.
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS quiz_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_title VARCHAR(255) NOT NULL,
+    topic_id UUID REFERENCES topics(id) ON DELETE SET NULL,
+    difficulty_level VARCHAR(50) NOT NULL DEFAULT 'intermediate',
+    total_questions INT NOT NULL DEFAULT 5,
+    score FLOAT NOT NULL DEFAULT 0.0,
+    status VARCHAR(50) NOT NULL DEFAULT 'in_progress',
+    initial_mastery FLOAT NOT NULL DEFAULT 0.10,
+    final_mastery FLOAT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_quiz_sessions_user_id ON quiz_sessions(user_id);
+CREATE INDEX idx_quiz_sessions_topic_id ON quiz_sessions(topic_id);
+
+-- ------------------------------------------------------------------------------
+-- 14. QUIZ QUESTIONS TABLE
+-- Stores generated assessment items with Bloom's level and IRT 2PL difficulty parameters.
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS quiz_questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES quiz_sessions(id) ON DELETE CASCADE,
+    question_index INT NOT NULL DEFAULT 0,
+    prompt TEXT NOT NULL,
+    options JSONB NOT NULL DEFAULT '[]'::jsonb,
+    correct_answer VARCHAR(500) NOT NULL,
+    explanation TEXT NOT NULL,
+    blooms_level VARCHAR(50) NOT NULL DEFAULT 'understanding',
+    irt_difficulty FLOAT NOT NULL DEFAULT 0.0,
+    irt_discrimination FLOAT NOT NULL DEFAULT 1.0,
+    misconception_map JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_quiz_questions_session_id ON quiz_questions(session_id);
+
+-- ------------------------------------------------------------------------------
+-- 15. QUIZ ATTEMPTS TABLE
+-- Idempotent student submissions with posterior BKT mastery updates.
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES quiz_sessions(id) ON DELETE CASCADE,
+    question_id UUID NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    selected_answer VARCHAR(500) NOT NULL,
+    is_correct BOOLEAN NOT NULL,
+    latency_ms INT NOT NULL DEFAULT 0,
+    bkt_prior_mastery FLOAT NOT NULL DEFAULT 0.10,
+    bkt_posterior_mastery FLOAT NOT NULL DEFAULT 0.10,
+    detected_misconception TEXT,
+    feedback TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_session_question_user_attempt UNIQUE(session_id, question_id, user_id)
+);
+
+CREATE INDEX idx_quiz_attempts_session_id ON quiz_attempts(session_id);
+CREATE INDEX idx_quiz_attempts_question_id ON quiz_attempts(question_id);
+CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+

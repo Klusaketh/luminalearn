@@ -1,340 +1,224 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { LogOut, Menu, X, User } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
-import {
-  Sparkles,
-  Menu,
-  X,
-  LogOut,
-  User,
-  GraduationCap,
-  School,
-  LayoutDashboard,
-  Compass,
-  FileText,
-  BrainCircuit,
-  BarChart3,
-  BookOpen
-} from "lucide-react";
+import { BrandMark } from "@/components/common/BrandMark";
+import { cn } from "@/utils/cn";
+import { homePathFor } from "@/utils/routes";
+
+interface NavItem {
+  label: string;
+  href: string;
+  match: (path: string) => boolean;
+}
+
+const HOME_LINK: NavItem = { label: "Home", href: "/", match: (p) => p === "/" };
+
+/** The workspace: shown only to signed-in learners (every one of these pages requires a session). */
+const WORKSPACE_LINKS: NavItem[] = [
+  {
+    label: "Subjects",
+    href: "/subjects",
+    match: (p) => ["/subjects", "/courses", "/topics", "/lessons"].some((prefix) => p.startsWith(prefix)),
+  },
+  { label: "Tutor", href: "/tutor", match: (p) => p.startsWith("/tutor") },
+  { label: "Quiz", href: "/quiz", match: (p) => p.startsWith("/quiz") },
+];
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, sessionStatus, logout } = useAuthStore();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
+  const signedIn = isAuthenticated && user !== null;
+  // Until a stored session is confirmed (or while the server can't confirm it), show neither the
+  // workspace nor "Sign in": no flicker on load, and no "Sign in" next to "you're still signed in".
+  const sessionPending = sessionStatus === "unknown" || sessionStatus === "checking" || sessionStatus === "unreachable";
+
+  const dashboardPath = user ? homePathFor(user.role) : "/dashboard";
+  const links: NavItem[] = [HOME_LINK];
+  if (signedIn) {
+    links.push({ label: "Dashboard", href: dashboardPath, match: (p) => p.startsWith("/dashboard") }, ...WORKSPACE_LINKS);
+    if (user.role === "student") {
+      links.push({ label: "Roadmap", href: "/onboarding/roadmap", match: (p) => p === "/onboarding/roadmap" });
+    }
+  }
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   const handleLogout = async () => {
+    setMenuOpen(false);
     await logout();
-    setMobileMenuOpen(false);
-    router.push("/");
-  };
-
-  const getDashboardPath = () => {
-    if (!user) return "/dashboard";
-    return user.role === "teacher" ? "/dashboard/teacher" : "/dashboard";
+    // A full page load: it drops every cached workspace page and the in-memory tutor conversation,
+    // so nothing from this session survives for the next person on a shared computer.
+    window.location.replace("/");
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-extrabold text-base tracking-tight text-white group-hover:text-indigo-400 transition-colors">
-              LuminaLearn <span className="text-indigo-400 font-light">AI</span>
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono -mt-1 tracking-wider uppercase">
-              Adaptive Ecosystem
-            </span>
-          </div>
+    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-space-950/70 backdrop-blur-2xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="group flex items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" aria-label="LuminaLearn AI home">
+          <BrandMark className="h-9 w-9 transition-transform duration-500 group-hover:rotate-[8deg]" />
+          <span className="text-[15px] font-semibold tracking-tight text-white">
+            LuminaLearn <span className="font-display text-[17px] italic text-indigo-300">AI</span>
+          </span>
         </Link>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-300">
-          <Link
-            href="/"
-            className={`hover:text-white transition-colors ${
-              pathname === "/" ? "text-indigo-400 font-semibold" : ""
-            }`}
-          >
-            Home
-          </Link>
-          <Link
-            href="/subjects"
-            className={`flex items-center gap-1 hover:text-white transition-colors ${
-              pathname.startsWith("/subjects") || pathname.startsWith("/courses") || pathname.startsWith("/topics") || pathname.startsWith("/lessons")
-                ? "text-indigo-400 font-semibold"
-                : ""
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Subjects
-          </Link>
-          <Link
-            href="/#features"
-            className="hover:text-white transition-colors"
-          >
-            Features
-          </Link>
-          <Link
-            href="/#about"
-            className="hover:text-white transition-colors"
-          >
-            About AI
-          </Link>
-
-          {isAuthenticated && user && (
-            <>
+        <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          {links.map((link) => {
+            const active = link.match(pathname);
+            return (
               <Link
-                href={getDashboardPath()}
-                className={`flex items-center gap-1.5 hover:text-white transition-colors ${
-                  pathname.startsWith("/dashboard") ? "text-indigo-400 font-semibold" : ""
-                }`}
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative rounded-xl px-3.5 py-2 text-[13px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-indigo-300",
+                  active ? "text-white" : "text-slate-400 hover:text-white"
+                )}
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Dashboard
+                {active && (
+                  <motion.span
+                    layoutId="nav-active-pill"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-xl bg-white/[0.07] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <span className="relative">{link.label}</span>
               </Link>
-
-              {user.role === "student" && (
-                <>
-                  <Link
-                    href="/onboarding/roadmap"
-                    className={`flex items-center gap-1 hover:text-white transition-colors ${
-                      pathname === "/onboarding/roadmap" ? "text-indigo-400 font-semibold" : ""
-                    }`}
-                  >
-                    <Compass className="w-3.5 h-3.5" />
-                    Learning
-                  </Link>
-                  <span className="flex items-center gap-1 opacity-60 cursor-not-allowed text-slate-400" title="AI Socratic Tutor — Coming Soon in Phase 3">
-                    <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
-                    AI Tutor
-                    <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                      Soon
-                    </span>
-                  </span>
-                  <span className="flex items-center gap-1 opacity-60 cursor-not-allowed text-slate-400" title="Progress Analytics — Coming Soon">
-                    <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
-                    Progress
-                    <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      Soon
-                    </span>
-                  </span>
-                  <Link
-                    href="/onboarding/profile"
-                    className={`flex items-center gap-1 hover:text-white transition-colors ${
-                      pathname === "/onboarding/profile" ? "text-indigo-400 font-semibold" : ""
-                    }`}
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    Profile
-                  </Link>
-                </>
-              )}
-            </>
-          )}
+            );
+          })}
         </nav>
 
-        {/* Auth CTA Actions (Desktop) */}
-        <div className="hidden md:flex items-center gap-3">
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              {/* User Badge */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800">
-                <div className="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xs font-bold">
-                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : <User className="w-3 h-3" />}
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-semibold text-slate-200 leading-none">
-                    {user.full_name}
-                  </span>
-                  <span className="text-[10px] text-indigo-400 capitalize leading-tight">
-                    {user.role}
-                  </span>
-                </div>
-              </div>
-
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 hover:bg-rose-500/10 transition-colors"
-                title="Sign Out"
+        <div className="hidden items-center gap-2 md:flex">
+          {sessionPending ? (
+            <span className="h-9 w-40 animate-pulse rounded-full bg-white/[0.04]" aria-hidden="true" />
+          ) : signedIn ? (
+            <>
+              <Link
+                href={user.role === "student" ? "/onboarding/profile" : dashboardPath}
+                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] py-1 pl-1 pr-3 text-left outline-none transition-colors hover:border-white/20 focus-visible:ring-2 focus-visible:ring-indigo-300"
               >
-                <LogOut className="w-4 h-4" />
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7C3AED,#0891B2)] text-xs font-semibold text-white">
+                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : <User className="h-3.5 w-3.5" aria-hidden="true" />}
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="max-w-[9rem] truncate text-xs font-semibold text-slate-100">{user.full_name}</span>
+                  <span className="text-[11px] capitalize text-slate-400">{user.role}</span>
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Sign out"
+                title="Sign out"
+                className="rounded-xl border border-white/[0.08] p-2 text-slate-400 outline-none transition-colors hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 focus-visible:ring-2 focus-visible:ring-rose-300"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
               </button>
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-2">
+            <>
               <Link
                 href="/login"
-                className="px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+                className="rounded-xl px-3.5 py-2 text-[13px] font-medium text-slate-300 outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
               >
-                Sign In
+                Sign in
               </Link>
               <Link
                 href="/register/student"
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all flex items-center gap-1.5"
+                className="rounded-xl bg-white px-3.5 py-2 text-[13px] font-semibold text-space-950 outline-none transition-transform hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-space-950"
               >
-                <GraduationCap className="w-3.5 h-3.5" />
-                Student Join
+                Create account
               </Link>
-              <Link
-                href="/register/teacher"
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center gap-1.5"
-              >
-                <School className="w-3.5 h-3.5" />
-                Teacher Portal
-              </Link>
-            </div>
+            </>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
         <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white border border-slate-800"
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-controls={menuId}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          className="rounded-xl border border-white/[0.08] p-2 text-slate-300 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300 md:hidden"
         >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
         </button>
       </div>
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
-          <nav className="flex flex-col gap-2 text-sm font-medium text-slate-300">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 hover:text-white"
-            >
-              Home
-            </Link>
-            <Link
-              href="/subjects"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 hover:text-white flex items-center gap-2"
-            >
-              <BookOpen className="w-4 h-4 text-indigo-400" />
-              Academic Subjects
-            </Link>
-            <Link
-              href="/#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 hover:text-white"
-            >
-              Features
-            </Link>
-            <Link
-              href="/#about"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 hover:text-white"
-            >
-              About AI
-            </Link>
-
-            {isAuthenticated && user && (
-              <>
-                <Link
-                  href={getDashboardPath()}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-2 text-indigo-400 font-semibold flex items-center gap-2"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
-                </Link>
-                {user.role === "student" && (
-                  <>
-                    <Link
-                      href="/onboarding/roadmap"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="py-2 hover:text-white flex items-center gap-2"
-                    >
-                      <Compass className="w-4 h-4" />
-                      Learning Roadmap
+      <AnimatePresence initial={false}>
+        {menuOpen && (
+          <motion.div
+            id={menuId}
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            className="overflow-hidden border-t border-white/[0.06] bg-space-950/95 backdrop-blur-2xl md:hidden"
+          >
+            <nav aria-label="Mobile" className="flex flex-col gap-1 px-4 pb-5 pt-3">
+              {links.map((link) => {
+                const active = link.match(pathname);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "rounded-xl px-3 py-2.5 text-[15px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-indigo-300",
+                      active ? "bg-white/[0.07] text-white" : "text-slate-300 hover:text-white"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+              <div className="mt-3 border-t border-white/[0.06] pt-4">
+                {signedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-400/20 bg-rose-500/10 py-2.5 text-sm font-semibold text-rose-300"
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Sign out of {user.full_name?.split(" ")[0] || "your account"}
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link href="/login" className="rounded-xl border border-white/10 py-2.5 text-center text-sm font-semibold text-white">
+                      Sign in
                     </Link>
-                    <span className="py-2 opacity-60 flex items-center justify-between text-slate-400">
-                      <span className="flex items-center gap-2">
-                        <BrainCircuit className="w-4 h-4 text-indigo-400" />
-                        AI Tutor
-                      </span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Soon</span>
-                    </span>
-                    <span className="py-2 opacity-60 flex items-center justify-between text-slate-400">
-                      <span className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-purple-400" />
-                        Progress
-                      </span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">Soon</span>
-                    </span>
-                    <Link
-                      href="/onboarding/profile"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="py-2 hover:text-white flex items-center gap-2"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Learner Profile
+                    <Link href="/register/student" className="rounded-xl bg-white py-2.5 text-center text-sm font-semibold text-space-950">
+                      Create account
                     </Link>
-                  </>
+                  </div>
                 )}
-              </>
-            )}
-          </nav>
-
-          <div className="pt-3 border-t border-slate-800">
-            {isAuthenticated && user ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900">
-                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                    {user.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-white">{user.full_name}</div>
-                    <div className="text-xs text-indigo-400 capitalize">{user.role}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full py-2.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center justify-center gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2 text-center text-xs font-semibold bg-slate-900 border border-slate-800 text-white rounded-lg"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register/student"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2 text-center text-xs font-semibold bg-indigo-600 text-white rounded-lg shadow-md shadow-indigo-600/30"
-                >
-                  Register Student
-                </Link>
-                <Link
-                  href="/register/teacher"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2 text-center text-xs font-semibold bg-purple-600 text-white rounded-lg"
-                >
-                  Register Teacher
+                <Link href="/register/teacher" className="mt-3 block text-center text-xs text-slate-400 underline-offset-4 hover:text-slate-200 hover:underline">
+                  For teachers
                 </Link>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

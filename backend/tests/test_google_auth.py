@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 from httpx import AsyncClient
 
@@ -55,7 +56,7 @@ async def test_google_login_existing_unverified_user(async_client: AsyncClient):
 
     # Create unverified user directly in DB
     async with async_session_factory() as session:
-        user = await user_repository.create(
+        await user_repository.create(
             session,
             email=unique_email,
             password_hash=get_password_hash("InitialPassword123!"),

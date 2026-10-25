@@ -27,7 +27,6 @@ class BaseEmailProvider(ABC):
         text_content: str,
     ) -> bool:
         """Asynchronously send an email."""
-        pass
 
 
 class SMTPEmailProvider(BaseEmailProvider):
@@ -52,15 +51,25 @@ class SMTPEmailProvider(BaseEmailProvider):
         from_name = settings.EMAILS_FROM_NAME or "LuminaLearn AI"
 
         if not host or not user or not password:
-            logger.warning(
-                "SMTP credentials not fully configured (host=%s, user=%s). Email not dispatched.",
-                bool(host),
-                bool(user),
-            )
-            print("\n" + "=" * 64)
-            print(f"📧 [DEV EMAIL CONSOLE] To: {to_email}")
-            print(f"   Subject: {subject}")
-            print("=" * 64 + "\n", flush=True)
+            if settings.ENVIRONMENT == "development":
+                logger.warning(
+                    "SMTP credentials not fully configured (host=%s, user=%s). Dispatching to dev console.",
+                    bool(host),
+                    bool(user),
+                )
+                print("\n" + "=" * 64)
+                print(f"📧 [DEV EMAIL CONSOLE] To: {to_email}")
+                print(f"   Subject: {subject}")
+                for line in text_content.strip().split("\n"):
+                    if "code:" in line.lower() or "valid for" in line.lower():
+                        print(f"   {line.strip()}")
+                print("=" * 64 + "\n", flush=True)
+            else:
+                logger.error(
+                    "SMTP credentials not configured in %s environment. Refusing to print OTP to stdout. Email to %s dropped.",
+                    settings.ENVIRONMENT,
+                    to_email,
+                )
             return False
 
         message = MIMEMultipart("alternative")
@@ -86,7 +95,8 @@ class SMTPEmailProvider(BaseEmailProvider):
                     server.sendmail(from_email, [to_email], message.as_string())
             logger.info("Email successfully dispatched to %s via SMTP (%s)", to_email, host)
             return True
-        except Exception as exc:
+        except (smtplib.SMTPException, OSError) as exc:
+            # OSError covers DNS, socket, TLS and timeout failures.
             logger.error("Failed to send email to %s: %s", to_email, str(exc))
             return False
 

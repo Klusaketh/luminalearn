@@ -1,4 +1,5 @@
 import uuid
+from typing import ClassVar
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -110,7 +111,7 @@ DIAGNOSTIC_QUESTIONS: list[dict] = [
 class OnboardingService:
     """Service managing student onboarding and rule-based diagnostic profile evaluation."""
 
-    CANONICAL_SUBJECT_MAP: dict[str, str] = {
+    CANONICAL_SUBJECT_MAP: ClassVar[dict[str, str]] = {
         "Data Structures": "Data Structures & Algorithms",
         "Algorithms": "Data Structures & Algorithms",
         "Data Structures & Algorithms": "Data Structures & Algorithms",

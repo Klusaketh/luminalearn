@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "../../components/auth/ProtectedRoute";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -60,26 +61,31 @@ export default function OnboardingPage() {
   // Result Profile & Roadmap State
   const [roadmapResult, setRoadmapResult] = useState<PersonalizedRoadmap | null>(null);
 
-  // Fetch Diagnostic Questions when entering Step 5
-  useEffect(() => {
-    if (currentStep === 5 && questions.length === 0) {
-      fetchQuestions();
-    }
-  }, [currentStep]);
-
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     setIsLoadingQuestions(true);
     setErrorMessage(null);
     try {
       const qData = await onboardingService.getDiagnosticQuestions();
       setQuestions(qData);
       setQuestionStartTime(Date.now());
-    } catch (err: any) {
+    } catch {
       setErrorMessage("Failed to load diagnostic questions. Please try again.");
     } finally {
       setIsLoadingQuestions(false);
     }
-  };
+  }, []);
+
+  // Fetch Diagnostic Questions when entering Step 5
+  useEffect(() => {
+    if (currentStep === 5 && questions.length === 0) {
+      fetchQuestions();
+    }
+  }, [currentStep, questions.length, fetchQuestions]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void fetchQuestions();
+  });
 
   // Option Toggles
   const toggleGoal = (goal: string) => {
@@ -186,10 +192,8 @@ export default function OnboardingPage() {
 
   return (
     <ProtectedRoute allowedRoles={["student", "admin"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between px-4 py-8 relative overflow-hidden font-sans">
+      <div className="flex-1 text-slate-100 flex flex-col justify-between px-4 py-8 relative overflow-hidden font-sans">
         {/* Ambient Glow Effects */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 blur-[160px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600/10 blur-[130px] rounded-full pointer-events-none" />
 
         {/* Top Wizard Navigation Header */}
         <header className="max-w-4xl w-full mx-auto flex items-center justify-between z-10 mb-6">
@@ -235,12 +239,12 @@ export default function OnboardingPage() {
           {/* ============================================================================== */}
           {currentStep === 1 && (
             <div className="text-center py-4 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 Adaptive Cognitive Personalization
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent leading-tight">
+              <h1 className="font-display leading-tight text-white text-4xl sm:text-5xl">
                 Welcome to Your Personal AI Learning Journey, {user?.full_name || "Learner"}!
               </h1>
 
@@ -287,7 +291,7 @@ export default function OnboardingPage() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div>
-                <span className="text-xs text-indigo-400 font-mono font-semibold uppercase tracking-wider block mb-1">Step 2 of 5</span>
+                <span className="text-xs text-indigo-400 font-mono font-semibold block mb-1">Step 2 of 5</span>
                 <h2 className="text-2xl font-bold text-white">What is your primary learning goal?</h2>
                 <p className="text-slate-400 text-xs mt-1">Select one or more goals to tailor your roadmap velocity.</p>
               </div>
@@ -344,7 +348,7 @@ export default function OnboardingPage() {
           {currentStep === 3 && (
             <div className="space-y-6">
               <div>
-                <span className="text-xs text-indigo-400 font-mono font-semibold uppercase tracking-wider block mb-1">Step 3 of 5</span>
+                <span className="text-xs text-indigo-400 font-mono font-semibold block mb-1">Step 3 of 5</span>
                 <h2 className="text-2xl font-bold text-white">What domains excite you most?</h2>
                 <p className="text-slate-400 text-xs mt-1">Select domains to prioritize interactive practice problems.</p>
               </div>
@@ -396,7 +400,7 @@ export default function OnboardingPage() {
           {currentStep === 4 && (
             <div className="space-y-6">
               <div>
-                <span className="text-xs text-indigo-400 font-mono font-semibold uppercase tracking-wider block mb-1">Step 4 of 5</span>
+                <span className="text-xs text-indigo-400 font-mono font-semibold block mb-1">Step 4 of 5</span>
                 <h2 className="text-2xl font-bold text-white">Choose subjects to learn first</h2>
                 <p className="text-slate-400 text-xs mt-1">Select subjects you want featured in your first roadmap module.</p>
               </div>
@@ -448,11 +452,11 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-indigo-400 font-mono font-semibold uppercase tracking-wider">
+                  <span className="text-xs text-indigo-400 font-mono font-semibold">
                     Diagnostic Quiz • Question {currentQuestionIdx + 1} of {questions.length || 10}
                   </span>
                   {questions[currentQuestionIdx] && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
                       questions[currentQuestionIdx].difficulty === "Easy"
                         ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : questions[currentQuestionIdx].difficulty === "Medium"
@@ -596,7 +600,7 @@ export default function OnboardingPage() {
             <div className="space-y-6 py-2">
               {/* Header Badge */}
               <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Onboarding & Assessment Complete
                 </div>
                 <h2 className="text-3xl font-extrabold text-white">Your Personalized Learning Profile</h2>
@@ -609,7 +613,7 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Diagnostic Score Gauge */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-center flex flex-col items-center justify-center">
-                  <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider mb-1">Diagnostic Score</span>
+                  <span className="text-[11px] text-slate-400 font-mono mb-1">Diagnostic Score</span>
                   <div className="text-3xl font-black text-indigo-400 font-mono">
                     {roadmapResult.profile.assessment_score}%
                   </div>
@@ -618,7 +622,7 @@ export default function OnboardingPage() {
 
                 {/* Recommended Study Pace */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-center flex flex-col items-center justify-center">
-                  <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider mb-1">Target Study Pace</span>
+                  <span className="text-[11px] text-slate-400 font-mono mb-1">Target Study Pace</span>
                   <div className="text-3xl font-black text-purple-400 font-mono flex items-baseline gap-1">
                     {roadmapResult.weekly_goal_hours} <span className="text-xs text-slate-400 font-sans font-normal">hrs/wk</span>
                   </div>
@@ -627,7 +631,7 @@ export default function OnboardingPage() {
 
                 {/* Starting Course Focus */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-center flex flex-col items-center justify-center">
-                  <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider mb-1">Suggested Starting Focus</span>
+                  <span className="text-[11px] text-slate-400 font-mono mb-1">Suggested Starting Focus</span>
                   <div className="text-xs font-bold text-emerald-400 line-clamp-2 px-1">
                     {roadmapResult.starting_module}
                   </div>
@@ -685,7 +689,7 @@ export default function OnboardingPage() {
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-white">{mod.title}</h4>
                           {mod.is_key_focus && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white uppercase tracking-wider">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white">
                               Starting Focus
                             </span>
                           )}

@@ -1,3 +1,6 @@
+import asyncio
+import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,13 +9,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.port_guard import serving_port, warn_if_port_shadowed
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager to handle startup and shutdown events."""
     await init_db()
+    # Under pytest there is no listening socket to check.
+    shadow_check = None if "pytest" in sys.modules else asyncio.create_task(warn_if_port_shadowed(serving_port()))
     yield
+    if shadow_check is not None:
+        shadow_check.cancel()
 
 
 def create_application() -> FastAPI:

@@ -16,12 +16,41 @@ class LessonSummary(BaseModel):
     lesson_type: str
 
 
+class LessonNavLink(BaseModel):
+    """A neighbouring lesson in syllabus order."""
+
+    lesson_id: uuid.UUID
+    lesson_title: str
+    topic_id: uuid.UUID
+    topic_title: str
+    module_title: str
+
+
+class ModuleTopicLink(BaseModel):
+    """A topic in the current lesson's module, for the reader's sidebar."""
+
+    topic_id: uuid.UUID
+    title: str
+    lesson_id: uuid.UUID | None = None
+    is_current: bool = False
+
+
+class LessonNavigation(BaseModel):
+    previous: LessonNavLink | None = None
+    next: LessonNavLink | None = None
+    position: int
+    total: int
+    module_topics: list[ModuleTopicLink] = []
+
+
 class LessonDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
     topic_id: uuid.UUID
     topic_title: str | None = None
+    topic_summary: str | None = None
+    topic_difficulty: str | None = None
     module_id: uuid.UUID | None = None
     module_title: str | None = None
     course_id: uuid.UUID | None = None
@@ -37,6 +66,23 @@ class LessonDetail(BaseModel):
     estimated_minutes: int
     display_order: int
     lesson_type: str
+    navigation: LessonNavigation | None = None
+
+
+class TopicNavLink(BaseModel):
+    """A neighbouring topic in syllabus order, with its first lesson when it has one."""
+
+    topic_id: uuid.UUID
+    title: str
+    module_title: str
+    lesson_id: uuid.UUID | None = None
+
+
+class TopicNavigation(BaseModel):
+    previous: TopicNavLink | None = None
+    next: TopicNavLink | None = None
+    position: int
+    total: int
 
 
 class TopicSummary(BaseModel):
@@ -71,6 +117,7 @@ class TopicDetail(BaseModel):
     difficulty: str
     display_order: int
     lessons: list[LessonSummary] = []
+    navigation: TopicNavigation | None = None
 
 
 class ModuleSummary(BaseModel):
@@ -143,6 +190,11 @@ class SubjectSummary(BaseModel):
     difficulty_level: str
     display_order: int
     course_count: int = 0
+    module_count: int = 0
+    topic_count: int = 0
+    lesson_count: int = 0
+    # Lets the catalog search topics as well as subject names.
+    topic_titles: list[str] = []
 
 
 class SubjectDetail(BaseModel):
@@ -160,6 +212,64 @@ class SubjectDetail(BaseModel):
     difficulty_level: str
     display_order: int
     courses: list[CourseSummary] = []
+
+
+class SyllabusLesson(BaseModel):
+    id: uuid.UUID
+    title: str
+    slug: str
+    estimated_minutes: int
+
+
+class SyllabusTopic(BaseModel):
+    id: uuid.UUID
+    title: str
+    slug: str
+    summary: str | None = None
+    difficulty: str
+    estimated_minutes: int
+    display_order: int
+    lessons: list[SyllabusLesson] = []
+
+
+class SyllabusModule(BaseModel):
+    id: uuid.UUID
+    title: str
+    slug: str
+    description: str | None = None
+    estimated_minutes: int
+    display_order: int
+    topics: list[SyllabusTopic] = []
+
+
+class SyllabusCourse(BaseModel):
+    id: uuid.UUID
+    title: str
+    slug: str
+    description: str | None = None
+    difficulty: str
+    estimated_hours: int
+    display_order: int
+    modules: list[SyllabusModule] = []
+
+
+class SubjectSyllabus(BaseModel):
+    """A subject with its whole course -> module -> topic -> lesson tree (lesson bodies excluded)."""
+
+    id: uuid.UUID
+    name: str
+    slug: str
+    category_name: str | None = None
+    category_slug: str | None = None
+    short_description: str | None = None
+    description: str | None = None
+    icon_key: str | None = None
+    difficulty_level: str
+    module_count: int = 0
+    topic_count: int = 0
+    lesson_count: int = 0
+    estimated_hours: int = 0
+    courses: list[SyllabusCourse] = []
 
 
 class ContentCategorySummary(BaseModel):

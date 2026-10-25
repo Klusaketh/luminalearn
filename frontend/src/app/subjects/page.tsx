@@ -1,328 +1,258 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  contentService,
-  ContentCategorySummary,
-  SubjectSummary,
-} from "@/services/contentService";
-import {
-  Sparkles,
-  Search,
-  BookOpen,
-  ArrowRight,
-  Layers,
-  GraduationCap,
-  Code2,
-  Database,
-  Cpu,
-  Network,
-  Binary,
-  Server,
-  Terminal,
-  Code,
-  Coffee,
-  FileCode,
-  Brain,
-  Wand2,
-  MessageSquare,
-  Eye,
-  Sigma,
-  Dice5,
-  BarChart3,
-  Grid3X3,
-  Calculator,
-  AlertCircle,
-  RefreshCw,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, RefreshCw, Search, X } from "lucide-react";
+import { useOnReconnect } from "@/hooks/useOnReconnect";
+import { contentService, type ContentCategorySummary, type SubjectSummary } from "@/services/contentService";
+import { DifficultyBadge, SubjectIcon } from "@/components/subjects/SubjectIcon";
 
-// Icon resolution helper for dynamic icon_key
-function getSubjectIcon(iconKey: string | null) {
-  const className = "w-6 h-6";
-  switch (iconKey) {
-    case "code-2":
-      return <Code2 className={className} />;
-    case "cpu":
-      return <Cpu className={className} />;
-    case "database":
-      return <Database className={className} />;
-    case "network":
-      return <Network className={className} />;
-    case "binary":
-      return <Binary className={className} />;
-    case "server":
-      return <Server className={className} />;
-    case "terminal":
-      return <Terminal className={className} />;
-    case "code":
-      return <Code className={className} />;
-    case "coffee":
-      return <Coffee className={className} />;
-    case "file-code":
-      return <FileCode className={className} />;
-    case "brain":
-      return <Brain className={className} />;
-    case "sparkles":
-      return <Sparkles className={className} />;
-    case "wand-2":
-      return <Wand2 className={className} />;
-    case "message-square":
-      return <MessageSquare className={className} />;
-    case "eye":
-      return <Eye className={className} />;
-    case "sigma":
-      return <Sigma className={className} />;
-    case "dice-5":
-      return <Dice5 className={className} />;
-    case "bar-chart":
-      return <BarChart3 className={className} />;
-    case "grid":
-      return <Grid3X3 className={className} />;
-    case "calculator":
-      return <Calculator className={className} />;
-    default:
-      return <BookOpen className={className} />;
-  }
+type SortKey = "syllabus" | "name" | "topics" | "difficulty";
+
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: "syllabus", label: "Catalog order" },
+  { key: "name", label: "Name (A to Z)" },
+  { key: "topics", label: "Most topics" },
+  { key: "difficulty", label: "Beginner first" },
+];
+const DIFFICULTY_RANK: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
+
+interface Match {
+  subject: SubjectSummary;
+  /** Topic titles that matched when the subject itself did not. */
+  topics: string[];
+}
+
+function matchSubject(subject: SubjectSummary, query: string): Match | null {
+  if (!query) return { subject, topics: [] };
+  const haystack = [subject.name, subject.short_description ?? "", subject.category_name ?? ""].join(" ").toLowerCase();
+  if (haystack.includes(query)) return { subject, topics: [] };
+  const topics = subject.topic_titles.filter((title) => title.toLowerCase().includes(query));
+  return topics.length > 0 ? { subject, topics } : null;
+}
+
+function SubjectCard({ match }: { match: Match }) {
+  const { subject, topics } = match;
+  return (
+    <Link
+      href={`/subjects/${subject.slug}`}
+      className="group flex h-full flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 outline-none transition-colors hover:border-indigo-300/35 hover:bg-white/[0.035] focus-visible:ring-2 focus-visible:ring-indigo-300"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-200 transition-colors group-hover:bg-indigo-500/15">
+          <SubjectIcon iconKey={subject.icon_key} />
+        </span>
+        <DifficultyBadge level={subject.difficulty_level} />
+      </div>
+      <p className="mt-5 text-xs font-medium text-slate-500">{subject.category_name}</p>
+      <h2 className="mt-1 text-xl font-semibold leading-snug text-white">{subject.name}</h2>
+      <p className="mt-2 line-clamp-3 text-[15px] leading-relaxed text-slate-400">{subject.short_description}</p>
+      {topics.length > 0 && (
+        <p className="mt-3 text-sm text-indigo-200">
+          Matches {topics.length === 1 ? "topic" : "topics"}: {topics.slice(0, 2).join(", ")}
+          {topics.length > 2 ? ` and ${topics.length - 2} more` : ""}
+        </p>
+      )}
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4 text-sm">
+        <span className="tabular text-slate-400">
+          {subject.module_count} modules · {subject.topic_count} topics · {subject.lesson_count} lessons
+        </span>
+        <span className="flex items-center gap-1 font-medium text-indigo-200 group-hover:text-white">
+          Explore <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+        </span>
+      </div>
+    </Link>
+  );
 }
 
 export default function SubjectsCatalogPage() {
   const [categories, setCategories] = useState<ContentCategorySummary[]>([]);
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("syllabus");
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadCatalog = async () => {
+  const loadCatalog = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const [cats, subs] = await Promise.all([
-        contentService.getCategories(),
-        contentService.getSubjects(),
-      ]);
+      const [cats, subs] = await Promise.all([contentService.getCategories(), contentService.getSubjects()]);
       setCategories(cats);
       setSubjects(subs);
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to load academic catalog.");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to load the academic catalog.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadCatalog();
   }, []);
 
-  // Filter subjects based on active category & search query
-  const filteredSubjects = subjects.filter((subject) => {
-    const matchesCategory =
-      selectedCategory === "all" || subject.category_slug === selectedCategory;
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      subject.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (subject.short_description &&
-        subject.short_description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
+
+  // After a server outage, reload by itself if this page is showing a load error.
+  useOnReconnect(() => {
+    if (errorMessage) void loadCatalog();
   });
 
+  const query = searchQuery.trim().toLowerCase();
+  const searched = useMemo(() => subjects.map((s) => matchSubject(s, query)).filter((m): m is Match => m !== null), [subjects, query]);
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of searched) counts[m.subject.category_slug ?? ""] = (counts[m.subject.category_slug ?? ""] ?? 0) + 1;
+    return counts;
+  }, [searched]);
+  const visible = useMemo(() => {
+    const filtered = searched.filter((m) => selectedCategory === "all" || m.subject.category_slug === selectedCategory);
+    const categoryOrder = new Map(categories.map((c) => [c.slug, c.display_order]));
+    const bySyllabus = (a: Match, b: Match) =>
+      (categoryOrder.get(a.subject.category_slug ?? "") ?? 0) - (categoryOrder.get(b.subject.category_slug ?? "") ?? 0) ||
+      a.subject.display_order - b.subject.display_order;
+    const comparators: Record<SortKey, (a: Match, b: Match) => number> = {
+      syllabus: bySyllabus,
+      name: (a, b) => a.subject.name.localeCompare(b.subject.name),
+      topics: (a, b) => b.subject.topic_count - a.subject.topic_count || bySyllabus(a, b),
+      difficulty: (a, b) =>
+        (DIFFICULTY_RANK[a.subject.difficulty_level.toLowerCase()] ?? 1) - (DIFFICULTY_RANK[b.subject.difficulty_level.toLowerCase()] ?? 1) ||
+        bySyllabus(a, b),
+    };
+    return [...filtered].sort(comparators[sort]);
+  }, [searched, selectedCategory, sort, categories]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+  };
+
+  const pill = (active: boolean) =>
+    `rounded-xl px-3.5 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-indigo-300 ${
+      active ? "bg-white text-space-950" : "border border-white/[0.08] text-slate-300 hover:border-white/20 hover:text-white"
+    }`;
+
   return (
-    <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative overflow-hidden">
-      {/* Ambient Glow */}
-      <div className="absolute top-1/6 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-indigo-600/10 blur-[160px] rounded-full pointer-events-none" />
-
-      {/* Catalog Header */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto relative z-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" />
-          Academic Knowledge Graph
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-          Explore Academic Subjects
-        </h1>
-        <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-          Browse our structured curriculum across Computer Science, Programming, Artificial Intelligence, and Mathematics. Built to power personalized Socratic learning.
+    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+      <header className="max-w-3xl">
+        <p className="text-sm font-medium text-indigo-300">Subjects</p>
+        <h1 className="mt-2 font-display text-4xl leading-tight text-white sm:text-6xl">The academic catalog</h1>
+        <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          Twenty-two subjects across computer science, programming, artificial intelligence, and mathematics. Each one is a full syllabus of lessons with theory, worked examples, and practice questions.
         </p>
-      </div>
+      </header>
 
-      {/* Loading State */}
       {isLoading && (
-        <div className="space-y-8 relative z-10 py-6">
-          <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800/80 flex flex-col items-center justify-center gap-4 text-center max-w-md mx-auto">
-            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 font-mono animate-pulse">
-              Retrieving dynamic academic catalog...
-            </p>
-          </div>
-
-          {/* Skeleton Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="p-6 rounded-2xl bg-slate-900/30 border border-slate-800/50 space-y-4 animate-pulse"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="w-12 h-12 rounded-xl bg-slate-800/60" />
-                  <div className="w-16 h-5 rounded-full bg-slate-800/60" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-5 w-3/4 bg-slate-800/60 rounded" />
-                  <div className="h-4 w-full bg-slate-800/40 rounded" />
-                  <div className="h-4 w-2/3 bg-slate-800/40 rounded" />
-                </div>
-                <div className="pt-4 border-t border-slate-800/40 flex justify-between">
-                  <div className="h-4 w-20 bg-slate-800/40 rounded" />
-                  <div className="h-4 w-12 bg-slate-800/40 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-live="polite">
+          <span className="sr-only">Loading the catalog</span>
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="h-64 animate-pulse rounded-2xl border border-white/[0.05] bg-white/[0.02]" />
+          ))}
         </div>
       )}
 
-      {/* Error State */}
       {!isLoading && errorMessage && (
-        <div className="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex flex-col sm:flex-row items-center justify-between gap-6 max-w-2xl mx-auto relative z-10 shadow-lg shadow-rose-950/20">
-          <div className="flex items-center gap-4 text-center sm:text-left">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
-              <AlertCircle className="w-5 h-5 text-rose-400" />
-            </div>
+        <div role="alert" className="mt-10 flex max-w-2xl flex-col items-start justify-between gap-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 p-6 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0 text-rose-300" aria-hidden="true" />
             <div>
-              <h3 className="font-semibold text-white">Unable to load the academic catalog</h3>
-              <p className="text-xs text-rose-300/80 mt-1">{errorMessage}</p>
+              <p className="font-semibold text-white">The catalog could not be loaded</p>
+              <p className="mt-0.5 text-sm text-rose-100/80">{errorMessage}</p>
             </div>
           </div>
           <button
-            onClick={loadCatalog}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-indigo-600/30 shrink-0"
+            type="button"
+            onClick={() => void loadCatalog()}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-space-950 outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
             Retry
           </button>
         </div>
       )}
 
-      {/* Loaded Content */}
       {!isLoading && !errorMessage && (
         <>
-          {/* Filter Controls Bar */}
-          <div className="space-y-4 relative z-10">
-            {/* Search Input */}
-            <div className="max-w-md mx-auto relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="mt-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-md">
+              <label htmlFor="subject-search-input" className="sr-only">
+                Search subjects and topics
+              </label>
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
               <input
-                type="text"
                 id="subject-search-input"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search subjects by name or keyword..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                placeholder="Search subjects or topics, e.g. paging, recursion, eigenvalues"
+                className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-10 pr-10 text-[15px] text-white placeholder:text-slate-500 outline-none transition-colors focus:border-indigo-300/50 focus:ring-2 focus:ring-indigo-300/30"
               />
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                  selectedCategory === "all"
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                    : "bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" />
-                All Categories ({subjects.length})
-              </button>
-              {categories.map((cat) => (
+              {searchQuery && (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                    selectedCategory === cat.slug
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                      : "bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-                  }`}
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-300"
                 >
-                  {cat.name} ({cat.subject_count})
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
-              ))}
+              )}
             </div>
+            <label className="flex items-center gap-2 text-sm text-slate-400">
+              Sort by
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="rounded-xl border border-white/10 bg-space-900 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-300/40"
+              >
+                {SORTS.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          {/* Empty State */}
-          {filteredSubjects.length === 0 && (
-            <div className="p-12 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-3 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-                <Search className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-white">No Subjects Found</h3>
-              <p className="text-xs text-slate-400">
-                No academic subjects matched &ldquo;{searchQuery}&rdquo;. Try another search term or switch categories.
-              </p>
+          <div role="group" aria-label="Filter by category" className="mt-4 flex flex-wrap gap-2">
+            <button type="button" aria-pressed={selectedCategory === "all"} onClick={() => setSelectedCategory("all")} className={pill(selectedCategory === "all")}>
+              All categories <span className="tabular opacity-70">({searched.length})</span>
+            </button>
+            {categories.map((cat) => (
               <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                }}
-                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors"
+                key={cat.id}
+                type="button"
+                aria-pressed={selectedCategory === cat.slug}
+                onClick={() => setSelectedCategory(cat.slug)}
+                className={pill(selectedCategory === cat.slug)}
               >
-                Clear Filters
+                {cat.name} <span className="tabular opacity-70">({categoryCounts[cat.slug] ?? 0})</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-6 text-sm text-slate-400" aria-live="polite">
+            Showing {visible.length} of {subjects.length} subjects
+            {query ? ` matching "${searchQuery.trim()}"` : ""}
+          </p>
+
+          {visible.length === 0 ? (
+            <div className="mt-6 max-w-lg rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8">
+              <p className="font-semibold text-white">No subject or topic matches that search</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                Try a broader term, check the spelling, or search for a topic name such as &ldquo;sorting&rdquo; or &ldquo;probability&rdquo;.
+              </p>
+              <button type="button" onClick={clearFilters} className="mt-4 rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white outline-none hover:border-white/30 focus-visible:ring-2 focus-visible:ring-indigo-300">
+                Clear search and filters
               </button>
             </div>
-          )}
-
-          {/* Subject Cards Grid */}
-          {filteredSubjects.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-              {filteredSubjects.map((subject) => (
-                <Link
-                  key={subject.id}
-                  href={`/subjects/${subject.slug}`}
-                  className="group p-6 rounded-2xl bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between shadow-lg hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-0.5"
-                >
-                  <div className="space-y-4">
-                    {/* Top Header */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-indigo-600/20 transition-all">
-                        {getSubjectIcon(subject.icon_key)}
-                      </div>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-                          {subject.category_name || "Academic"}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 capitalize">
-                          {subject.difficulty_level}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Subject Details */}
-                    <div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors">
-                        {subject.name}
-                      </h3>
-                      <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
-                        {subject.short_description || "Comprehensive academic syllabus and learning modules."}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card Footer */}
-                  <div className="pt-4 mt-6 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                    <span className="flex items-center gap-1.5 font-mono">
-                      <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-                      {subject.course_count} {subject.course_count === 1 ? "Course" : "Courses"}
-                    </span>
-                    <span className="text-indigo-400 flex items-center gap-1 font-semibold group-hover:translate-x-0.5 transition-transform">
-                      Explore
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </Link>
+          ) : (
+            <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {visible.map((match) => (
+                <li key={match.subject.id}>
+                  <SubjectCard match={match} />
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </>
       )}

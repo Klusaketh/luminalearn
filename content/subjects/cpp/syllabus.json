@@ -1,0 +1,207 @@
+{
+  "category_slug": "programming",
+  "name": "C++",
+  "slug": "cpp",
+  "short_description": "Modern C++ with OOP, templates, RAII, STL containers, and move semantics.",
+  "description": "Comprehensive C++ curriculum focusing on object-oriented programming, standard template library (STL), memory management, and modern C++ features.",
+  "icon_key": "code",
+  "difficulty_level": "Intermediate",
+  "display_order": 9,
+  "courses": [
+    {
+      "title": "C++ Programming",
+      "slug": "cpp-programming",
+      "description": "Modern C++ from procedural core to templates, STL, and object-oriented abstractions.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 10,
+      "modules": [
+        {
+          "title": "Fundamentals",
+          "slug": "cpp-fundamentals",
+          "description": "C++ streams, namespaces, auto typing, and modern enhancements.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "C++ Modern Syntax & Streams",
+              "slug": "cpp-syntax-and-streams",
+              "summary": "iostream, namespaces, references, and type inference.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Functions",
+          "slug": "cpp-functions",
+          "description": "Function overloading, default arguments, inline functions, and pass by reference.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Overloading & Pass-By-Reference",
+              "slug": "cpp-overloading-references",
+              "summary": "Const references, function name mangling, and inline execution.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Arrays & Strings",
+          "slug": "cpp-arrays-and-strings",
+          "description": "std::vector, std::array, and std::string modern wrappers.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Standard Containers (vector & string)",
+              "slug": "cpp-vector-and-string",
+              "summary": "Dynamic array growth, capacity vs size, and string methods.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Pointers & References",
+          "slug": "cpp-pointers-and-references",
+          "description": "Lvalue/rvalue references, smart pointers (unique_ptr, shared_ptr), and RAII.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Smart Pointers & RAII Paradigm",
+              "slug": "cpp-smart-pointers-raii",
+              "summary": "std::unique_ptr, std::shared_ptr, and automatic destructor cleanup.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Classes & Objects",
+          "slug": "cpp-classes-and-objects",
+          "description": "Constructors, destructors, rule of three/five, and access specifiers.",
+          "estimated_minutes": 145,
+          "topics": [
+            {
+              "title": "Class Encapsulation & Constructors",
+              "slug": "cpp-class-encapsulation",
+              "summary": "Initialization lists, copy constructors, and operator overloading.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Copy Control, Move Semantics & the Rule of Five",
+              "slug": "cpp-rule-of-five",
+              "summary": "Destructors, copy and move operations, and when to write them.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            },
+            {
+              "title": "Operator Overloading",
+              "slug": "cpp-operator-overloading",
+              "summary": "Giving user-defined types natural syntax for arithmetic, comparison, and streaming.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Inheritance",
+          "slug": "cpp-inheritance",
+          "description": "Public/protected/private inheritance, constructor chaining, and multiple inheritance.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Inheritance Models & Base Classes",
+              "slug": "cpp-inheritance-models",
+              "summary": "Base-derived class relationships and diamond problem resolution.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Polymorphism",
+          "slug": "cpp-polymorphism",
+          "description": "Virtual functions, vtable mechanics, abstract classes, and pure virtual interfaces.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Virtual Functions & VTable Dispatch",
+              "slug": "cpp-virtual-functions-vtable",
+              "summary": "Runtime dynamic dispatch and abstract interfaces.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Templates",
+          "slug": "cpp-templates",
+          "description": "Function and class templates, type traits, and compile-time specialization.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Generic Programming with Templates",
+              "slug": "cpp-generic-templates",
+              "summary": "Template instantiation, template parameters, and generic algorithms.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "STL",
+          "slug": "cpp-stl",
+          "description": "Standard Template Library containers, iterators, and <algorithm> utilities.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "STL Containers & Iterators",
+              "slug": "cpp-stl-containers-iterators",
+              "summary": "Map, set, unordered_map, priority_queue, and std::sort.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "STL Algorithms & Lambda Expressions",
+              "slug": "cpp-stl-algorithms-lambdas",
+              "summary": "sort, find_if, transform, accumulate, and lambdas with captures.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Exception Handling",
+          "slug": "cpp-exceptions",
+          "description": "Reporting and recovering from errors without leaking resources.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Exceptions & Exception Safety",
+              "slug": "cpp-exceptions-safety",
+              "summary": "throw, try, catch, standard exceptions, and the basic and strong guarantees.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "File Handling",
+          "slug": "cpp-file-handling",
+          "description": "fstream, ifstream, and ofstream stream operations.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Modern File Streams",
+              "slug": "cpp-file-streams",
+              "summary": "RAII file opening, formatted text reading, and binary streams.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

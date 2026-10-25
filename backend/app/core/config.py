@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     # FastAPI Server
-    BACKEND_HOST: str = Field(default="0.0.0.0")
-    BACKEND_PORT: int = Field(default=8000)
+    BACKEND_HOST: str = Field(default="127.0.0.1")
+    BACKEND_PORT: int = Field(default=8001)  # 8000 is often taken (Splunk, other dev servers)
     BACKEND_CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://127.0.0.1:3000"]
     )
@@ -65,6 +65,30 @@ class Settings(BaseSettings):
     # Google OAuth2 Identity Settings
     GOOGLE_CLIENT_ID: str | None = Field(default=None)
     GOOGLE_CLIENT_SECRET: str | None = Field(default=None)
+
+    # AI Engine Configuration (Google Gemini)
+    # Gemini 1.5 models were retired by Google; the gateway walks GEMINI_MODEL_FLASH
+    # followed by GEMINI_FALLBACK_MODELS and skips any model that is gone or overloaded.
+    GEMINI_API_KEY: str | None = Field(default=None)
+    GEMINI_MODEL_PRO: str = Field(default="gemini-pro-latest")
+    GEMINI_MODEL_FLASH: str = Field(default="gemini-3.5-flash")
+    GEMINI_FALLBACK_MODELS: list[str] = Field(
+        default=["gemini-3-flash-preview", "gemini-flash-lite-latest", "gemini-flash-latest"]
+    )
+    GEMINI_TTS_MODELS: list[str] = Field(
+        default=["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts", "gemini-2.5-flash-preview-tts"]
+    )
+    GEMINI_TTS_VOICE: str = Field(default="Kore")
+    GEMINI_TEMPERATURE: float = Field(default=0.2)
+    GEMINI_MAX_TOKENS: int = Field(default=2048)
+    GEMINI_REQUEST_TIMEOUT_SECONDS: float = Field(default=20.0)
+    TUTOR_TEMPERATURE: float = Field(default=0.6)
+    # Forces every AI feature onto its deterministic engine (used by the test suite).
+    LLM_OFFLINE_MODE: bool = Field(default=False)
+
+    # Socratic Tutor & Voice abuse protection (turns per learner per rolling window)
+    TUTOR_RATE_LIMIT_WINDOW_SECONDS: int = Field(default=600)
+    TUTOR_RATE_LIMIT_AUTHENTICATED: int = Field(default=200)
 
     @property
     def REDIS_URI(self) -> str:

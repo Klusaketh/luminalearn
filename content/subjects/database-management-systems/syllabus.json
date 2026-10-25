@@ -1,0 +1,236 @@
+{
+  "category_slug": "computer-science",
+  "name": "Database Management Systems",
+  "slug": "database-management-systems",
+  "short_description": "Relational algebra, SQL, normalization, transactions, concurrency, and indexing.",
+  "description": "Comprehensive study of relational database models, entity-relationship modeling, formal relational algebra, SQL DDL/DML, normalization forms, transaction ACID properties, and B+ tree storage indexing.",
+  "icon_key": "database",
+  "difficulty_level": "Intermediate",
+  "display_order": 3,
+  "courses": [
+    {
+      "title": "Database Management Systems Fundamentals",
+      "slug": "dbms-fundamentals",
+      "description": "Foundations of relational database design, query optimization, ACID transactions, and index structures.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 14,
+      "modules": [
+        {
+          "title": "Database Fundamentals",
+          "slug": "dbms-fundamentals-module",
+          "description": "File systems limitations, data abstraction levels, and ANSI/SPARC 3-tier architecture.",
+          "estimated_minutes": 60,
+          "topics": [
+            {
+              "title": "File Systems vs DBMS",
+              "slug": "file-systems-vs-dbms",
+              "summary": "Data redundancy, inconsistency, and declarative querying advantages.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            },
+            {
+              "title": "3-Schema Architecture",
+              "slug": "three-schema-architecture",
+              "summary": "Physical, logical, and external schema separation for data independence.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Relational Model",
+          "slug": "dbms-relational-model",
+          "description": "Mathematical relations, tuples, domain constraints, and relational algebra.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Relational Model & Tuple Algebra",
+              "slug": "relational-model-tuple-algebra",
+              "summary": "Relations as tables, attribute domains, and selection/projection operators.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "ER Model",
+          "slug": "dbms-er-model",
+          "description": "Entity-Relationship modeling, cardinalities, weak entity sets, and ER-to-relational mapping.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Entity Sets & Cardinality Ratios",
+              "slug": "entity-sets-cardinalities",
+              "summary": "1:1, 1:N, M:N relationship constraints and Crow's foot notation.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "ER-to-Relational Mapping",
+              "slug": "er-to-relational-mapping",
+              "summary": "Turning entities, relationships, weak entities, and multivalued attributes into tables.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Keys & Constraints",
+          "slug": "dbms-keys-and-constraints",
+          "description": "Candidate keys, primary keys, foreign keys, and referential integrity constraints.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Key Types & Integrity Constraints",
+              "slug": "key-types-and-constraints",
+              "summary": "Superkeys, minimal keys, cascading foreign key delete/update actions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "SQL",
+          "slug": "dbms-sql",
+          "description": "Structured Query Language, DDL, DML, aggregate expressions, and subqueries.",
+          "estimated_minutes": 115,
+          "topics": [
+            {
+              "title": "Declarative SQL Queries & Filtering",
+              "slug": "declarative-sql-queries",
+              "summary": "SELECT, WHERE, GROUP BY, HAVING, and aggregate functions.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 60
+            },
+            {
+              "title": "Subqueries, Views & Aggregation",
+              "slug": "subqueries-views-aggregation",
+              "summary": "Nested and correlated subqueries, GROUP BY with HAVING, views, and set operations.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Joins",
+          "slug": "dbms-joins",
+          "description": "Relational join algorithms, inner joins, outer joins, and cartesian products.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Inner, Outer & Self Joins",
+              "slug": "inner-outer-self-joins",
+              "summary": "Equi-joins, left/right outer joins, and nested loop execution.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Normalization",
+          "slug": "dbms-normalization",
+          "description": "Functional dependencies, Armstrong's axioms, 1NF, 2NF, 3NF, and BCNF decomposition.",
+          "estimated_minutes": 60,
+          "topics": [
+            {
+              "title": "Functional Dependencies & Normal Forms",
+              "slug": "functional-dependencies-normal-forms",
+              "summary": "Lossless-join decomposition, dependency preservation, and 3NF vs BCNF.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            }
+          ]
+        },
+        {
+          "title": "Transactions",
+          "slug": "dbms-transactions",
+          "description": "Transaction states, ACID guarantees, and serializability.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "ACID Properties & Transaction States",
+              "slug": "acid-properties-transaction-states",
+              "summary": "Atomicity, Consistency, Isolation, and Durability enforcement.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Concurrency Control",
+          "slug": "dbms-concurrency-control",
+          "description": "Locking protocols, 2-Phase Locking (2PL), deadlock prevention, and timestamp ordering.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Schedules & Serializability",
+              "slug": "schedules-serializability",
+              "summary": "Conflict serializability, precedence graphs, and recoverable schedules.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Two-Phase Locking (2PL) & Conflicts",
+              "slug": "two-phase-locking-protocol",
+              "summary": "Growing and shrinking phases, cascading rollbacks, strict 2PL.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Indexing",
+          "slug": "dbms-indexing",
+          "description": "Primary and secondary indexes, dense vs sparse indexes, B+ Trees.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "B+ Tree Index Structures",
+              "slug": "b-plus-tree-indexes",
+              "summary": "Balanced node splitting, leaf pointer chains, and logarithmic search cost.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Query Processing & Optimization",
+              "slug": "query-processing-optimization",
+              "summary": "How a query becomes a plan: algebraic rewrites, join algorithms, and cost estimates.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Recovery",
+          "slug": "dbms-recovery",
+          "description": "Write-Ahead Logging (WAL), undo/redo logging, checkpoints, and ARIES recovery.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Write-Ahead Logging & Checkpoints",
+              "slug": "wal-and-checkpoint-recovery",
+              "summary": "Crash recovery algorithms and idempotent log processing.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "NoSQL & Distributed Data",
+          "slug": "dbms-nosql",
+          "description": "Non-relational data models and the trade-offs of distributing data.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "NoSQL Data Models & the CAP Theorem",
+              "slug": "nosql-data-models-cap",
+              "summary": "Key-value, document, column-family, and graph stores, and consistency trade-offs.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

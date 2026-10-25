@@ -9,7 +9,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 class Base(DeclarativeBase):
     """Base SQLAlchemy Declarative Class."""
-    pass
 
 
 class UserRole(str, enum.Enum):
