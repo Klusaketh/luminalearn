@@ -1,0 +1,207 @@
+{
+  "category_slug": "programming",
+  "name": "Java",
+  "slug": "java",
+  "short_description": "Platform-independent OOP, JVM architecture, garbage collection, and collections.",
+  "description": "Enterprise-grade Java programming covering JVM bytecode, OOP principles, interfaces, exception handling, collections framework, generics, and concurrent multithreading.",
+  "icon_key": "coffee",
+  "difficulty_level": "Intermediate",
+  "display_order": 10,
+  "courses": [
+    {
+      "title": "Java Programming",
+      "slug": "java-programming",
+      "description": "Enterprise object-oriented Java covering JVM internals, collections, and concurrency.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 10,
+      "modules": [
+        {
+          "title": "Java Fundamentals",
+          "slug": "java-fundamentals",
+          "description": "JVM, JRE, JDK, bytecode compilation, primitives, and string pool.",
+          "estimated_minutes": 125,
+          "topics": [
+            {
+              "title": "JVM Architecture & Bytecode",
+              "slug": "jvm-architecture-bytecode",
+              "summary": "Class loaders, execution engine, heap/stack areas, and JIT compiler.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Syntax, Types & Control Flow",
+              "slug": "java-syntax-types-control",
+              "summary": "Primitive and reference types, operators, conditionals, loops, and methods.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Strings, Arrays & Wrapper Classes",
+              "slug": "java-strings-arrays-wrappers",
+              "summary": "Immutable strings, StringBuilder, arrays, autoboxing, and equality pitfalls.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Classes & Objects",
+          "slug": "java-classes-and-objects",
+          "description": "Class members, constructors, static keyword, and garbage collection.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Class Definitions & Memory Allocation",
+              "slug": "java-class-definitions-memory",
+              "summary": "Reference types, garbage collection roots, and method overloading.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Inheritance",
+          "slug": "java-inheritance",
+          "description": "Single inheritance, super keyword, and method overriding (@Override).",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Extending Classes & Super Keyword",
+              "slug": "java-extending-classes",
+              "summary": "Subclassing, superclass constructor invocation, and final classes.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Polymorphism",
+          "slug": "java-polymorphism",
+          "description": "Compile-time vs runtime polymorphism, dynamic method dispatch.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Runtime Polymorphism & Dynamic Binding",
+              "slug": "java-runtime-polymorphism",
+              "summary": "Upcasting, downcasting, and instanceof type checking.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Abstraction",
+          "slug": "java-abstraction",
+          "description": "Abstract classes, partial implementation, and design guidelines.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Abstract Classes & Method Contracts",
+              "slug": "java-abstract-classes",
+              "summary": "Declaring abstract methods and enforcing derived contracts.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Interfaces",
+          "slug": "java-interfaces",
+          "description": "Interface contracts, multiple implementation, default/static methods.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Interface Contracts & Default Methods",
+              "slug": "java-interface-contracts",
+              "summary": "Multiple inheritance of type and functional interfaces.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Exception Handling",
+          "slug": "java-exception-handling",
+          "description": "Checked vs unchecked exceptions, try-catch-finally, and try-with-resources.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Checked vs Runtime Exceptions",
+              "slug": "java-checked-runtime-exceptions",
+              "summary": "Throwable hierarchy, AutoCloseable, and custom exceptions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Collections",
+          "slug": "java-collections",
+          "description": "List, Set, Map interfaces, ArrayList, HashSet, HashMap, and iterators.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Java Collections Framework Core",
+              "slug": "java-collections-framework-core",
+              "summary": "HashMap bucketing, equals/hashCode contracts, and List implementations.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Lambdas & the Streams API",
+              "slug": "java-lambdas-streams",
+              "summary": "Functional interfaces, method references, and stream pipelines.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Generics",
+          "slug": "java-generics",
+          "description": "Type parameters, bounded type parameters, and wildcard expressions (? extends T).",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Generic Types & Wildcard Bounds",
+              "slug": "java-generic-types-wildcards",
+              "summary": "Type erasure, PECS rule (Producer Extends, Consumer Super).",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "File I/O",
+          "slug": "java-file-io",
+          "description": "Reading and writing files safely with the modern API.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "File I/O with java.nio",
+              "slug": "java-file-io-nio",
+              "summary": "Paths, Files, buffered readers and writers, and try-with-resources.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Multithreading",
+          "slug": "java-multithreading",
+          "description": "Thread class, Runnable interface, synchronized keyword, and Executors.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Thread Synchronization & Concurrency",
+              "slug": "java-thread-synchronization",
+              "summary": "Intrinsic locks, volatile keyword, and java.util.concurrent thread pools.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

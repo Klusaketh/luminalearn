@@ -1,0 +1,183 @@
+{
+  "category_slug": "computer-science",
+  "name": "Computer Organization & Architecture",
+  "slug": "computer-organization-and-architecture",
+  "short_description": "CPU datapath, instruction pipelines, memory hierarchy, cache coherence, and RISC/CISC.",
+  "description": "Instruction set architectures (RISC-V/MIPS), arithmetic logic units, single-cycle and pipelined datapath design, pipeline hazards, branch prediction, and multi-level cache hierarchies.",
+  "icon_key": "server",
+  "difficulty_level": "Advanced",
+  "display_order": 6,
+  "courses": [
+    {
+      "title": "Computer Organization & Architecture",
+      "slug": "coa-fundamentals",
+      "description": "Von Neumann architecture, pipelined processors, memory caches, and bus interconnects.",
+      "difficulty": "Advanced",
+      "estimated_hours": 12,
+      "modules": [
+        {
+          "title": "Computer System Fundamentals",
+          "slug": "coa-fundamentals",
+          "description": "The stored-program computer and how its performance is measured.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Von Neumann Architecture & Performance Metrics",
+              "slug": "von-neumann-performance-metrics",
+              "summary": "Stored-program machines, CPU time, CPI, MIPS, and Amdahl's law.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Computer Arithmetic",
+          "slug": "coa-computer-arithmetic",
+          "description": "How hardware adds, multiplies, and represents real numbers.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Integer Arithmetic & IEEE 754 Floating Point",
+              "slug": "integer-float-arithmetic",
+              "summary": "Two's complement adders, Booth multiplication, and floating-point representation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Instruction Set Architecture",
+          "slug": "coa-isa",
+          "description": "RISC vs CISC, machine instruction formats, addressing modes, and register files.",
+          "estimated_minutes": 140,
+          "topics": [
+            {
+              "title": "RISC vs CISC & Instruction Formats",
+              "slug": "risc-vs-cisc-instruction-formats",
+              "summary": "Load-store architectures vs memory-operand CISC instructions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Addressing Modes",
+              "slug": "addressing-modes",
+              "summary": "Immediate, register, direct, indirect, indexed, and relative addressing with effective-address calculations.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Instruction Cycle & Assembly Language",
+              "slug": "instruction-cycle-assembly",
+              "summary": "The fetch-decode-execute cycle and reading simple RISC assembly programs.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Datapath & Control Unit",
+          "slug": "coa-datapath-control",
+          "description": "How the processor's datapath executes instructions and how control signals are generated.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Datapath & Register Organization",
+              "slug": "datapath-register-organization",
+              "summary": "Registers, the ALU, buses, and how a single-cycle datapath executes instructions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Hardwired vs Microprogrammed Control",
+              "slug": "hardwired-microprogrammed-control",
+              "summary": "Generating control signals with logic or with microcode, and the trade-offs.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Pipelining & Hazards",
+          "slug": "coa-pipelining",
+          "description": "5-stage classic pipeline (IF, ID, EX, MEM, WB), structural, data, and control hazards.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Pipelining Fundamentals & Speedup",
+              "slug": "pipelining-fundamentals",
+              "summary": "Pipeline stages, throughput versus latency, and ideal and real speedup.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Pipeline Hazards & Forwarding",
+              "slug": "pipeline-hazards-forwarding",
+              "summary": "RAW dependencies, pipeline stalls, forwarding paths, and branch delay slots.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Memory Hierarchy & Caches",
+          "slug": "coa-memory-hierarchy",
+          "description": "Direct-mapped, set-associative caches, cache hit/miss penalties, and write policies.",
+          "estimated_minutes": 150,
+          "topics": [
+            {
+              "title": "Cache Associativity & Mapping",
+              "slug": "cache-associativity-mapping",
+              "summary": "Tag, index, offset bit calculation and replacement policies (LRU).",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Cache Performance & AMAT",
+              "slug": "cache-performance-amat",
+              "summary": "Hit rates, miss penalties, average memory access time, and multilevel caches.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Main Memory, Virtual Memory & TLBs",
+              "slug": "main-virtual-memory-tlb",
+              "summary": "DRAM organisation, address-translation hardware, and the translation lookaside buffer.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Input/Output Organization",
+          "slug": "coa-io-organization",
+          "description": "How the processor exchanges data with devices.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "I/O Techniques: Polling, Interrupts & DMA",
+              "slug": "io-polling-interrupts-dma",
+              "summary": "Programmed I/O, interrupt-driven I/O, and DMA transfers compared.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Parallel Processing",
+          "slug": "coa-parallel-processing",
+          "description": "Doing more work per cycle: instruction-level, thread-level, and multicore parallelism.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Instruction-Level & Multicore Parallelism",
+              "slug": "ilp-multicore-parallelism",
+              "summary": "Superscalar issue, Flynn's taxonomy, multicore processors, and cache coherence.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

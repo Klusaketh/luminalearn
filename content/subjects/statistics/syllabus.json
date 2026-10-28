@@ -1,0 +1,102 @@
+{
+  "category_slug": "mathematics",
+  "name": "Statistics",
+  "slug": "statistics",
+  "short_description": "Descriptive statistics, hypothesis testing, confidence intervals, and regression.",
+  "description": "Inferential statistics and data modeling: central tendency, dispersion, Central Limit Theorem, t-tests, z-tests, p-values, and maximum likelihood estimation.",
+  "icon_key": "bar-chart",
+  "difficulty_level": "Intermediate",
+  "display_order": 19,
+  "courses": [
+    {
+      "title": "Statistical Inference & Modeling",
+      "slug": "statistical-inference-modeling",
+      "description": "Sampling distributions, Central Limit Theorem, hypothesis testing, and p-values.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 6,
+      "modules": [
+        {
+          "title": "Describing Data",
+          "slug": "stats-descriptive",
+          "description": "Summarising data and understanding where it came from.",
+          "estimated_minutes": 85,
+          "topics": [
+            {
+              "title": "Descriptive Statistics: Center, Spread & Shape",
+              "slug": "descriptive-statistics",
+              "summary": "Mean, median, variance, quartiles, box plots, and skewness.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Data Collection & Sampling Methods",
+              "slug": "sampling-methods",
+              "summary": "Populations and samples, sampling designs, bias, and observational versus experimental studies.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Sampling & Central Limit Theorem",
+          "slug": "stat-sampling-clt",
+          "description": "Sample distributions, standard error, and Central Limit Theorem asymptotic normality.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Central Limit Theorem & Sampling Error",
+              "slug": "clt-and-sampling-error",
+              "summary": "Distribution of sample means and standard error scaling with sqrt(n).",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Point Estimation & Confidence Intervals",
+              "slug": "confidence-intervals",
+              "summary": "Estimators, standard error, and intervals for means and proportions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Hypothesis Testing",
+          "slug": "stat-hypothesis-testing",
+          "description": "Null/alternative hypotheses, Type I/II errors, p-values, t-tests, and ANOVA.",
+          "estimated_minutes": 100,
+          "topics": [
+            {
+              "title": "Significance Testing & P-Values",
+              "slug": "significance-testing-p-values",
+              "summary": "Formulating hypotheses, rejection regions, and critical values.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "t-Tests & Chi-Square Tests",
+              "slug": "t-tests-chi-square",
+              "summary": "One-sample, two-sample, and paired t-tests, and chi-square tests of independence.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            }
+          ]
+        },
+        {
+          "title": "Relationships Between Variables",
+          "slug": "stats-regression",
+          "description": "Measuring and modelling how one variable moves with another.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Correlation & Simple Linear Regression",
+              "slug": "correlation-linear-regression",
+              "summary": "Pearson correlation, least-squares lines, residuals, and R-squared.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

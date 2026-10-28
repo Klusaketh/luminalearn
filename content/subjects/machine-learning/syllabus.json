@@ -1,0 +1,177 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Machine Learning",
+  "slug": "machine-learning",
+  "short_description": "Supervised learning, unsupervised clustering, feature engineering, and evaluation.",
+  "description": "Mathematical formulations and algorithmic implementation of regression, decision trees, support vector machines, clustering, dimensionality reduction, regularization, and cross-validation.",
+  "icon_key": "sparkles",
+  "difficulty_level": "Intermediate",
+  "display_order": 12,
+  "courses": [
+    {
+      "title": "Machine Learning Fundamentals",
+      "slug": "machine-learning-fundamentals",
+      "description": "Core algorithms in supervised learning, unsupervised clustering, and statistical validation.",
+      "difficulty": "Intermediate",
+      "estimated_hours": 10,
+      "modules": [
+        {
+          "title": "ML Workflow",
+          "slug": "ml-workflow",
+          "description": "Problem framing, train/validation/test splits, and baseline models.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "The End-to-End ML Pipeline",
+              "slug": "end-to-end-ml-pipeline",
+              "summary": "Data ingestion, leakage prevention, and experiment logging.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Data Preparation",
+          "slug": "ml-data-preparation",
+          "description": "Missing value imputation, categorical encoding, scaling, and normalization.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Feature Scaling & One-Hot Encoding",
+              "slug": "feature-scaling-encoding",
+              "summary": "StandardScaler vs MinMaxScaler and handling high-cardinality features.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Regression",
+          "slug": "ml-regression",
+          "description": "Ordinary Least Squares, gradient descent, Mean Squared Error loss.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Linear Regression & Gradient Descent",
+              "slug": "linear-regression-gradient-descent",
+              "summary": "Normal equation, analytical derivation, and iterative gradient updates.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Classification",
+          "slug": "ml-classification",
+          "description": "Logistic regression, decision trees, Random Forests, and SVMs.",
+          "estimated_minutes": 160,
+          "topics": [
+            {
+              "title": "Logistic Regression & Decision Trees",
+              "slug": "logistic-regression-decision-trees",
+              "summary": "Sigmoid activations, log loss, Gini impurity, and information gain.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            },
+            {
+              "title": "k-NN, Naive Bayes & Support Vector Machines",
+              "slug": "knn-naive-bayes-svm",
+              "summary": "Instance-based, probabilistic, and maximum-margin classifiers compared.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 55
+            },
+            {
+              "title": "Ensemble Methods: Bagging, Random Forests & Boosting",
+              "slug": "ensemble-methods",
+              "summary": "Combining many models to reduce variance or bias.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Clustering",
+          "slug": "ml-clustering",
+          "description": "K-Means, hierarchical agglomerative clustering, and DBSCAN.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "K-Means & Density-Based Clustering",
+              "slug": "k-means-and-dbscan",
+              "summary": "Centroid initialization, elbow method, and density reachability.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Feature Engineering",
+          "slug": "ml-feature-engineering",
+          "description": "Domain features, interaction terms, and PCA dimensionality reduction.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Principal Component Analysis (PCA)",
+              "slug": "pca-dimensionality-reduction",
+              "summary": "Eigenvectors, covariance matrix decomposition, and variance retention.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Model Evaluation",
+          "slug": "ml-model-evaluation",
+          "description": "Confusion matrix, Precision, Recall, F1 score, ROC-AUC curves.",
+          "estimated_minutes": 85,
+          "topics": [
+            {
+              "title": "Classification Metrics & ROC Curves",
+              "slug": "classification-metrics-roc",
+              "summary": "Type I vs Type II errors, PR curves, and AUC statistical power.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Cross-Validation & Model Selection",
+              "slug": "cross-validation-model-selection",
+              "summary": "Train, validation, and test splits, k-fold cross-validation, and hyperparameter search.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Overfitting & Regularization",
+          "slug": "ml-overfitting-regularization",
+          "description": "Bias-variance trade-off, L1 Lasso, L2 Ridge, and elastic net penalization.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "L1/L2 Regularization & Bias-Variance",
+              "slug": "regularization-bias-variance",
+              "summary": "Shrinkage penalties, sparsity induction, and cross-validation tuning.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Reinforcement Learning",
+          "slug": "ml-reinforcement-learning",
+          "description": "Learning to act from rewards rather than labels.",
+          "estimated_minutes": 55,
+          "topics": [
+            {
+              "title": "Reinforcement Learning Fundamentals",
+              "slug": "reinforcement-learning-fundamentals",
+              "summary": "Agents and rewards, Markov decision processes, and Q-learning.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 55
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

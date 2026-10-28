@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Computer Science",
+    "slug": "computer-science",
+    "description": "Foundational computing systems, algorithm analysis, computer architecture, and distributed systems.",
+    "display_order": 1
+  },
+  {
+    "name": "Programming",
+    "slug": "programming",
+    "description": "Core software engineering paradigms, procedural, object-oriented, and modern scripting languages.",
+    "display_order": 2
+  },
+  {
+    "name": "Artificial Intelligence",
+    "slug": "artificial-intelligence",
+    "description": "Intelligent agents, machine learning algorithms, deep neural representations, and computer vision.",
+    "display_order": 3
+  },
+  {
+    "name": "Mathematics",
+    "slug": "mathematics",
+    "description": "Formal mathematical foundations for computer science, discrete structures, probability, and linear algebra.",
+    "display_order": 4
+  }
+]

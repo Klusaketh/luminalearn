@@ -1,0 +1,229 @@
+{
+  "category_slug": "programming",
+  "name": "C Programming",
+  "slug": "c-programming",
+  "short_description": "Procedural programming, direct memory manipulation with pointers, and manual memory management.",
+  "description": "Essential C programming covering pointers, arrays, memory allocation, struct layouts, file handling, and the C preprocessor.",
+  "icon_key": "terminal",
+  "difficulty_level": "Beginner",
+  "display_order": 8,
+  "courses": [
+    {
+      "title": "C Programming",
+      "slug": "c-programming",
+      "description": "Structured programming, manual pointer arithmetic, and system memory management.",
+      "difficulty": "Beginner",
+      "estimated_hours": 11,
+      "modules": [
+        {
+          "title": "Fundamentals",
+          "slug": "c-fundamentals",
+          "description": "C syntax, standard I/O (printf/scanf), primitive types, and compile pipeline.",
+          "estimated_minutes": 80,
+          "topics": [
+            {
+              "title": "C Syntax & Compilation Stages",
+              "slug": "c-compilation-stages",
+              "summary": "Preprocessor, compiler, assembler, and linker workflow.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Data Types, Operators & Expressions",
+              "slug": "c-data-types-expressions",
+              "summary": "Integer and floating types, conversions, precedence, and evaluation rules.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Operators",
+          "slug": "c-operators",
+          "description": "Bitwise operations, arithmetic, relational, and logical evaluation.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Bitwise Operators & Masks",
+              "slug": "c-bitwise-operators",
+              "summary": "Shifting, bit masking, and bitwise boolean manipulation.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Control Flow",
+          "slug": "c-control-flow",
+          "description": "If-else conditions, switch-case statements, for and while loops.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Iteration & Switch Statements",
+              "slug": "c-iteration-switch",
+              "summary": "Loop constructs, break, continue, and switch fall-through.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Functions",
+          "slug": "c-functions",
+          "description": "Pass-by-value, prototypes, static functions, and recursive stacks.",
+          "estimated_minutes": 75,
+          "topics": [
+            {
+              "title": "Function Prototypes & Call Stack",
+              "slug": "c-prototypes-call-stack",
+              "summary": "Stack frames, function declarations, and return registers.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Scope, Linkage & Storage Classes",
+              "slug": "c-scope-storage-classes",
+              "summary": "Block and file scope, static and extern, and object lifetime.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Arrays",
+          "slug": "c-arrays",
+          "description": "1D and 2D arrays, contiguous storage, and bounds safety.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Array Memory Layout & Indexing",
+              "slug": "c-array-memory-layout",
+              "summary": "Base address arithmetic and multi-dimensional row-major storage.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Strings",
+          "slug": "c-strings",
+          "description": "Null-terminated char buffers and string.h standard functions.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Null-Terminated String Manipulation",
+              "slug": "c-null-terminated-strings",
+              "summary": "strcpy, strlen, strcmp, and buffer overflow prevention.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "Pointers",
+          "slug": "c-pointers",
+          "description": "Memory addresses, pointer dereferencing, pointer arithmetic, and double pointers.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Pointers & Address Arithmetic",
+              "slug": "c-pointers-address-arithmetic",
+              "summary": "The * and & operators, void pointers, and pointer offsets.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Structures",
+          "slug": "c-structures",
+          "description": "Struct declarations, padding/alignment, unions, and typedef.",
+          "estimated_minutes": 80,
+          "topics": [
+            {
+              "title": "Struct Alignment & Member Access",
+              "slug": "c-struct-alignment",
+              "summary": "Arrow -> vs dot . operators, memory padding, and unions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Unions, Enumerations & typedef",
+              "slug": "c-unions-enums-typedef",
+              "summary": "Overlapping storage, named integer constants, and type aliases.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Dynamic Memory",
+          "slug": "c-dynamic-memory",
+          "description": "Heap allocation with malloc, calloc, realloc, and free.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Heap Allocation & Memory Leaks",
+              "slug": "c-heap-allocation-free",
+              "summary": "malloc/free lifecycle, dangling pointers, and memory sanitization.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Linked Data Structures in C",
+              "slug": "c-linked-data-structures",
+              "summary": "Building a singly linked list and a stack with malloc and free.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "File Handling",
+          "slug": "c-file-handling",
+          "description": "FILE stream pointers, fopen, fread, fwrite, and fclose.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Binary & Text File Streams",
+              "slug": "c-file-streams",
+              "summary": "Buffered I/O, EOF flags, and binary struct serialization.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Preprocessor & Program Structure",
+          "slug": "c-preprocessor",
+          "description": "What happens before compilation, and how larger C programs are organised.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Preprocessor, Macros & Multi-File Programs",
+              "slug": "c-preprocessor-macros",
+              "summary": "#include, #define, conditional compilation, header guards, and separate compilation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Writing Robust C",
+          "slug": "c-robust-code",
+          "description": "Avoiding the bugs C does not stop you from writing.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Undefined Behavior & Common Bugs",
+              "slug": "c-undefined-behavior",
+              "summary": "Out-of-bounds access, uninitialised reads, overflow, and the tools that catch them.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

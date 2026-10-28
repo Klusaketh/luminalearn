@@ -1,0 +1,16 @@
+"""
+Shared System Constants for LuminaLearn AI Backend.
+"""
+
+API_V1_STR: str = "/api/v1"
+
+# Telemetry & Performance Limits
+MAX_SESSIONS_PER_USER_DAILY: int = 50
+DEFAULT_PAGINATION_LIMIT: int = 20
+MAX_PAGINATION_LIMIT: int = 100
+
+# Error Code Definitions
+ERR_RESOURCE_NOT_FOUND: str = "RESOURCE_NOT_FOUND"
+ERR_UNAUTHORIZED: str = "UNAUTHORIZED"
+ERR_VALIDATION_FAILED: str = "VALIDATION_FAILED"
+ERR_INTERNAL_SERVER_ERROR: str = "INTERNAL_SERVER_ERROR"

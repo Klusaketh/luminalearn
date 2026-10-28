@@ -1,0 +1,139 @@
+{
+  "category_slug": "mathematics",
+  "name": "Discrete Mathematics",
+  "slug": "discrete-mathematics",
+  "short_description": "Set theory, predicate logic, relations, combinatorics, and graph theory.",
+  "description": "Formal discrete structures essential for computing: sets, functions, equivalence relations, mathematical induction, pigeonhole principle, permutations, combinations, and recurrence relations.",
+  "icon_key": "sigma",
+  "difficulty_level": "Beginner",
+  "display_order": 17,
+  "courses": [
+    {
+      "title": "Discrete Mathematics",
+      "slug": "discrete-mathematics",
+      "description": "Formal mathematical logic, sets, relations, combinatorics, and induction proofs.",
+      "difficulty": "Beginner",
+      "estimated_hours": 8,
+      "modules": [
+        {
+          "title": "Logic & Proofs",
+          "slug": "dm-logic-proofs",
+          "description": "The language of mathematics and how to argue in it.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Propositional & Predicate Logic",
+              "slug": "propositional-predicate-logic",
+              "summary": "Connectives, truth tables, logical equivalence, quantifiers, and negation.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Proof Techniques",
+              "slug": "proof-techniques",
+              "summary": "Direct proof, contrapositive, contradiction, and proof by cases.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Sets & Relations",
+          "slug": "dm-sets-and-relations",
+          "description": "Set operations, Cartesian products, equivalence relations, and partial orders.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Sets, Functions & Cardinality",
+              "slug": "sets-functions-cardinality",
+              "summary": "Set operations, functions, injections and bijections, and countable sets.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Equivalence Relations & Partitions",
+              "slug": "equivalence-relations-partitions",
+              "summary": "Reflexive, symmetric, transitive properties and equivalence classes.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Combinatorics",
+          "slug": "dm-combinatorics",
+          "description": "Permutations, combinations, inclusion-exclusion, and Pigeonhole principle.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Counting Principles & Pigeonhole Principle",
+              "slug": "counting-principles-pigeonhole",
+              "summary": "Permutation formulas, binomial coefficients, and Dirichlet pigeonhole proofs.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Permutations, Combinations & the Binomial Theorem",
+              "slug": "permutations-combinations-binomial",
+              "summary": "Arrangements and selections with and without repetition, and binomial coefficients.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Mathematical Induction",
+          "slug": "dm-mathematical-induction",
+          "description": "Weak induction, strong induction, and well-ordering principle.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Induction Proof Techniques",
+              "slug": "induction-proof-techniques",
+              "summary": "Base case validation, inductive hypothesis, and inductive step.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            },
+            {
+              "title": "Recurrence Relations",
+              "slug": "recurrence-relations",
+              "summary": "Modelling with recurrences and solving linear recurrences with the characteristic equation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Graph Theory",
+          "slug": "dm-graph-theory",
+          "description": "Vertices, edges, and the structures built from them.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Graph Theory Fundamentals",
+              "slug": "graph-theory-fundamentals",
+              "summary": "Degrees, paths, connectivity, trees, and Euler and Hamilton circuits.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Number Theory",
+          "slug": "dm-number-theory",
+          "description": "Integers, divisibility, and modular arithmetic.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Modular Arithmetic, GCD & Primes",
+              "slug": "modular-arithmetic-gcd",
+              "summary": "Divisibility, the Euclidean algorithm, modular inverses, and an outline of RSA.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+**/node_modules/
+.venv/
+venv/
+
+# Generated files and caches
+.next/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.tsbuildinfo
+
+# Local SQLite dev database (holds real account hashes)
+*.db
+*.db-journal
+
+# OS / editor noise
+.DS_Store
+Thumbs.db

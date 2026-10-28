@@ -1,0 +1,147 @@
+{
+  "category_slug": "artificial-intelligence",
+  "name": "Deep Learning",
+  "slug": "deep-learning",
+  "short_description": "Multilayer perceptrons, backpropagation, CNNs, RNNs, and transformer introduction.",
+  "description": "Deep artificial neural networks covering computational graphs, automatic differentiation, activation functions, convolutional vision networks, sequence models, and attention mechanisms.",
+  "icon_key": "network",
+  "difficulty_level": "Advanced",
+  "display_order": 13,
+  "courses": [
+    {
+      "title": "Deep Learning Fundamentals",
+      "slug": "deep-learning-fundamentals",
+      "description": "Neural representation learning, backpropagation calculus, and deep architectures.",
+      "difficulty": "Advanced",
+      "estimated_hours": 8,
+      "modules": [
+        {
+          "title": "Neural Networks",
+          "slug": "dl-neural-networks",
+          "description": "Perceptrons, dense linear layers, and multi-layer architectures.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Multilayer Perceptron & Matrix Algebra",
+              "slug": "mlp-matrix-algebra",
+              "summary": "Forward pass formulation, weight tensors, and bias vectors.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Activation Functions",
+          "slug": "dl-activation-functions",
+          "description": "Sigmoid, Tanh, ReLU, Leaky ReLU, GELU, and vanishing gradients.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Non-Linear Activations & Gradient Flow",
+              "slug": "non-linear-activations",
+              "summary": "Saturation regimes, dead ReLUs, and zero-centered gradients.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Backpropagation",
+          "slug": "dl-backpropagation",
+          "description": "Multivariate chain rule, computational graphs, and loss gradient propagation.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Loss Functions & the Training Loop",
+              "slug": "loss-functions-training-loop",
+              "summary": "Mean squared error and cross-entropy, mini-batches, epochs, and one training step.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Computational Graphs & Chain Rule",
+              "slug": "computational-graphs-chain-rule",
+              "summary": "Reverse-mode automatic differentiation step-by-step calculus.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Optimization",
+          "slug": "dl-optimization",
+          "description": "SGD with Momentum, RMSprop, Adam, and learning rate scheduling.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Adam Optimizer & Adaptive Learning Rates",
+              "slug": "adam-optimizer-adaptive-learning",
+              "summary": "First and second moment estimation with bias corrections.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Regularization: Dropout, Batch Norm & Weight Decay",
+              "slug": "dl-regularization",
+              "summary": "Techniques that make deep networks generalise and train stably.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "CNNs",
+          "slug": "dl-cnns",
+          "description": "2D convolution kernels, padding, stride, pooling, and feature hierarchies.",
+          "estimated_minutes": 95,
+          "topics": [
+            {
+              "title": "Convolutional Layers & Spatial Invariance",
+              "slug": "convolutional-layers-spatial-invariance",
+              "summary": "Kernel sliding, receptive fields, and max-pooling operations.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            },
+            {
+              "title": "Transfer Learning & Fine-Tuning",
+              "slug": "transfer-learning-fine-tuning",
+              "summary": "Reusing pretrained networks as feature extractors or starting points.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "RNNs",
+          "slug": "dl-rnns",
+          "description": "Recurrent loops, Backpropagation Through Time (BPTT), and LSTM gates.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Recurrent Cells, LSTMs & Gated Units",
+              "slug": "lstms-and-gated-recurrent-units",
+              "summary": "Forget gate, input gate, cell state updates, and vanishing gradient remedies.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        },
+        {
+          "title": "Transformers Introduction",
+          "slug": "dl-transformers-intro",
+          "description": "Scaled dot-product attention, multi-head attention, and positional encodings.",
+          "estimated_minutes": 50,
+          "topics": [
+            {
+              "title": "Self-Attention Mechanism & Transformers",
+              "slug": "self-attention-mechanism",
+              "summary": "Query, Key, Value tensor projections and parallel sequence processing.",
+              "difficulty": "Advanced",
+              "estimated_minutes": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

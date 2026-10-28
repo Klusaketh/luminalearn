@@ -1,0 +1,185 @@
+{
+  "category_slug": "computer-science",
+  "name": "Digital Logic",
+  "slug": "digital-logic",
+  "short_description": "Boolean algebra, combinational circuits, sequential flip-flops, and finite state machines.",
+  "description": "Binary number systems, Boolean algebra reduction, Karnaugh maps, combinational logic design (adders, multiplexers), and sequential circuits (flip-flops, registers, counters).",
+  "icon_key": "binary",
+  "difficulty_level": "Beginner",
+  "display_order": 5,
+  "courses": [
+    {
+      "title": "Digital Logic Fundamentals",
+      "slug": "digital-logic-fundamentals",
+      "description": "Binary logic gates, Boolean simplification, and synchronous sequential circuits.",
+      "difficulty": "Beginner",
+      "estimated_hours": 9,
+      "modules": [
+        {
+          "title": "Number Systems",
+          "slug": "dl-number-systems",
+          "description": "Binary, octal, hexadecimal representations, and 2's complement arithmetic.",
+          "estimated_minutes": 80,
+          "topics": [
+            {
+              "title": "Binary Conversions & 2's Complement",
+              "slug": "binary-conversions-twos-complement",
+              "summary": "Signed binary integer arithmetic and overflow detection.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            },
+            {
+              "title": "Binary Arithmetic, Overflow & Codes",
+              "slug": "binary-arithmetic-codes",
+              "summary": "Signed arithmetic, overflow detection, BCD, Gray code, and parity.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Boolean Algebra",
+          "slug": "dl-boolean-algebra",
+          "description": "Postulates, De Morgan's laws, sum-of-products (SOP), and product-of-sums (POS).",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "De Morgan's Laws & Canonical Forms",
+              "slug": "de-morgans-laws-canonical-forms",
+              "summary": "Boolean identities and minterm/maxterm canonical forms.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Logic Gates",
+          "slug": "dl-logic-gates",
+          "description": "AND, OR, NOT, NAND, NOR universal gates, XOR, and propagation delays.",
+          "estimated_minutes": 30,
+          "topics": [
+            {
+              "title": "Universal Gates & Truth Tables",
+              "slug": "universal-gates-truth-tables",
+              "summary": "NAND/NOR complete functional sets.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 30
+            }
+          ]
+        },
+        {
+          "title": "K-Maps",
+          "slug": "dl-k-maps",
+          "description": "2, 3, and 4-variable Karnaugh maps, prime implicants, and don't-care conditions.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Karnaugh Map Minimization",
+              "slug": "k-map-minimization",
+              "summary": "Gray code adjacency grouping for minimal SOP expressions.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Combinational Circuits",
+          "slug": "dl-combinational-circuits",
+          "description": "Half/full adders, subtractors, multiplexers, demultiplexers, decoders.",
+          "estimated_minutes": 90,
+          "topics": [
+            {
+              "title": "Adders & Multiplexers Design",
+              "slug": "adders-multiplexers-design",
+              "summary": "Ripple carry adders and MUX-based Boolean logic implementation.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            },
+            {
+              "title": "Decoders, Encoders & Comparators",
+              "slug": "decoders-encoders-comparators",
+              "summary": "Line decoders, priority encoders, and magnitude comparators, and building functions from them.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Sequential Circuits",
+          "slug": "dl-sequential-circuits",
+          "description": "Latches, clocking schemes, setup/hold times, and metastability.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "Latches vs Flip-Flops Timing",
+              "slug": "latches-vs-flip-flops",
+              "summary": "Level-sensitive latches vs edge-triggered flip-flop timing diagrams.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Flip-Flops",
+          "slug": "dl-flip-flops",
+          "description": "SR, JK, D, and T flip-flops, characteristic equations, and excitation tables.",
+          "estimated_minutes": 40,
+          "topics": [
+            {
+              "title": "JK & D Flip-Flop Operation",
+              "slug": "jk-d-flip-flop-operation",
+              "summary": "Toggle modes, race-around conditions, and master-slave setups.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 40
+            }
+          ]
+        },
+        {
+          "title": "Registers",
+          "slug": "dl-registers",
+          "description": "SISO, SIPO, PISO, PIPO shift registers and universal shift registers.",
+          "estimated_minutes": 35,
+          "topics": [
+            {
+              "title": "Shift Register Architectures",
+              "slug": "shift-register-architectures",
+              "summary": "Serial and parallel data conversion registers.",
+              "difficulty": "Beginner",
+              "estimated_minutes": 35
+            }
+          ]
+        },
+        {
+          "title": "Counters",
+          "slug": "dl-counters",
+          "description": "Asynchronous ripple counters and synchronous decade/mod-N counters.",
+          "estimated_minutes": 45,
+          "topics": [
+            {
+              "title": "Synchronous Counter Design",
+              "slug": "synchronous-counter-design",
+              "summary": "Excitation table synthesis for modulo-N sequence counters.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 45
+            }
+          ]
+        },
+        {
+          "title": "Finite State Machines",
+          "slug": "dl-finite-state-machines",
+          "description": "Designing sequential controllers from state diagrams.",
+          "estimated_minutes": 60,
+          "topics": [
+            {
+              "title": "Mealy & Moore State Machine Design",
+              "slug": "mealy-moore-state-machines",
+              "summary": "State diagrams, state tables, state assignment, and implementation with flip-flops.",
+              "difficulty": "Intermediate",
+              "estimated_minutes": 60
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
