@@ -10,6 +10,11 @@ import { VoiceOrb, type OrbMode } from "@/components/tutor/VoiceOrb";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { MasteryGauge } from "@/components/quiz/MasteryGauge";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
+import { CustomCursor } from "@/components/motion/CustomCursor";
+import { TagLabel } from "@/components/motion/TagLabel";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { Hero } from "@/components/landing/Hero";
 
 const DEMO: Array<{ mode: OrbMode; caption: string }> = [
   { mode: "idle", caption: "Ready when you are" },
@@ -104,34 +109,25 @@ export default function Home() {
   const dashboard = user ? homePathFor(user.role) : "/dashboard";
 
   return (
-    <main className="flex w-full flex-1 flex-col">
-      <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-16 pt-12 sm:px-6 md:pt-20 lg:grid-cols-[1.05fr_1fr] lg:px-8 lg:pb-24">
+    <SmoothScroll>
+      <CustomCursor />
+      <LandingNav />
+      <main className="flex w-full flex-1 flex-col">
+      <Hero />
+
+      <section id="see-it-think" aria-labelledby="see-it-think-heading" className="mx-auto grid w-full max-w-7xl scroll-mt-24 items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:px-8">
         <div>
-          <motion.h1
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05, type: "spring", stiffness: 120, damping: 20 }}
-            className="font-display text-[2.9rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.6rem]"
-          >
-            The tutor that answers with a better question.
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, type: "spring", stiffness: 120, damping: 20 }}
-            className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300"
-          >
+          <TagLabel>Live product</TagLabel>
+          <h2 id="see-it-think-heading" className="mt-4 font-display text-4xl leading-tight text-white sm:text-6xl">
+            See it <em>think</em>
+          </h2>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
             A faculty of four AI specialists diagnoses what you already know, adapts to how you learn, and guides you to the answer out loud or in writing. It never just hands the answer over.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 120, damping: 20 }}
-            className="mt-9 flex flex-wrap items-center gap-3"
-          >
+          </p>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             {signedIn ? (
               <>
-                <MagneticButton href="/tutor" size="lg">
+                <MagneticButton href="/tutor" size="lg" cursorLabel="Open">
                   <Mic className="h-5 w-5" aria-hidden="true" /> Talk to the tutor
                 </MagneticButton>
                 <MagneticButton href={dashboard} size="lg" variant="glass">
@@ -140,7 +136,7 @@ export default function Home() {
               </>
             ) : (
               <>
-                <MagneticButton href="/register/student" size="lg">
+                <MagneticButton href="/register/student" size="lg" cursorLabel="Start">
                   <Sparkles className="h-5 w-5" aria-hidden="true" /> Start learning free
                 </MagneticButton>
                 <MagneticButton href="/login" size="lg" variant="glass">
@@ -148,7 +144,7 @@ export default function Home() {
                 </MagneticButton>
               </>
             )}
-          </motion.div>
+          </div>
           <p className="mt-5 text-sm text-slate-400">
             {signedIn
               ? "Your mastery and learning style carry over to every session."
@@ -158,7 +154,7 @@ export default function Home() {
         <HeroDemo />
       </section>
 
-      <section aria-labelledby="faculty-heading" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section id="features" aria-labelledby="faculty-heading" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <h2 id="faculty-heading" className="font-display text-4xl text-white sm:text-5xl">
             One question, the right specialist.
@@ -181,7 +177,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="mastery-heading" className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <section id="how-it-works" aria-labelledby="mastery-heading" className="mx-auto grid w-full max-w-7xl scroll-mt-24 items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
         <GlassPanel flow className="order-last flex flex-col items-center gap-6 p-8 sm:flex-row sm:justify-center lg:order-first">
           <MasteryGauge value={0.68} from={0.42} size={190} label="Mastery of Linear Algebra" />
           <ul className="space-y-3 text-sm text-slate-300">
@@ -209,7 +205,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
+      <section id="about" aria-label="For teachers" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 pb-24 pt-8 sm:px-6 lg:px-8">
         <GlassPanel className="flex flex-col items-start justify-between gap-6 p-8 sm:p-10 md:flex-row md:items-center">
           <div>
             <h2 className="font-display text-3xl text-white sm:text-4xl">Teaching a class?</h2>
@@ -222,6 +218,7 @@ export default function Home() {
           </MagneticButton>
         </GlassPanel>
       </section>
-    </main>
+      </main>
+    </SmoothScroll>
   );
 }

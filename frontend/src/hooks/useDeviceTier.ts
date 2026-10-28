@@ -16,17 +16,20 @@ interface NavigatorHints extends Navigator {
 }
 
 let cached: DeviceTier | null = null;
+let webgl2: boolean | null = null;
 
-function supportsWebGL2(): boolean {
+/** three.js r163+ renders through WebGL2 only; without it every 3D scene must use its fallback. */
+export function supportsWebGL2(): boolean {
+  if (webgl2 !== null) return webgl2;
   try {
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2");
-    const ok = !!gl;
+    webgl2 = !!gl;
     gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    return ok;
   } catch {
-    return false;
+    webgl2 = false;
   }
+  return webgl2;
 }
 
 export function detectDeviceTier(): DeviceTier {

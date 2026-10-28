@@ -26,7 +26,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (reduceMotion) return;
-    const instance = new Lenis({ lerp: 0.09, smoothWheel: true, wheelMultiplier: 0.9 });
+    // anchors: in-page "#section" links glide instead of jumping (offset clears the floating nav).
+    const instance = new Lenis({ lerp: 0.09, smoothWheel: true, wheelMultiplier: 0.9, anchors: { offset: -88 } });
     const tick = (time: number) => instance.raf(time * 1000);
     instance.on("scroll", ScrollTrigger.update);
     gsap.ticker.add(tick);
