@@ -18,7 +18,7 @@ const space = {
   700: "#2E3248",
   800: "#181B2A",
   900: "#0B0C15",
-  950: "#05050A",
+  950: "#05060A",
 };
 
 const violet = {
@@ -57,10 +57,18 @@ module.exports = {
         slate: space,
         indigo: violet,
         space,
+        // Brand accents run teal -> cyan -> violet -> indigo. Amber is reserved for warnings/status.
         aurora: {
+          teal: "#2DD4BF",
+          cyan: "#22D3EE",
           violet: "#8B5CF6",
-          cyan: "#06B6D4",
+          indigo: "#6366F1",
           amber: "#F59E0B",
+        },
+        ink: {
+          DEFAULT: "#05060A",
+          text: "#E6E8EE",
+          muted: "#8A90A2",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -106,12 +114,16 @@ module.exports = {
         card: "0 4px 24px -6px rgba(0, 0, 0, 0.6)",
         linear: "0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 30px -10px rgba(0, 0, 0, 0.7)",
         glow: "0 0 0 1px rgba(139, 92, 246, 0.35), 0 8px 32px -8px rgba(139, 92, 246, 0.55)",
-        "glow-cyan": "0 0 0 1px rgba(6, 182, 212, 0.35), 0 8px 32px -8px rgba(6, 182, 212, 0.5)",
+        "glow-teal": "0 0 0 1px rgba(45, 212, 191, 0.35), 0 8px 32px -8px rgba(45, 212, 191, 0.5)",
+        "glow-cyan": "0 0 0 1px rgba(34, 211, 238, 0.35), 0 8px 32px -8px rgba(34, 211, 238, 0.5)",
+        "glow-violet": "0 0 0 1px rgba(139, 92, 246, 0.35), 0 8px 32px -8px rgba(139, 92, 246, 0.55)",
+        "glow-indigo": "0 0 0 1px rgba(99, 102, 241, 0.35), 0 8px 32px -8px rgba(99, 102, 241, 0.55)",
         "glow-amber": "0 0 0 1px rgba(245, 158, 11, 0.4), 0 8px 32px -8px rgba(245, 158, 11, 0.5)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-        display: ["var(--font-display)", "Georgia", "serif"],
+        display: ["var(--font-display)", "-apple-system", "Segoe UI", "sans-serif"],
+        accent: ["var(--font-accent)", "Georgia", "serif"],
         mono: ["var(--font-mono)", "SFMono-Regular", "Menlo", "Monaco", "monospace"],
       },
       keyframes: {
@@ -132,8 +144,18 @@ module.exports = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        twinkle: {
+          "0%, 100%": { opacity: 0.15 },
+          "50%": { opacity: 0.9 },
+        },
+        "line-draw": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
       },
       animation: {
+        twinkle: "twinkle 4s ease-in-out infinite",
+        "line-draw": "line-draw 1.2s cubic-bezier(0.16, 1, 0.3, 1) both",
         "fade-in": "fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both",
         "pulse-subtle": "pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "aurora-drift": "aurora-drift 28s ease-in-out infinite",

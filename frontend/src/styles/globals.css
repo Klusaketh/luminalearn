@@ -29,6 +29,41 @@
 
   --radius: 0.875rem;
   color-scheme: dark;
+
+  /* Brand tokens (hex/rgba) for CSS, canvas and shader code that can't use Tailwind classes */
+  --ll-bg: #05060a;
+  --ll-surface: rgba(255, 255, 255, 0.04);
+  --ll-border: rgba(255, 255, 255, 0.08);
+  --ll-text: #e6e8ee;
+  --ll-muted: #8a90a2;
+  --ll-teal: #2dd4bf;
+  --ll-cyan: #22d3ee;
+  --ll-violet: #8b5cf6;
+  --ll-indigo: #6366f1;
+  --ll-amber: #f59e0b; /* warnings/status only */
+  --ll-gradient: linear-gradient(100deg, #2dd4bf 0%, #22d3ee 32%, #8b5cf6 68%, #6366f1 100%);
+
+  --ll-radius-sm: 0.625rem;
+  --ll-radius-md: 1rem;
+  --ll-radius-lg: 1.5rem;
+  --ll-radius-xl: 2rem;
+  --ll-space-1: 0.25rem;
+  --ll-space-2: 0.5rem;
+  --ll-space-3: 0.75rem;
+  --ll-space-4: 1rem;
+  --ll-space-6: 1.5rem;
+  --ll-space-8: 2rem;
+  --ll-space-12: 3rem;
+  --ll-space-16: 4rem;
+  --ll-space-24: 6rem;
+
+  --ll-shadow-panel: 0 1px 0 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  --ll-glow-teal: 0 0 0 1px rgba(45, 212, 191, 0.35), 0 8px 32px -8px rgba(45, 212, 191, 0.5);
+  --ll-glow-cyan: 0 0 0 1px rgba(34, 211, 238, 0.35), 0 8px 32px -8px rgba(34, 211, 238, 0.5);
+  --ll-glow-violet: 0 0 0 1px rgba(139, 92, 246, 0.35), 0 8px 32px -8px rgba(139, 92, 246, 0.55);
+  --ll-glow-indigo: 0 0 0 1px rgba(99, 102, 241, 0.35), 0 8px 32px -8px rgba(99, 102, 241, 0.55);
+
+  --ll-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @property --border-angle {
@@ -80,16 +115,26 @@
     -webkit-backdrop-filter: blur(40px) saturate(150%);
     backdrop-filter: blur(40px) saturate(150%);
   }
+  /* Headings: Space Grotesk Light. An <em> (or .italic) inside one becomes the serif accent word. */
   .font-display {
-    font-family: var(--font-display), Georgia, serif;
+    font-family: var(--font-display), -apple-system, "Segoe UI", sans-serif;
+    font-weight: 300;
+    letter-spacing: -0.025em;
+  }
+  .font-display em,
+  .font-display .italic,
+  .font-display.italic,
+  .font-accent {
+    font-family: var(--font-accent), Georgia, serif;
+    font-style: italic;
     font-weight: 400;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.01em;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
   .text-aurora {
-    background-image: linear-gradient(100deg, #c4b5fd 0%, #67e8f9 48%, #fcd34d 100%);
+    background-image: linear-gradient(100deg, #5eead4 0%, #67e8f9 34%, #c4b5fd 70%, #a5b4fc 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -108,11 +153,12 @@
     border-radius: inherit;
     background: conic-gradient(
       from var(--border-angle),
-      rgba(139, 92, 246, 0) 0%,
-      rgba(139, 92, 246, 0.95) 18%,
-      rgba(6, 182, 212, 0.9) 36%,
-      rgba(245, 158, 11, 0.8) 52%,
-      rgba(139, 92, 246, 0) 70%
+      rgba(45, 212, 191, 0) 0%,
+      rgba(45, 212, 191, 0.9) 16%,
+      rgba(34, 211, 238, 0.9) 30%,
+      rgba(139, 92, 246, 0.95) 46%,
+      rgba(99, 102, 241, 0.8) 58%,
+      rgba(99, 102, 241, 0) 72%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
@@ -128,6 +174,27 @@
       rgba(255, 255, 255, 0.16),
       transparent 65%
     );
+  }
+
+  /* "[ LABEL ]" tags */
+  .tag-label {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ll-muted);
+  }
+
+  /* Light band that sweeps across a button on hover (see MagneticButton). */
+  .shine-sweep {
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.9s var(--ll-ease-out);
+  }
+  .group:hover > .shine-sweep,
+  .group:focus-visible > .shine-sweep {
+    transform: translateX(120%);
   }
 
   /* Tutor message typography (markdown output) */
@@ -213,6 +280,36 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(169, 175, 202, 0.45);
+}
+
+/* Custom cursor (CustomCursor.tsx sets the class on <html> for fine pointers only).
+   Text fields keep the native I-beam so editing never loses its caret cue. */
+html.ll-custom-cursor,
+html.ll-custom-cursor a,
+html.ll-custom-cursor button,
+html.ll-custom-cursor [role="button"] {
+  cursor: none;
+}
+html.ll-custom-cursor input,
+html.ll-custom-cursor textarea,
+html.ll-custom-cursor select,
+html.ll-custom-cursor [contenteditable="true"] {
+  cursor: auto;
+}
+
+/* Lenis smooth scrolling (landing page only) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 /* Motion is decorative everywhere it is not essential: honor the OS preference. */
