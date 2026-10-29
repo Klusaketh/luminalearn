@@ -7,24 +7,17 @@ import { cn } from "@/utils/cn";
 
 const MotionLink = motion.create(Link);
 
-type Variant = "primary" | "light" | "outline" | "glass" | "ghost";
-type Size = "sm" | "md" | "lg";
+type Variant = "primary" | "glass" | "ghost";
+type Size = "md" | "lg";
 
-// Gradient stops are the 700 shades of teal/cyan/violet so white label text stays above 4.5:1.
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "text-white bg-[linear-gradient(135deg,#0F766E_0%,#0E7490_45%,#6D28D9_100%)] shadow-glow-teal hover:shadow-[0_0_0_1px_rgba(45,212,191,0.55),0_14px_44px_-10px_rgba(34,211,238,0.6)]",
-  light: "bg-white text-space-950 shadow-[0_10px_40px_-12px_rgba(255,255,255,0.45)] hover:bg-slate-50",
-  outline: "border border-white/25 text-white hover:border-aurora-teal/70 hover:bg-white/[0.04]",
+    "text-white bg-[linear-gradient(135deg,#7C3AED_0%,#6D28D9_45%,#0891B2_100%)] shadow-glow hover:shadow-[0_0_0_1px_rgba(167,139,250,0.55),0_14px_44px_-10px_rgba(139,92,246,0.7)]",
   glass: "glass text-slate-100 hover:border-white/20",
   ghost: "text-slate-200 hover:text-white hover:bg-white/[0.04]",
 };
 
-/** Variants that get the light sweep on hover. */
-const SHINE: Record<Variant, boolean> = { primary: true, light: true, outline: true, glass: true, ghost: false };
-
 const SIZES: Record<Size, string> = {
-  sm: "h-9 px-4 text-[13px] gap-1.5 rounded-xl",
   md: "h-11 px-5 text-sm gap-2 rounded-2xl",
   lg: "h-14 px-7 text-[15px] gap-2.5 rounded-[1.25rem]",
 };
@@ -34,8 +27,6 @@ interface BaseProps {
   size?: Size;
   /** How far (0-1) the button follows the cursor. */
   strength?: number;
-  /** Label the custom cursor shows while hovering ("Start", "Open"). */
-  cursorLabel?: string;
   className?: string;
   children: React.ReactNode;
 }
@@ -56,7 +47,6 @@ export function MagneticButton({
   variant = "primary",
   size = "md",
   strength = 0.22,
-  cursorLabel,
   className,
   children,
   ...rest
@@ -98,9 +88,6 @@ export function MagneticButton({
         aria-hidden="true"
         className="spotlight pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
-      {SHINE[variant] && !reduceMotion ? (
-        <span aria-hidden="true" className="shine-sweep pointer-events-none absolute inset-0" />
-      ) : null}
       <span className="relative z-[1] inline-flex items-center gap-[inherit]">{children}</span>
     </>
   );
@@ -116,7 +103,6 @@ export function MagneticButton({
         href={linkProps.href}
         target={linkProps.target}
         aria-label={linkProps["aria-label"]}
-        data-cursor={cursorLabel}
         className={classes}
         style={{ x, y }}
         whileTap={tap}
@@ -136,7 +122,6 @@ export function MagneticButton({
       }}
       {...buttonProps}
       type={buttonProps.type ?? "button"}
-      data-cursor={cursorLabel}
       className={classes}
       style={{ x, y }}
       whileTap={tap}

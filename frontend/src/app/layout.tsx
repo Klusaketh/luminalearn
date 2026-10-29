@@ -14,24 +14,12 @@ const sans = localFont({
   display: "swap",
 });
 
-// Headings: Space Grotesk Light (300), with 400/500 for small headings that need more weight.
 const display = localFont({
-  src: [
-    { path: "../../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-300-normal.woff2", style: "normal", weight: "300" },
-    { path: "../../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2", style: "normal", weight: "400" },
-    { path: "../../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2", style: "normal", weight: "500" },
-  ],
-  variable: "--font-display",
-  display: "swap",
-});
-
-// Accent words inside headlines ("Learning that *adapts* to you").
-const accent = localFont({
   src: [
     { path: "../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2", style: "normal", weight: "400" },
     { path: "../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2", style: "italic", weight: "400" },
   ],
-  variable: "--font-accent",
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -51,7 +39,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#05060A",
+  themeColor: "#05050A",
   colorScheme: "dark",
 };
 
@@ -61,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${sans.variable} ${display.variable} ${accent.variable} ${mono.variable}`}>
+    <html lang="en" className={`dark ${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <a
           href="#main-content"

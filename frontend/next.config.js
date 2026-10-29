@@ -9,8 +9,6 @@ process.env.BACKEND_URL = BACKEND_URL;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Lets a verification build (NEXT_DIST_DIR=.next-verify) run while `next dev` owns .next.
-  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   swcMinify: true,
   ...(process.env.NEXT_OUTPUT === "standalone" ? { output: "standalone" } : {}),
