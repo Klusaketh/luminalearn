@@ -168,11 +168,12 @@ async def forgot_password(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis)
 ) -> Any:
-    """Generate a password reset token for account recovery."""
+    """Email a password reset link for account recovery."""
     reset_token = await auth_service.request_password_reset(db, payload.email, redis)
     return MessageResponse(
-        message="If an account exists with this email, a password reset token has been issued.",
-        detail=reset_token if reset_token and not reset_token.startswith("If an account") else None
+        message="If an account exists with this email, a password reset link has been sent.",
+        # Local development only: returning the token anywhere else would let anyone reset any account.
+        detail=reset_token if settings.ENVIRONMENT == "development" else None
     )
 
 

@@ -1,0 +1,26 @@
+# Render Blueprint: the whole app as one free web service. Setup steps: docs/DEPLOYMENT.md.
+services:
+  - type: web
+    name: luminalearn
+    runtime: docker
+    plan: free
+    # Create the Neon database in the matching region (AWS US West 2) to keep queries fast.
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      # Render asks for these when the Blueprint is created.
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAILS_FROM_EMAIL
+        sync: false
+      # AI turns per learner per 10 minutes. Anyone can sign up here, and each turn spends your Gemini quota.
+      - key: TUTOR_RATE_LIMIT_AUTHENTICATED
+        value: "30"

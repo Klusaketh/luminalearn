@@ -1,14 +1,17 @@
 """
 Provider-independent Email Service for LuminaLearn AI.
-Supports standard SMTP (including Gmail SMTP), custom enterprise providers, and testing mocks.
+Supports standard SMTP (including Gmail SMTP), Brevo's HTTPS API, custom enterprise providers, and testing mocks.
 Never hard-codes credentials or sensitive verification data.
 """
 import asyncio
+import html
 import logging
 import smtplib
 from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import httpx
 
 from app.core.config import settings
 
@@ -117,6 +120,42 @@ class SMTPEmailProvider(BaseEmailProvider):
         )
 
 
+class BrevoEmailProvider(BaseEmailProvider):
+    """Brevo's transactional email API, for hosts that block outbound SMTP (Render's free plan does)."""
+
+    API_URL = "https://api.brevo.com/v3/smtp/email"
+
+    def __init__(self, transport: httpx.AsyncBaseTransport | None = None) -> None:
+        self._transport = transport
+
+    async def send_email(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: str,
+    ) -> bool:
+        payload = {
+            "sender": {"name": settings.EMAILS_FROM_NAME, "email": settings.EMAILS_FROM_EMAIL},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            # Brevo documents one body type per request, so the plain-text part is not sent.
+            "htmlContent": html_content,
+        }
+        try:
+            async with httpx.AsyncClient(transport=self._transport, timeout=10) as client:
+                response = await client.post(self.API_URL, json=payload, headers={"api-key": settings.BREVO_API_KEY or ""})
+        except httpx.HTTPError as exc:
+            logger.error("Failed to reach Brevo for email to %s: %s", to_email, exc)
+            return False
+        if response.is_error:
+            # Brevo's reply names the problem, such as an unverified sender or a bad API key.
+            logger.error("Brevo refused email to %s (%s): %s", to_email, response.status_code, response.text[:300])
+            return False
+        logger.info("Email successfully dispatched to %s via Brevo", to_email)
+        return True
+
+
 class MockEmailProvider(BaseEmailProvider):
     """In-memory mock email provider for testing and offline development."""
 
@@ -147,7 +186,7 @@ class EmailService:
     """High-level email service handling templating and provider delegation."""
 
     def __init__(self, provider: BaseEmailProvider | None = None) -> None:
-        self.provider = provider or SMTPEmailProvider()
+        self.provider = provider or (BrevoEmailProvider() if settings.BREVO_API_KEY else SMTPEmailProvider())
 
     def set_provider(self, provider: BaseEmailProvider) -> None:
         """Swap email provider at runtime (e.g. for testing)."""
@@ -199,7 +238,7 @@ class EmailService:
           </tr>
           <tr>
             <td style="font-size: 14px; color: #94a3b8; line-height: 1.6; text-align: center; padding-bottom: 28px;">
-              Hello <strong style="color: #f1f5f9;">{display_name}</strong>, use the 6-digit verification code below to activate your account.
+              Hello <strong style="color: #f1f5f9;">{html.escape(display_name)}</strong>, use the 6-digit verification code below to activate your account.
             </td>
           </tr>
           <tr>
@@ -224,6 +263,54 @@ class EmailService:
       </td>
     </tr>
   </table>
+</body>
+</html>"""
+
+        return await self.provider.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+    async def send_password_reset_email(
+        self,
+        to_email: str,
+        token: str,
+        user_name: str | None = None,
+    ) -> bool:
+        """
+        Send a password reset link, valid for the reset token's 15-minute lifetime.
+        """
+        display_name = user_name or "Learner"
+        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+        subject = "Reset your LuminaLearn AI password"
+
+        text_content = (
+            f"Hello {display_name},\n\n"
+            f"Reset your LuminaLearn AI password here (valid for 15 minutes):\n{reset_url}\n\n"
+            f"If you did not ask to reset your password, you can safely ignore this email.\n\n"
+            f"Best regards,\n"
+            f"The LuminaLearn AI Team"
+        )
+
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Reset Your Password</title>
+</head>
+<body style="margin: 0; padding: 40px 20px; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9; text-align: center;">
+  <h1 style="font-size: 22px; font-weight: 700; color: #ffffff;">Reset Your Password</h1>
+  <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
+    Hello <strong style="color: #f1f5f9;">{html.escape(display_name)}</strong>, use the button below to choose a new password.
+  </p>
+  <p style="padding: 16px 0;">
+    <a href="{reset_url}" style="display: inline-block; background-color: #4f46e5; border-radius: 12px; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none;">Reset Password</a>
+  </p>
+  <p style="font-size: 13px; color: #64748b; line-height: 1.5;">
+    This link is valid for <strong>15 minutes</strong>. If you did not ask to reset your password, please ignore this email.
+  </p>
 </body>
 </html>"""
 

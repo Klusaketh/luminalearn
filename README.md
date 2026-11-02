@@ -105,6 +105,9 @@ Access local instances:
 
 The workspace (subjects, tutor, quiz, dashboards) requires signing in, and the API enforces it on every request.
 
+### 5. Deploy It Publicly
+The root `Dockerfile` and `render.yaml` run the whole app as one service on Render's free plan, with a free Neon database. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ---
 
 ## 🛠️ Code Quality & Formatting Rules

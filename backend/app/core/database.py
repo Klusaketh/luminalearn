@@ -19,7 +19,7 @@ _BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 SQLITE_URI = f"sqlite+aiosqlite:///{os.path.join(_BACKEND_DIR, 'luminalearn.db').replace(os.sep, '/')}"
 
 # Determine DB URI with SQLite fallback for local dev environment
-use_sqlite = os.environ.get("USE_SQLITE", "true").lower() == "true"
+use_sqlite = os.environ.get("USE_SQLITE", "false" if settings.DATABASE_URL else "true").lower() == "true"
 db_uri = SQLITE_URI if use_sqlite else settings.ASYNC_DATABASE_URI
 
 
@@ -28,6 +28,9 @@ engine: AsyncEngine = create_async_engine(
     db_uri,
     echo=settings.DEBUG,
     future=True,
+    # Hosted PostgreSQL drops idle connections when it scales to zero; replace them instead of
+    # failing the next request.
+    pool_pre_ping=True,
 )
 
 # Async Session Factory
@@ -80,6 +83,10 @@ async def init_db() -> None:
     """Initialize database tables automatically on startup with safe column migrations."""
     import app.models  # noqa: F401 - ensure all ORM models are registered
     from app.models.user import Base
+
+    if use_sqlite and settings.ENVIRONMENT == "production":
+        # A hosted container loses its filesystem on every restart, and every account with it.
+        raise RuntimeError("Production needs PostgreSQL: set DATABASE_URL and leave USE_SQLITE unset.")
 
     if not use_sqlite:
         try:

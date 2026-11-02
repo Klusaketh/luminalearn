@@ -1,5 +1,9 @@
 **/node_modules
 **/.next
+**/.next-verify
+**/*.tsbuildinfo
+.git
+scripts/bench
 **/.venv
 **/venv
 **/__pycache__
@@ -11,6 +15,5 @@
 **/.env.*
 !.env.example
 backend/*.db
-frontend/
 *.docx
 *.key

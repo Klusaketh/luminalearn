@@ -26,7 +26,7 @@ def origin_allowed(origin: str | None) -> bool:
     """CORS does not cover WebSockets, so browser origins are checked explicitly."""
     if origin is None:
         return True  # non-browser clients (CLI tools, tests) send no Origin header
-    return bool(_LOCAL_ORIGIN.match(origin)) or origin in settings.BACKEND_CORS_ORIGINS
+    return bool(_LOCAL_ORIGIN.match(origin)) or origin == settings.FRONTEND_URL or origin in settings.BACKEND_CORS_ORIGINS
 
 
 @router.websocket("/session")

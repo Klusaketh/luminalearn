@@ -219,21 +219,27 @@ class AuthService:
         db: AsyncSession,
         email: str,
         redis: Redis | None = None
-    ) -> str:
-        """Generate a password reset token for the given email."""
+    ) -> str | None:
+        """Email a password reset token to the given address. Returns it, or None when none was issued."""
         user = await user_repository.get_by_email(db, email)
         if not user:
-            # Return generic success to avoid email enumeration
-            return "If an account exists with that email, a password reset link has been issued."
+            # The endpoint answers the same either way, to avoid email enumeration
+            return None
 
         reset_token = secrets.token_urlsafe(32)
         if redis:
+            # One email a minute per account, so this public endpoint can't flood an inbox
+            cooldown_key = f"reset_cooldown:{user.id}"
+            if await _cache_best_effort(redis.get(cooldown_key), "read the password reset cooldown"):
+                return None
+            await _cache_best_effort(redis.setex(cooldown_key, 60, "1"), "store the password reset cooldown")
             # Store reset token in Redis (15 mins TTL = 900 seconds)
             await _cache_best_effort(
                 redis.setex(f"reset_token:{reset_token}", 900, str(user.id)),
                 "store the password reset token",
             )
 
+        await email_service.send_password_reset_email(user.email, reset_token, user.full_name)
         return reset_token
 
     async def reset_password(
