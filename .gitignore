@@ -17,3 +17,7 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 *.tsbuildinfo
+
+# Local SQLite database (may contain user accounts)
+*.db
+*.db-journal
