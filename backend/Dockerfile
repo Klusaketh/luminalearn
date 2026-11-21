@@ -32,10 +32,14 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY backend /srv/backend
 COPY ai /srv/ai
 COPY ml /srv/ml
+# The course catalog (content/) and its sync script, so a fresh database starts with every subject.
+COPY content /srv/content
+COPY scripts/seed_academic_content.py scripts/subject_content.py /srv/scripts/
 
 RUN chown -R appuser:appgroup /srv
 USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Sync the catalog first (idempotent: it only creates or refreshes records), then serve.
+CMD ["sh", "-c", "python /srv/scripts/seed_academic_content.py && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]

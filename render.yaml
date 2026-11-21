@@ -1,0 +1,87 @@
+# Render Blueprint for LuminaLearn AI.
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo. Render reads this file and
+# creates three resources: the PostgreSQL database, the FastAPI backend and the Next.js frontend.
+# Every push to main redeploys the services.
+#
+# Values marked `sync: false` are secrets: Render asks for them once when the Blueprint is
+# created, and they are never stored in this repo.
+
+databases:
+  - name: luminalearn-db
+    plan: free            # free Postgres expires after 30 days; switch to a paid plan for real users
+    region: singapore
+    databaseName: luminalearn_db
+    user: lumina_admin
+
+services:
+  # ---------------------------------------------------------------- FastAPI backend
+  - type: web
+    name: luminalearn-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .       # the backend image also copies the shared ai/ and ml/ packages
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT          # the Dockerfile runs uvicorn on 8000; this tells Render where to route
+        value: "8000"
+      - key: ENVIRONMENT
+        value: production  # secure cookies, no dev shortcuts, fail fast if Postgres is down
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: USE_SQLITE
+        value: "false"     # the container disk is wiped on every deploy, so use Postgres
+      - key: POSTGRES_SERVER
+        fromDatabase: { name: luminalearn-db, property: host }
+      - key: POSTGRES_PORT
+        fromDatabase: { name: luminalearn-db, property: port }
+      - key: POSTGRES_DB
+        fromDatabase: { name: luminalearn-db, property: database }
+      - key: POSTGRES_USER
+        fromDatabase: { name: luminalearn-db, property: user }
+      - key: POSTGRES_PASSWORD
+        fromDatabase: { name: luminalearn-db, property: password }
+      - key: SECRET_KEY
+        generateValue: true  # Render creates a random signing key for login tokens
+      - key: GEMINI_API_KEY
+        sync: false        # https://aistudio.google.com/apikey
+      # Sign-up sends a verification code by email; without SMTP nobody can register.
+      # Gmail works: SMTP_HOST=smtp.gmail.com, SMTP_USER=you@gmail.com,
+      # SMTP_PASSWORD=a 16-character App Password (Google Account -> Security -> App passwords).
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAILS_FROM_EMAIL
+        sync: false
+      # Optional: Google sign-in. Leave blank to use email + password only.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # ---------------------------------------------------------------- Next.js frontend
+  - type: web
+    name: luminalearn-web
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    healthCheckPath: /login
+    envVars:
+      - key: PORT
+        value: "3000"
+      # Where the frontend's server forwards /api/v1. Render passes env vars to the Docker build
+      # as well, which matters because the voice WebSocket rewrite is fixed at build time.
+      # If Render gives the backend a different URL (it adds a suffix when the name is taken),
+      # paste the real one here and redeploy this service.
+      - key: BACKEND_URL
+        value: https://luminalearn-api.onrender.com
