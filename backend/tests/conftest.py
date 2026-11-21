@@ -1,6 +1,8 @@
 import asyncio
 import os
+import shutil
 import sys
+import tempfile
 import uuid
 from collections.abc import AsyncGenerator
 
@@ -10,6 +12,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 # Hermetic AI: every Gemini-backed feature runs on its deterministic engine during tests,
 # even when .env holds a real API key. Must be set before the settings singleton loads.
 os.environ["LLM_OFFLINE_MODE"] = "true"
+
+# Hermetic database: every run gets a fresh SQLite file in a temp directory, so tests never touch
+# backend/luminalearn.db (the developer's data) or a PostgreSQL server named in .env.
+_TEST_DB_DIR = tempfile.mkdtemp(prefix="luminalearn-tests-")
+os.environ["USE_SQLITE"] = "true"
+os.environ["SQLITE_PATH"] = os.path.join(_TEST_DB_DIR, "test.db")
 
 import pytest
 import pytest_asyncio
@@ -31,7 +39,14 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_database():
+    """Creates the schema and loads the curriculum, so content tests never depend on run order."""
+    from scripts.seed_academic_content import seed_academic_content
+
     await init_db()
+    async with AsyncSessionLocal() as session:
+        await seed_academic_content(session)
+    yield
+    shutil.rmtree(_TEST_DB_DIR, ignore_errors=True)
 
 
 @pytest.fixture(autouse=True)

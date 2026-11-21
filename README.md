@@ -1,131 +1,132 @@
-# LuminaLearn AI — Enterprise Monorepo
+# LuminaLearn AI
 
-> **Illuminate Every Learning Journey**  
-> *Project Aurora | Monorepo Engineering Foundation*
+> **Illuminate Every Learning Journey**
+> *Project Aurora*
 
-LuminaLearn AI is an AI-powered adaptive learning platform designed to personalize education through Artificial Intelligence, Learning Analytics, Universal Accessibility (WCAG 2.1 AAA), and Explainable AI (XAI).
+[![CI](https://github.com/Klusaketh/luminalearn/actions/workflows/ci.yml/badge.svg)](https://github.com/Klusaketh/luminalearn/actions/workflows/ci.yml)
+
+LuminaLearn AI is an adaptive learning platform built around a **Socratic AI tutor**: instead of handing over answers, it asks the next right question, explains why it chose that approach, and offers hints one step at a time. It diagnoses each learner's learning style, tracks mastery with **Bayesian Knowledge Tracing**, calibrates quizzes with **Item Response Theory**, and forecasts forgetting so reviews come at the right time.
 
 ---
 
-## 🏛️ Monorepo Directory Architecture
+## ✨ Features
+
+| Area | What it does |
+| :--- | :--- |
+| **Socratic tutor** | A supervisor routes every question to one of four specialists (Socratic Tutor, Concept Explainer, Analogy Specialist, Code Diagnostic). A guardrail screens replies so the final answer is never leaked. "Why this tutor?" shows the routing decision and its confidence. |
+| **Learning styles (VARK)** | An onboarding diagnostic finds whether a learner prefers visual, auditory, read/write or hands-on explanations, and the tutor adapts, for example answering with a flowchart for a visual learner. |
+| **Grounded answers** | Replies cite the course material they used, retrieved with hybrid search (dense vectors + BM25) over the curriculum. |
+| **Code diagnostics** | Pasted Python code is analysed with the `ast` module (missing base cases, repeated subproblems, complexity) and the tutor responds with guiding questions. |
+| **Adaptive quizzes** | Questions are calibrated with IRT (2PL). Wrong answers are diagnosed as specific misconceptions, mastery updates live with BKT, and a retention forecast schedules spaced reviews. |
+| **Voice** | Talk to the tutor and hear replies (Gemini speech-to-text and text-to-speech over a WebSocket). |
+| **Curriculum** | 4 disciplines, 22 subjects, 279 topics, with fully written lessons (theory, worked examples, common mistakes, practice questions). Coverage is tracked in [`docs/SUBJECTS_COVERAGE.md`](docs/SUBJECTS_COVERAGE.md). |
+| **Accounts & security** | Email OTP verification, Google sign-in, Argon2id password hashing, short-lived JWT sessions, role-based access, per-learner rate limits. |
+| **Keeps working offline** | Every AI specialist has a deterministic offline engine, so tutoring continues with no API key or when every Gemini model is unavailable. |
+
+---
+
+## 🧱 Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| Frontend | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, Zustand, TanStack Query, Framer Motion, KaTeX |
+| Backend | FastAPI, Python 3.11+, async SQLAlchemy 2 |
+| Database | PostgreSQL 16 in production; SQLite for local development |
+| Cache | Redis 7, with an in-memory fallback |
+| AI | Google Gemini (with a model fallback chain), multi-agent orchestration in [`ai/`](ai/README.md) |
+| Learning science | Bayesian Knowledge Tracing, IRT 2PL and retention forecasting in [`ml/`](ml/) |
+| Deployment | Docker, Render ([`render.yaml`](render.yaml)), Netlify ([`netlify.toml`](netlify.toml)) |
+| Quality | pytest, Ruff, mypy, ESLint, TypeScript strict mode, GitHub Actions |
+
+---
+
+## 🗂️ Repository Layout
 
 ```
-LUMINALEARN_AI/
-├── .github/                 # GitHub CI/CD workflows, issue & PR templates
-├── .vscode/                 # Workspace linter, formatter & debugger settings
-├── ai/                      # Socratic AI Agent framework & prompt engineering
-├── backend/                 # FastAPI (Python 3.11+) microservices app
-│   ├── app/                 # FastAPI application package (core, api, domain)
-│   ├── tests/               # Pytest backend test suite
-│   ├── Dockerfile           # Multi-stage production container spec
-│   └── pyproject.toml       # Python dependencies (Ruff, Mypy, FastAPI)
-├── database/                # PostgreSQL schema definitions & migrations
-│   ├── init/                # SQL initialization scripts
-│   └── schema.sql           # Master DDL schema definition
-├── docker/                  # Docker Compose orchestration configurations
-│   └── docker-compose.dev.yml # Local development multi-container stack
-├── docs/                    # Single Source of Truth (SSOT) documentation
-│   ├── PRODUCT_CHARTER.md   # Product Vision & Strategic Pillars
-│   ├── MARKET_RESEARCH.md   # Industry Analysis & TAM/SAM/SOM
-│   ├── STAKEHOLDER_ANALYSIS.md # 20 Stakeholder Profiles & Matrices
-│   ├── ENGINEERING_STANDARDS.md # Coding & Architectural Handbook
-│   └── SYSTEM_ARCHITECTURE.md   # Tech Stack Lock & Data Flow Specs
-├── frontend/                # Next.js 14+ (React 18 / TypeScript) web app
-│   ├── src/
-│   │   ├── app/             # App Router pages & layouts
-│   │   ├── components/      # UI Component Library (Apple/Linear inspired)
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── services/        # TanStack Query API services
-│   │   ├── stores/          # Zustand state stores
-│   │   ├── styles/          # Tailwind directives & CSS design tokens
-│   │   └── utils/           # Shared utility functions & constants
-│   ├── next.config.js       # Next.js configuration
-│   ├── tailwind.config.js   # Custom design tokens & theme specs
-│   ├── tsconfig.json        # Strict TypeScript compiler options
-│   └── package.json         # Frontend dependencies
-├── ml/                      # Machine Learning & Bayesian Knowledge Graph engine
-├── scripts/                 # Developer setup & utility scripts
-├── .env.example             # Centralized environment variable template
-├── .gitignore               # Version control exclusion definitions
-├── mypy.ini                 # Strict Python type checking configuration
-├── ruff.toml                # High-performance Python linter configuration
-└── docker-compose.yml       # Primary Docker Compose orchestration file
+luminalearn/
+├── ai/          # Gemini gateway, Socratic agents, prompts, curriculum RAG
+├── backend/     # FastAPI app (app/), tests (tests/), Dockerfile
+├── content/     # Curriculum source: subjects, syllabi, overviews and lessons (Markdown)
+├── database/    # PostgreSQL schema reference
+├── docker/      # Docker Compose stack for local development
+├── docs/        # Architecture, standards, research, deployment guide, notes and IEEE paper
+├── frontend/    # Next.js web app (src/app pages, components, services, stores)
+├── ml/          # Knowledge tracing and retention forecasting models
+├── scripts/     # Curriculum seeder, coverage report, dev launcher
+├── render.yaml  # Render blueprint: PostgreSQL + backend + frontend
+└── netlify.toml # Netlify build for the frontend
 ```
 
 ---
 
-## ⚡ Tech Stack Lock
+## 🚀 Run It Locally
 
-| Domain | Technology | Version | Purpose |
-| :--- | :--- | :---: | :--- |
-| **Frontend** | **Next.js (App Router)** | `14.2+` | React 18 Web Client, Server Components, SSR |
-| **Styling** | **Tailwind CSS & CSS Tokens** | `3.4+` | Custom Design System (Apple/Linear inspired) |
-| **State** | **Zustand & TanStack Query** | `v4 / v5` | Client UI State + Server Async Caching |
-| **Backend** | **FastAPI** | `0.110+` | High-performance Async REST Microservices |
-| **Language** | **Python** | `3.11+` | Backend & AI/ML Execution Engine |
-| **Database** | **PostgreSQL** | `16.2+` | Primary Relational Database |
-| **Cache & Queue** | **Redis** | `7.2+` | Session Cache & Async Task Queue |
-| **Vector DB** | **Qdrant** | `1.9+` | Vector Search for RAG Concept Embeddings |
-| **AI Foundation** | **Google Gemini** | `1.5 Pro / Flash` | Socratic AI Tutoring & Resource Generation |
-| **Containers** | **Docker & Docker Compose** | `26.0+` | Multi-Container Local & Cloud Deployment |
+**Prerequisites:** Node.js 20+, Python 3.11+.
 
----
-
-## 🚀 Quickstart Development Setup
-
-### 1. Prerequisites
-- **Node.js**: `v20.x` or higher
-- **Python**: `3.11.x`
-- **Docker & Docker Compose**: `v26.x` or higher
-
-### 2. Environment Configuration
-Copy `.env.example` to create your local environment configuration:
 ```bash
-cp .env.example .env
-```
-
-### 3. Run Locally (one command)
-From the project root, after installing backend (`backend/.venv`) and frontend (`frontend/node_modules`) dependencies:
-```bash
+cp .env.example backend/.env          # then add GEMINI_API_KEY (optional: the tutor runs offline without it)
+python -m venv backend/.venv
+backend/.venv/bin/pip install -r backend/requirements.txt
+(cd frontend && npm ci)
+backend/.venv/bin/python scripts/seed_academic_content.py   # load the curriculum into the local database
 npm run dev
 ```
-This starts the API on `http://127.0.0.1:8001` and the web app on `http://localhost:3000` (or the next free port), and Ctrl+C stops both. The browser only ever calls the web app's own `/api/v1`, which the Next.js server forwards to the API. There is no CORS setup, and no API address in the browser that can drift.
 
-### 4. Or Launch the Stack via Docker Compose
-To launch PostgreSQL, Redis, FastAPI Backend, and Next.js Frontend concurrently:
+On Windows, use `backend\.venv\Scripts\pip` and `backend\.venv\Scripts\python` in place of the `bin/` paths.
+
+This starts the API on `http://127.0.0.1:8001` and the web app on `http://localhost:3000`. The browser only calls the web app's own `/api/v1`, which the Next.js server forwards to the API, so there is no CORS setup.
+
+In development, sign-up verification codes are printed in the API console, so no email account is needed.
+
+Or run the whole stack (PostgreSQL, Redis, API and web app) with Docker:
+
 ```bash
-docker-compose -f docker/docker-compose.dev.yml up --build
+docker compose -f docker/docker-compose.dev.yml up --build
 ```
-
-Access local instances:
-- **Frontend App**: `http://localhost:3000`
-- **Backend API**: `http://localhost:8001`
-- **API Interactive Docs (Swagger)**: `http://localhost:8001/docs`
-- **Health Check Endpoint**: `http://localhost:8001/api/v1/health`
-
-The workspace (subjects, tutor, quiz, dashboards) requires signing in, and the API enforces it on every request.
 
 ---
 
-## 🛠️ Code Quality & Formatting Rules
+## ✅ Tests & Code Quality
 
-### Frontend (TypeScript / React)
-```bash
-cd frontend
-npm run lint      # ESLint check
-npm run typecheck # TypeScript strict type check
-npm run format    # Prettier auto-format
-```
-
-### Backend (Python / FastAPI)
 ```bash
 cd backend
-ruff check .      # High-performance linting
-ruff format .     # Code formatting (Black compliant)
-mypy app          # Strict type checking
+pytest -q          # 404 tests; runs on offline AI engines and a throwaway database
+ruff check .
+mypy app
+
+cd ../frontend
+npm run lint
+npm run typecheck
 ```
+
+GitHub Actions runs the backend tests and lint, and the frontend lint, type check and build, on every push and pull request.
+
+The lesson tests also run every code example in the curriculum and compare its real output with the output printed in the lesson.
 
 ---
 
-## 📄 License & Governance
-Proprietary & Confidential — LuminaLearn AI Development Team. All rights reserved.
+## ☁️ Deploy
+
+- **Render (full stack):** New → Blueprint → this repository. Render reads [`render.yaml`](render.yaml) and creates PostgreSQL, the API and the web app. Step-by-step guide: [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
+- **Netlify (web app only):** import the repository; [`netlify.toml`](netlify.toml) builds the frontend. Set `BACKEND_URL` to the Render API's URL. The live voice session needs WebSockets, which Netlify cannot proxy.
+
+Production needs `GEMINI_API_KEY` for live AI, and SMTP settings so sign-up emails are delivered.
+
+---
+
+## 📚 Documentation
+
+| Document | Contents |
+| :--- | :--- |
+| [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) | Architecture and data flow |
+| [`docs/PRODUCT_CHARTER.md`](docs/PRODUCT_CHARTER.md) | Vision, personas and success metrics |
+| [`docs/ENGINEERING_STANDARDS.md`](docs/ENGINEERING_STANDARDS.md) | Coding standards |
+| [`ai/README.md`](ai/README.md) | The tutor's agents, prompts and retrieval |
+| [`content/README.md`](content/README.md) | How to write and publish lessons |
+| [`docs/paper/`](docs/paper/) | IEEE technical paper |
+
+---
+
+## 📄 License
+
+Proprietary. © LuminaLearn AI Development Team. All rights reserved.

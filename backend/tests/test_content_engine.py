@@ -257,7 +257,8 @@ async def test_verified_user_can_access_lesson(async_client: AsyncClient):
     assert data["slug"] == "foundations-of-big-o-complexity"
     assert data["title"] == "Foundations of Big-O Complexity"
     assert len(data["learning_objectives"]) >= 2
-    assert "# Foundations of Big-O Complexity" in data["content"]
+    # Lesson bodies start at the first section: the page renders the title itself (content/README.md).
+    assert data["content"].lstrip().startswith("## Introduction")
     assert data["subject_slug"] == "data-structures-and-algorithms"
 
 
