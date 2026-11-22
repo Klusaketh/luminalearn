@@ -1,0 +1,54 @@
+{
+  "title": "Climbing Stairs",
+  "difficulty": "Easy",
+  "order": 6,
+  "tags": [
+    "Dynamic Programming"
+  ],
+  "related_topic": "memoization-vs-tabulation",
+  "function": "climb_stairs",
+  "compare": "exact",
+  "hints": [
+    "Your last move onto step `n` was either a 1-step or a 2-step. Where were you just before it?",
+    "ways(n) = ways(n - 1) + ways(n - 2), with ways(1) = 1 and ways(2) = 2. Build the answer upwards with two variables instead of recursion.",
+    "The Fibonacci numbers follow the same rule: each is the sum of the previous two, and a loop computes them in linear time."
+  ],
+  "tests": [
+    {
+      "args": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        2
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        3
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        5
+      ],
+      "expected": 8
+    },
+    {
+      "args": [
+        10
+      ],
+      "expected": 89
+    },
+    {
+      "args": [
+        45
+      ],
+      "expected": 1836311903
+    }
+  ]
+}

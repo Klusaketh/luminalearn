@@ -1,0 +1,105 @@
+{
+  "title": "Group Anagrams",
+  "difficulty": "Medium",
+  "order": 8,
+  "tags": [
+    "Hashing",
+    "Strings"
+  ],
+  "related_topic": "hash-functions-collisions",
+  "function": "group_anagrams",
+  "compare": "exact",
+  "hints": [
+    "What do all anagrams of a word have in common that other words do not?",
+    "Sorting a word's letters gives the same key for every anagram (`\"eat\"`, `\"tea\"` and `\"ate\"` all become `\"aet\"`). Group words in a dictionary keyed by that, then sort as the statement asks.",
+    "Grouping students by the first letter of their name uses the same dictionary-of-lists pattern, with a different key function."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          "eat",
+          "tea",
+          "tan",
+          "ate",
+          "nat",
+          "bat"
+        ]
+      ],
+      "expected": [
+        [
+          "ate",
+          "eat",
+          "tea"
+        ],
+        [
+          "bat"
+        ],
+        [
+          "nat",
+          "tan"
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          ""
+        ]
+      ],
+      "expected": [
+        [
+          ""
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          "a"
+        ]
+      ],
+      "expected": [
+        [
+          "a"
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          "abc",
+          "cba",
+          "bca",
+          "xyz"
+        ]
+      ],
+      "expected": [
+        [
+          "abc",
+          "bca",
+          "cba"
+        ],
+        [
+          "xyz"
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          "ab",
+          "ba",
+          "ab"
+        ]
+      ],
+      "expected": [
+        [
+          "ab",
+          "ab",
+          "ba"
+        ]
+      ]
+    }
+  ]
+}

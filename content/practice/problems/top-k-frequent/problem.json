@@ -1,0 +1,95 @@
+{
+  "title": "Top K Frequent Elements",
+  "difficulty": "Medium",
+  "order": 11,
+  "tags": [
+    "Hashing",
+    "Heaps"
+  ],
+  "related_topic": "heap-implementation",
+  "function": "top_k_frequent",
+  "compare": "exact",
+  "hints": [
+    "First you need to know how often each value appears. Which data structure counts things?",
+    "Count with `collections.Counter`. Then order the distinct values by the key `(-count, value)`, so higher counts come first and ties go to the smaller value, and take the first `k`.",
+    "A leaderboard of the top scorers uses the same idea: rank by score descending, break ties by name, and keep the first few."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          1,
+          1,
+          2,
+          2,
+          3
+        ],
+        2
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "args": [
+        [
+          4,
+          4,
+          6,
+          6,
+          5
+        ],
+        2
+      ],
+      "expected": [
+        4,
+        6
+      ]
+    },
+    {
+      "args": [
+        [
+          7
+        ],
+        1
+      ],
+      "expected": [
+        7
+      ]
+    },
+    {
+      "args": [
+        [
+          3,
+          3,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        3
+      ],
+      "expected": [
+        2,
+        1,
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          -1,
+          -1,
+          5
+        ],
+        1
+      ],
+      "expected": [
+        -1
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "title": "Longest Substring Without Repeating Characters",
+  "difficulty": "Medium",
+  "order": 10,
+  "tags": [
+    "Sliding Window",
+    "Hashing"
+  ],
+  "related_topic": "sliding-window-two-pointers",
+  "function": "length_of_longest_substring",
+  "compare": "exact",
+  "hints": [
+    "Keep a window of characters with no repeats. When a new character is already inside the window, which part of the window has to go?",
+    "Store each character's last index. When `ch` repeats inside the window, move `start` to just after its previous position. The answer is the largest `i - start + 1` you see.",
+    "Finding the longest run of days with temperatures above a threshold uses the same expanding and shrinking window."
+  ],
+  "tests": [
+    {
+      "args": [
+        "abcabcbb"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "bbbbb"
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        "pwwkew"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        ""
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        " "
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        "dvdf"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "abba"
+      ],
+      "expected": 2
+    }
+  ]
+}
