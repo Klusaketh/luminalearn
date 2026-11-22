@@ -124,6 +124,8 @@ const webPort = await freeWebPort();
 const webUrl = `http://localhost:${webPort}`;
 console.log(`Starting LuminaLearn: API on ${backendUrl}, web app on ${webUrl}\n`);
 start("api", python, ["-m", "app"], { cwd: backendDir, env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+// The coding sandbox serves the Pyodide runtime from public/pyodide (npm `predev` is bypassed here).
+spawnSync(process.execPath, [join(frontendDir, "scripts", "copy-pyodide.mjs")], { stdio: "inherit" });
 start("web", process.execPath, [nextBin, "dev", "-p", String(webPort)], { cwd: frontendDir, env: { ...process.env, BACKEND_URL: backendUrl } });
 
 if (await waitForBackend()) {

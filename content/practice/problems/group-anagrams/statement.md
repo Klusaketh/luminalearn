@@ -6,10 +6,8 @@ So that the answer is unique, return the groups in this form:
 
 ### Examples
 
-| `words` | Result |
-| :--- | :--- |
-| `["eat", "tea", "tan", "ate", "nat", "bat"]` | `[["ate", "eat", "tea"], ["bat"], ["nat", "tan"]]` |
-| `[""]` | `[[""]]` |
+- `words = ["eat", "tea", "tan", "ate", "nat", "bat"]` → `[["ate", "eat", "tea"], ["bat"], ["nat", "tan"]]`
+- `words = [""]` → `[[""]]`
 
 ### Constraints
 

@@ -2,11 +2,9 @@ Return the `k` values that appear most often in `nums`, **most frequent first**.
 
 ### Examples
 
-| `nums` | `k` | Result |
-| :--- | :--- | :--- |
-| `[1, 1, 1, 2, 2, 3]` | `2` | `[1, 2]` |
-| `[4, 4, 6, 6, 5]` | `2` | `[4, 6]` |
-| `[7]` | `1` | `[7]` |
+- `nums = [1, 1, 1, 2, 2, 3]`, `k = 2` → `[1, 2]`
+- `nums = [4, 4, 6, 6, 5]`, `k = 2` → `[4, 6]`
+- `nums = [7]`, `k = 1` → `[7]`
 
 ### Constraints
 

@@ -2,11 +2,9 @@ Return `True` if `s` reads the same forwards and backwards once you **ignore cas
 
 ### Examples
 
-| `s` | Result | Cleaned |
-| :--- | :--- | :--- |
-| `"A man, a plan, a canal: Panama"` | `True` | `amanaplanacanalpanama` |
-| `"race a car"` | `False` | `raceacar` |
-| `" "` | `True` | empty string |
+- `s = "A man, a plan, a canal: Panama"` → `True` (cleaned: `amanaplanacanalpanama`)
+- `s = "race a car"` → `False` (cleaned: `raceacar`)
+- `s = " "` → `True` (cleaned: empty string)
 
 ### Constraints
 

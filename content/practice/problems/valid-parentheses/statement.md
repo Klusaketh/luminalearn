@@ -4,12 +4,10 @@ A string is balanced when every opening bracket is closed by the **same type** o
 
 ### Examples
 
-| `s` | Result |
-| :--- | :--- |
-| `"()[]{}"` | `True` |
-| `"([{}])"` | `True` |
-| `"(]"` | `False` |
-| `"([)]"` | `False` |
+- `s = "()[]{}"` → `True`
+- `s = "([{}])"` → `True`
+- `s = "(]"` → `False`
+- `s = "([)]"` → `False`
 
 ### Constraints
 

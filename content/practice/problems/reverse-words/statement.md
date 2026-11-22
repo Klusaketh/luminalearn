@@ -4,11 +4,9 @@ The input may have leading or trailing spaces, or several spaces between words. 
 
 ### Examples
 
-| `s` | Result |
-| :--- | :--- |
-| `"the sky is blue"` | `"blue is sky the"` |
-| `"  hello world  "` | `"world hello"` |
-| `"a good   example"` | `"example good a"` |
+- `s = "the sky is blue"` → `"blue is sky the"`
+- `s = "  hello world  "` → `"world hello"`
+- `s = "a good   example"` → `"example good a"`
 
 ### Constraints
 

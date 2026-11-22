@@ -4,11 +4,9 @@ Exactly one pair adds up to the target, and you may not use the same element twi
 
 ### Examples
 
-| `nums` | `target` | Result | Why |
-| :--- | :--- | :--- | :--- |
-| `[2, 7, 11, 15]` | `9` | `[0, 1]` | `2 + 7 = 9` |
-| `[3, 2, 4]` | `6` | `[1, 2]` | `2 + 4 = 6` |
-| `[3, 3]` | `6` | `[0, 1]` | The same value may appear twice |
+- `nums = [2, 7, 11, 15]`, `target = 9` → `[0, 1]` (2 + 7 = 9)
+- `nums = [3, 2, 4]`, `target = 6` → `[1, 2]` (2 + 4 = 6)
+- `nums = [3, 3]`, `target = 6` → `[0, 1]` (The same value may appear twice)
 
 ### Constraints
 

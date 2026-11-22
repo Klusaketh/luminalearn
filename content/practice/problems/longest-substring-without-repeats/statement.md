@@ -2,11 +2,9 @@ Return the length of the longest **substring** of `s` (a contiguous run of chara
 
 ### Examples
 
-| `s` | Result | Longest substring |
-| :--- | :--- | :--- |
-| `"abcabcbb"` | `3` | `"abc"` |
-| `"bbbbb"` | `1` | `"b"` |
-| `"pwwkew"` | `3` | `"wke"` (`"pwke"` is not contiguous) |
+- `s = "abcabcbb"` → `3` (longest substring: `"abc"`)
+- `s = "bbbbb"` → `1` (longest substring: `"b"`)
+- `s = "pwwkew"` → `3` (longest substring: `"wke"` (`"pwke"` is not contiguous))
 
 ### Constraints
 
