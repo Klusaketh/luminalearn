@@ -16,7 +16,9 @@ from app.core.config import settings
 logger = logging.getLogger("luminalearn.database")
 
 _BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SQLITE_URI = f"sqlite+aiosqlite:///{os.path.join(_BACKEND_DIR, 'luminalearn.db').replace(os.sep, '/')}"
+# SQLITE_PATH lets the test suite (and anyone else) use a different file than the dev database.
+SQLITE_PATH = os.environ.get("SQLITE_PATH") or os.path.join(_BACKEND_DIR, "luminalearn.db")
+SQLITE_URI = f"sqlite+aiosqlite:///{SQLITE_PATH.replace(os.sep, '/')}"
 
 # Determine DB URI with SQLite fallback for local dev environment
 use_sqlite = os.environ.get("USE_SQLITE", "true").lower() == "true"

@@ -5,6 +5,7 @@ Convention (content/README.md): a fenced code block followed by an `Output:` lin
 ` ```text ` block is a runnable example. Python always runs; Java, C, and C++ run when a
 compiler is available on the machine and are skipped otherwise.
 """
+import itertools
 import os
 import re
 import shutil
@@ -28,7 +29,7 @@ def _examples() -> list[tuple[str, str, str, str]]:
     for path in sorted(SUBJECTS_ROOT.glob("*/lessons/*.md")):
         text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
         blocks = list(FENCE.finditer(text))
-        for index, (code, output) in enumerate(zip(blocks, blocks[1:])):
+        for index, (code, output) in enumerate(itertools.pairwise(blocks)):
             if code.group(1) in RUNNABLE and output.group(1) == "text" and BETWEEN_OK.match(text[code.end() : output.start()]):
                 case_id = f"{path.parent.parent.name}/{path.stem}#{index}"
                 found.append((case_id, code.group(1), code.group(2), output.group(2)))
@@ -43,7 +44,7 @@ def _normalise(text: str) -> str:
 
 
 def _run(args: list[str], cwd: Path, timeout: int = 30) -> str:
-    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout, check=False)
     assert result.returncode == 0, f"exit {result.returncode}\n{result.stderr[-2000:]}"
     return result.stdout
 
