@@ -2,17 +2,75 @@
 Provider-independent Email Service for LuminaLearn AI.
 Supports standard SMTP (including Gmail SMTP), custom enterprise providers, and testing mocks.
 Never hard-codes credentials or sensitive verification data.
+
+Every send reports how the message was delivered (see `OTPDelivery`): "email" when an SMTP
+server accepted it, "console" when development without SMTP printed it to the API terminal,
+and "failed" otherwise. Callers must never tell a user "we emailed you" unless it was "email".
 """
 import asyncio
 import logging
 import smtplib
+import ssl
 from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from app.core.config import settings
+from app.schemas.auth import OTPDelivery
+from app.services.otp_service import OTPPurpose
 
 logger = logging.getLogger(__name__)
+
+SMTP_TIMEOUT_SECONDS = 15
+# Port 465 speaks TLS from the first byte (SMTPS). Every other port (587, 2525, 25) starts in
+# plain text and upgrades with STARTTLS when SMTP_TLS is true.
+IMPLICIT_TLS_PORT = 465
+
+
+def smtp_configured() -> bool:
+    """True when host, user and password are all set, so codes can really be emailed."""
+    return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD)
+
+
+def sender_address() -> str:
+    return settings.EMAILS_FROM_EMAIL or settings.SMTP_USER or "noreply@luminalearn.ai"
+
+
+def fallback_delivery() -> OTPDelivery:
+    """How a code is delivered when SMTP is not configured: printed in development, else lost."""
+    return "console" if settings.ENVIRONMENT == "development" else "failed"
+
+
+def expected_delivery() -> OTPDelivery:
+    """The delivery a successful send would report, for responses that must not reveal accounts."""
+    return "email" if smtp_configured() else fallback_delivery()
+
+
+def check_email_configuration() -> None:
+    """
+    Log one line saying whether email works, at API startup. In production, refuse to start
+    without SMTP: nobody could register or reset a password.
+    """
+    # Uvicorn configures only its own loggers, so this line goes through one of them to be seen.
+    startup_log = logging.getLogger("uvicorn.error")
+    if smtp_configured():
+        startup_log.info(
+            "Email: SMTP configured (%s:%s, from %s)",
+            settings.SMTP_HOST,
+            settings.SMTP_PORT,
+            sender_address(),
+        )
+        return
+    message = (
+        "Email: NOT configured - OTP codes will be printed to the console (development) "
+        "or not sent (production). Set SMTP_HOST, SMTP_USER and SMTP_PASSWORD in backend/.env."
+    )
+    if settings.ENVIRONMENT == "production":
+        startup_log.critical(message)
+        raise RuntimeError(
+            "SMTP_HOST, SMTP_USER and SMTP_PASSWORD are required when ENVIRONMENT=production."
+        )
+    startup_log.warning(message)
 
 
 class BaseEmailProvider(ABC):
@@ -25,15 +83,51 @@ class BaseEmailProvider(ABC):
         subject: str,
         html_content: str,
         text_content: str,
-    ) -> bool:
-        """Asynchronously send an email."""
+    ) -> OTPDelivery:
+        """Asynchronously send an email and report how it was delivered."""
 
 
 class SMTPEmailProvider(BaseEmailProvider):
     """
-    Standard SMTP email provider supporting Gmail SMTP, Mailgun, SendGrid, AWS SES,
+    Standard SMTP email provider supporting Gmail SMTP, Brevo, SendGrid, Mailgun, AWS SES,
     and any RFC 5321 compliant SMTP server.
     """
+
+    def transmit(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: str,
+    ) -> None:
+        """Send one message over SMTP. Raises the SMTP/network error if the server rejects it."""
+        host = settings.SMTP_HOST
+        user = settings.SMTP_USER
+        password = settings.SMTP_PASSWORD
+        if not host or not user or not password:
+            raise RuntimeError("SMTP is not configured: set SMTP_HOST, SMTP_USER and SMTP_PASSWORD.")
+        port = settings.SMTP_PORT
+        from_email = sender_address()
+        from_name = settings.EMAILS_FROM_NAME or "LuminaLearn AI"
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = f"{from_name} <{from_email}>"
+        message["To"] = to_email
+        message.attach(MIMEText(text_content, "plain", "utf-8"))
+        message.attach(MIMEText(html_content, "html", "utf-8"))
+
+        context = ssl.create_default_context()
+        server: smtplib.SMTP
+        if port == IMPLICIT_TLS_PORT:
+            server = smtplib.SMTP_SSL(host, port, timeout=SMTP_TIMEOUT_SECONDS, context=context)
+        else:
+            server = smtplib.SMTP(host, port, timeout=SMTP_TIMEOUT_SECONDS)
+        with server:
+            if port != IMPLICIT_TLS_PORT and settings.SMTP_TLS:
+                server.starttls(context=context)
+            server.login(user, password)
+            server.sendmail(from_email, [to_email], message.as_string())
 
     def _send_sync(
         self,
@@ -41,64 +135,51 @@ class SMTPEmailProvider(BaseEmailProvider):
         subject: str,
         html_content: str,
         text_content: str,
-    ) -> bool:
-        host = settings.SMTP_HOST
-        port = settings.SMTP_PORT
-        user = settings.SMTP_USER
-        password = settings.SMTP_PASSWORD
-        use_tls = settings.SMTP_TLS
-        from_email = settings.EMAILS_FROM_EMAIL or user or "noreply@luminalearn.ai"
-        from_name = settings.EMAILS_FROM_NAME or "LuminaLearn AI"
-
-        if not host or not user or not password:
-            if settings.ENVIRONMENT == "development":
-                logger.warning(
-                    "SMTP credentials not fully configured (host=%s, user=%s). Dispatching to dev console.",
-                    bool(host),
-                    bool(user),
-                )
+    ) -> OTPDelivery:
+        if not smtp_configured():
+            delivery = fallback_delivery()
+            if delivery == "console":
+                # ASCII only: on Windows a piped stdout may not be able to encode emoji.
                 print("\n" + "=" * 64)
-                print(f"📧 [DEV EMAIL CONSOLE] To: {to_email}")
+                print(f"[DEV EMAIL CONSOLE] To: {to_email}")
                 print(f"   Subject: {subject}")
                 for line in text_content.strip().split("\n"):
-                    if "code:" in line.lower() or "valid for" in line.lower():
+                    if "code is:" in line.lower() or "valid for" in line.lower():
                         print(f"   {line.strip()}")
                 print("=" * 64 + "\n", flush=True)
             else:
                 logger.error(
-                    "SMTP credentials not configured in %s environment. Refusing to print OTP to stdout. Email to %s dropped.",
+                    "SMTP is not configured in the %s environment, so the email to %s was not sent.",
                     settings.ENVIRONMENT,
                     to_email,
                 )
-            return False
-
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = f"{from_name} <{from_email}>"
-        message["To"] = to_email
-
-        part_text = MIMEText(text_content, "plain", "utf-8")
-        part_html = MIMEText(html_content, "html", "utf-8")
-        message.attach(part_text)
-        message.attach(part_html)
+            return delivery
 
         try:
-            if port == 465:
-                with smtplib.SMTP_SSL(host, port, timeout=10) as server:
-                    server.login(user, password)
-                    server.sendmail(from_email, [to_email], message.as_string())
-            else:
-                with smtplib.SMTP(host, port, timeout=10) as server:
-                    if use_tls:
-                        server.starttls()
-                    server.login(user, password)
-                    server.sendmail(from_email, [to_email], message.as_string())
-            logger.info("Email successfully dispatched to %s via SMTP (%s)", to_email, host)
-            return True
+            self.transmit(to_email, subject, html_content, text_content)
         except (smtplib.SMTPException, OSError) as exc:
-            # OSError covers DNS, socket, TLS and timeout failures.
-            logger.error("Failed to send email to %s: %s", to_email, str(exc))
-            return False
+            # OSError covers DNS, refused connections, TLS and timeouts. The exception text is the
+            # server's reply; it never contains the password or the message (so never the code).
+            hint = ""
+            if isinstance(exc, smtplib.SMTPAuthenticationError):
+                hint = " Check SMTP_USER and SMTP_PASSWORD (Gmail needs an App Password)."
+            elif not isinstance(exc, smtplib.SMTPException):  # SMTPException is itself an OSError
+                hint = (
+                    " Could not reach or secure the SMTP server: check SMTP_HOST and SMTP_PORT."
+                    " Some hosts block outbound SMTP (Render's free plan blocks 25, 465 and 587)."
+                )
+            logger.error(
+                "Email to %s via %s:%s failed: %s: %s.%s",
+                to_email,
+                settings.SMTP_HOST,
+                settings.SMTP_PORT,
+                type(exc).__name__,
+                exc,
+                hint,
+            )
+            return "failed"
+        logger.info("Email sent to %s via SMTP (%s)", to_email, settings.SMTP_HOST)
+        return "email"
 
     async def send_email(
         self,
@@ -106,8 +187,8 @@ class SMTPEmailProvider(BaseEmailProvider):
         subject: str,
         html_content: str,
         text_content: str,
-    ) -> bool:
-        """Run blocking SMTP transmission on background worker thread."""
+    ) -> OTPDelivery:
+        """Run the blocking SMTP exchange on a worker thread so the event loop keeps serving."""
         return await asyncio.to_thread(
             self._send_sync,
             to_email,
@@ -120,8 +201,10 @@ class SMTPEmailProvider(BaseEmailProvider):
 class MockEmailProvider(BaseEmailProvider):
     """In-memory mock email provider for testing and offline development."""
 
-    def __init__(self) -> None:
+    def __init__(self, delivery: OTPDelivery = "email") -> None:
         self.sent_emails: list[dict[str, str]] = []
+        # What send_email reports, so tests can simulate a console fallback or a failed send.
+        self.delivery: OTPDelivery = delivery
 
     async def send_email(
         self,
@@ -129,18 +212,34 @@ class MockEmailProvider(BaseEmailProvider):
         subject: str,
         html_content: str,
         text_content: str,
-    ) -> bool:
+    ) -> OTPDelivery:
         self.sent_emails.append({
             "to_email": to_email,
             "subject": subject,
             "html_content": html_content,
             "text_content": text_content,
         })
-        logger.debug("Mock email queued for %s with subject: %s", to_email, subject)
-        return True
+        logger.debug("Mock email queued for %s (reporting %s)", to_email, self.delivery)
+        return self.delivery
 
     def clear(self) -> None:
         self.sent_emails.clear()
+
+
+_OTP_COPY: dict[OTPPurpose, dict[str, str]] = {
+    "verify": {
+        "subject": "is your LuminaLearn AI verification code",
+        "title": "Verify Your Email Address",
+        "intro": "use the 6-digit verification code below to activate your account.",
+        "ignore": "If you did not create an account on LuminaLearn AI, you can safely ignore this email.",
+    },
+    "reset": {
+        "subject": "is your LuminaLearn AI password reset code",
+        "title": "Reset Your Password",
+        "intro": "use the 6-digit code below to choose a new password.",
+        "ignore": "If you did not ask to reset your password, you can safely ignore this email. Your password has not changed.",
+    },
+}
 
 
 class EmailService:
@@ -158,18 +257,21 @@ class EmailService:
         to_email: str,
         otp: str,
         user_name: str | None = None,
-    ) -> bool:
+        purpose: OTPPurpose = "verify",
+    ) -> OTPDelivery:
         """
-        Send a secure 6-digit email verification OTP with 10-minute validity notice.
+        Send a 6-digit one-time code (email verification or password reset) with a
+        10-minute validity notice, and report how it was delivered.
         """
+        copy = _OTP_COPY[purpose]
         display_name = user_name or "Learner"
-        subject = f"{otp} is your LuminaLearn AI verification code"
+        subject = f"{otp} {copy['subject']}"
 
         text_content = (
             f"Hello {display_name},\n\n"
-            f"Your LuminaLearn AI verification code is: {otp}\n\n"
-            f"This code will expire in exactly 10 minutes.\n"
-            f"If you did not create an account on LuminaLearn AI, you can safely ignore this email.\n\n"
+            f"Your LuminaLearn AI code is: {otp}\n\n"
+            f"This code is valid for 10 minutes.\n"
+            f"{copy['ignore']}\n\n"
             f"Best regards,\n"
             f"The LuminaLearn AI Team"
         )
@@ -178,7 +280,7 @@ class EmailService:
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Verify Your Email</title>
+  <title>{copy['title']}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0b0f19; padding: 40px 20px;">
@@ -194,12 +296,12 @@ class EmailService:
           </tr>
           <tr>
             <td style="font-size: 22px; font-weight: 700; color: #ffffff; text-align: center; padding-bottom: 12px;">
-              Verify Your Email Address
+              {copy['title']}
             </td>
           </tr>
           <tr>
             <td style="font-size: 14px; color: #94a3b8; line-height: 1.6; text-align: center; padding-bottom: 28px;">
-              Hello <strong style="color: #f1f5f9;">{display_name}</strong>, use the 6-digit verification code below to activate your account.
+              Hello <strong style="color: #f1f5f9;">{display_name}</strong>, {copy['intro']}
             </td>
           </tr>
           <tr>
@@ -211,12 +313,12 @@ class EmailService:
           </tr>
           <tr>
             <td style="font-size: 13px; color: #64748b; line-height: 1.5; text-align: center; padding-bottom: 24px;">
-              ⏰ This code is valid for <strong>10 minutes</strong>. Do not share this code with anyone.
+              This code is valid for <strong>10 minutes</strong>. Do not share this code with anyone.
             </td>
           </tr>
           <tr>
             <td style="border-top: 1px solid #1f2937; padding-top: 20px; font-size: 12px; color: #475569; text-align: center;">
-              If you did not request this code, please ignore this email.<br>
+              {copy['ignore']}<br>
               &copy; 2026 LuminaLearn AI. All rights reserved.
             </td>
           </tr>

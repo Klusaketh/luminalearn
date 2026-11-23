@@ -10,11 +10,14 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.port_guard import serving_port, warn_if_port_shadowed
+from app.services.email_service import check_email_configuration
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager to handle startup and shutdown events."""
+    # Says whether OTP emails can be sent; refuses to start in production without SMTP.
+    check_email_configuration()
     await init_db()
     # Under pytest there is no listening socket to check.
     shadow_check = None if "pytest" in sys.modules else asyncio.create_task(warn_if_port_shadowed(serving_port()))

@@ -77,13 +77,49 @@ On Windows, use `backend\.venv\Scripts\pip` and `backend\.venv\Scripts\python` i
 
 This starts the API on `http://127.0.0.1:8001` and the web app on `http://localhost:3000`. The browser only calls the web app's own `/api/v1`, which the Next.js server forwards to the API, so there is no CORS setup.
 
-In development, sign-up verification codes are printed in the API console, so no email account is needed.
+In development without SMTP settings, sign-up and password-reset codes are printed in the API console, so no email account is needed. To send real emails, see **Email (OTP) setup** below.
 
 Or run the whole stack (PostgreSQL, Redis, API and web app) with Docker:
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
+
+---
+
+## ✉️ Email (OTP) setup
+
+Sign-up, **Resend code** and **Forgot password** each send a 6-digit code by email. The page then says what actually happened: *sent to your address*, *email isn't set up (the code is in the API terminal)*, or *couldn't send, try Resend in a minute*.
+
+| Situation | What happens |
+| :--- | :--- |
+| SMTP set | The code is emailed. On startup the API logs `Email: SMTP configured (host:port, from address)`. |
+| No SMTP, development | The code is printed in the terminal running the API. |
+| No SMTP, `ENVIRONMENT=production` | The API refuses to start. |
+| SMTP set but sending fails | The real SMTP error is logged (never the password or the code). Development reports it on the page; production answers `503 EMAIL_DELIVERY_FAILED` and the account stays unverified, so the user can resend later. |
+
+**With Gmail:**
+
+1. Turn on 2-Step Verification: Google Account > Security > 2-Step Verification.
+2. Create an App Password: Google Account > Security > 2-Step Verification > App passwords. Copy the 16-character password (it is shown once).
+3. Add these lines to `backend/.env` (never commit this file):
+
+   ```bash
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=you@gmail.com
+   SMTP_PASSWORD=<the 16-character app password>
+   EMAILS_FROM_EMAIL=you@gmail.com
+   ```
+
+4. Check it, then restart the API:
+
+   ```bash
+   cd backend
+   python scripts/send_test_email.py you@gmail.com   # prints "sent", or the exact SMTP error
+   ```
+
+Gmail allows about **500 emails a day**. For many users, use a transactional email provider such as [Brevo](https://www.brevo.com), [Resend](https://resend.com) or [SendGrid](https://sendgrid.com): only the `SMTP_*` values change (each provider shows its host, port, login and SMTP key; you'll also verify a sender address or domain with them). Port 465 uses SSL; 587 and 2525 use STARTTLS.
 
 ---
 
@@ -111,7 +147,7 @@ The lesson tests also run every code example in the curriculum and compare its r
 - **Render (full stack):** New → Blueprint → this repository. Render reads [`render.yaml`](render.yaml) and creates PostgreSQL, the API and the web app. Step-by-step guide: [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
 - **Netlify (web app only):** import the repository; [`netlify.toml`](netlify.toml) builds the frontend. Set `BACKEND_URL` to the Render API's URL. The live voice session needs WebSockets, which Netlify cannot proxy.
 
-Production needs `GEMINI_API_KEY` for live AI, and SMTP settings so sign-up emails are delivered.
+Production needs `GEMINI_API_KEY` for live AI, and SMTP settings so sign-up and password-reset codes are delivered (the API won't start without them; see **Email (OTP) setup** above).
 
 ---
 

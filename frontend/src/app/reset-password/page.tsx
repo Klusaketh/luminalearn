@@ -4,13 +4,14 @@ import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authService } from "../../services/authService";
-import { Lock, Key, Eye, EyeOff, CheckCircle2, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Lock, Key, Mail, Eye, EyeOff, CheckCircle2, ShieldAlert, ArrowLeft } from "lucide-react";
 
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,9 +21,9 @@ function ResetPasswordForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const urlToken = searchParams.get("token");
-    if (urlToken) {
-      setToken(urlToken);
+    const urlEmail = searchParams.get("email");
+    if (urlEmail) {
+      setEmail(urlEmail);
     }
   }, [searchParams]);
 
@@ -31,8 +32,13 @@ function ResetPasswordForm() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    if (!token.trim()) {
-      setErrorMessage("Password reset token is required.");
+    if (!email.trim()) {
+      setErrorMessage("Please enter your account email.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(code.trim())) {
+      setErrorMessage("Enter the 6-digit code from the reset email.");
       return;
     }
 
@@ -48,13 +54,13 @@ function ResetPasswordForm() {
 
     setIsLoading(true);
     try {
-      const res = await authService.resetPassword(token.trim(), newPassword);
+      const res = await authService.resetPassword(email.trim().toLowerCase(), code.trim(), newPassword);
       setSuccessMessage(res.message);
       setTimeout(() => {
         router.push("/login");
       }, 2500);
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to reset password. Token may be invalid or expired.");
+      setErrorMessage(err.message || "Failed to reset password. The code may be wrong or expired.");
     } finally {
       setIsLoading(false);
     }
@@ -104,17 +110,42 @@ function ResetPasswordForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Reset Token
+                Account Email
               </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-slate-300">
+                  6-Digit Reset Code
+                </label>
+                <Link href="/forgot-password" className="text-[11px] text-indigo-400 hover:text-indigo-300">
+                  Need a new code?
+                </Link>
+              </div>
               <div className="relative">
                 <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   required
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Paste your reset token here"
-                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-600 font-mono outline-none transition-all"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="123456"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg pl-9 pr-3 py-2.5 text-base tracking-[0.4em] text-slate-100 placeholder-slate-600 font-mono outline-none transition-all"
                 />
               </div>
             </div>

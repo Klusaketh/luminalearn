@@ -48,9 +48,11 @@ services:
         generateValue: true  # Render creates a random signing key for login tokens
       - key: GEMINI_API_KEY
         sync: false        # https://aistudio.google.com/apikey
-      # Sign-up sends a verification code by email; without SMTP nobody can register.
-      # Gmail works: SMTP_HOST=smtp.gmail.com, SMTP_USER=you@gmail.com,
-      # SMTP_PASSWORD=a 16-character App Password (Google Account -> Security -> App passwords).
+      # Sign-up and password reset send a code by email; the API won't start without SMTP.
+      # Gmail: SMTP_HOST=smtp.gmail.com, SMTP_USER=you@gmail.com, SMTP_PASSWORD=a 16-character
+      # App Password (Google Account -> Security -> 2-Step Verification -> App passwords).
+      # The FREE plan blocks ports 25/465/587: upgrade this service, or use a provider on port
+      # 2525 (Brevo, SendGrid, Mailgun) and set SMTP_PORT below to "2525". See docs/DEPLOY_RENDER.md.
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

@@ -41,13 +41,13 @@ export default function TeacherRegistrationPage() {
     }
 
     try {
-      await registerTeacher({
+      const delivery = await registerTeacher({
         full_name: fullName.trim(),
         email: email.trim(),
         password,
         department: department.trim() || undefined,
       });
-      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}&delivery=${delivery}`);
     } catch (err: any) {
       setFormError(err.message || "Registration failed. Please check details.");
     }

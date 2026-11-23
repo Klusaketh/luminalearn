@@ -6,7 +6,7 @@ Handles 6-digit generation, keyed HMAC verification, 10-minute expiry,
 import json
 import logging
 import time
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import HTTPException, status
 
@@ -18,16 +18,23 @@ OTP_EXPIRY_SECONDS = 600       # Exactly 10 minutes
 MAX_FAILED_ATTEMPTS = 5        # Maximum 5 failed attempts allowed
 RESEND_COOLDOWN_SECONDS = 60   # 60 seconds resend cooldown
 
+# Email verification and password reset codes live under separate keys, so asking for one
+# never cancels the other and a code issued for one purpose never works for the other.
+OTPPurpose = Literal["verify", "reset"]
+
 
 class OTPService:
     """Service managing cryptographically secure OTP state in Redis."""
 
-    def _get_key(self, email: str) -> str:
-        return f"otp:{email.strip().lower()}"
+    def _get_key(self, email: str, purpose: OTPPurpose = "verify") -> str:
+        prefix = "otp" if purpose == "verify" else f"otp:{purpose}"
+        return f"{prefix}:{email.strip().lower()}"
 
-    async def get_otp_raw_state(self, email: str, redis: Any) -> dict[str, Any] | None:
+    async def get_otp_raw_state(
+        self, email: str, redis: Any, purpose: OTPPurpose = "verify"
+    ) -> dict[str, Any] | None:
         """Utility for inspection in tests (raw state in Redis)."""
-        key = self._get_key(email)
+        key = self._get_key(email, purpose)
         raw = await redis.get(key)
         if not raw:
             return None
@@ -42,6 +49,7 @@ class OTPService:
         email: str,
         redis: Any,
         is_resend: bool = False,
+        purpose: OTPPurpose = "verify",
     ) -> str:
         """
         Generate a secure 6-digit OTP and store its keyed HMAC in Redis.
@@ -49,7 +57,7 @@ class OTPService:
         Invalidates any previous OTP (overwriting state).
         Returns the raw OTP string for email dispatch only.
         """
-        key = self._get_key(email)
+        key = self._get_key(email, purpose)
         now = time.time()
 
         # Check existing state for resend cooldown
@@ -96,13 +104,14 @@ class OTPService:
         email: str,
         candidate_otp: str,
         redis: Any,
+        purpose: OTPPurpose = "verify",
     ) -> bool:
         """
         Verify candidate 6-digit OTP against stored keyed HMAC.
         Enforces 10-minute expiry and max 5 failed attempts limit.
         On success, invalidates all OTP state.
         """
-        key = self._get_key(email)
+        key = self._get_key(email, purpose)
         now = time.time()
 
         raw_state = await redis.get(key)
@@ -168,9 +177,9 @@ class OTPService:
         logger.info("OTP successfully verified and invalidated for %s", email)
         return True
 
-    async def invalidate_otp(self, email: str, redis: Any) -> None:
+    async def invalidate_otp(self, email: str, redis: Any, purpose: OTPPurpose = "verify") -> None:
         """Explicitly invalidate any OTP state for email."""
-        key = self._get_key(email)
+        key = self._get_key(email, purpose)
         await redis.delete(key)
 
 

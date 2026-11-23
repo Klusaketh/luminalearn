@@ -25,6 +25,33 @@ export interface MessageResponse {
   detail?: string;
 }
 
+/**
+ * How a one-time code reached the user: by email, printed in the API terminal (development
+ * without SMTP), or not at all. Never claim "we emailed you" unless it is "email".
+ */
+export type OTPDelivery = "email" | "console" | "failed";
+
+/** The API's error detail when production could not send a code email (HTTP 503). */
+export const EMAIL_DELIVERY_FAILED = "EMAIL_DELIVERY_FAILED";
+
+export interface OTPDeliveryResponse extends MessageResponse {
+  otp_delivery: OTPDelivery;
+}
+
+export interface RegisterResponse extends UserResponse {
+  otp_delivery: OTPDelivery;
+}
+
+/** Read a code-sending response; a production send failure (503) becomes otp_delivery "failed". */
+async function readDeliveryResponse(res: Response, fallback: string): Promise<OTPDeliveryResponse> {
+  if (res.ok) return res.json();
+  const detail = await readErrorDetail(res, fallback);
+  if (detail === EMAIL_DELIVERY_FAILED) {
+    return { message: "We couldn't send the email.", otp_delivery: "failed" };
+  }
+  throw new Error(detail);
+}
+
 export interface StudentRegisterPayload {
   email: string;
   password: string;
@@ -88,7 +115,7 @@ class AuthService {
     return res.json();
   }
 
-  async registerStudent(payload: StudentRegisterPayload): Promise<UserResponse> {
+  async registerStudent(payload: StudentRegisterPayload): Promise<RegisterResponse> {
     const res = await apiFetch(`${API_BASE}/auth/register/student`, {
       auth: false,
       method: "POST",
@@ -103,7 +130,7 @@ class AuthService {
     return res.json();
   }
 
-  async registerTeacher(payload: TeacherRegisterPayload): Promise<UserResponse> {
+  async registerTeacher(payload: TeacherRegisterPayload): Promise<RegisterResponse> {
     const res = await apiFetch(`${API_BASE}/auth/register/teacher`, {
       auth: false,
       method: "POST",
@@ -161,27 +188,23 @@ class AuthService {
     return res.json();
   }
 
-  async forgotPassword(email: string): Promise<MessageResponse> {
+  /** Email a 6-digit password reset code. */
+  async forgotPassword(email: string): Promise<OTPDeliveryResponse> {
     const res = await apiFetch(`${API_BASE}/auth/forgot-password`, {
       auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email }),
     });
-
-    if (!res.ok) {
-      throw new Error(await readErrorDetail(res, "Failed to process forgot password request."));
-    }
-
-    return res.json();
+    return readDeliveryResponse(res, "Failed to process forgot password request.");
   }
 
-  async resetPassword(token: string, new_password: string): Promise<MessageResponse> {
+  async resetPassword(email: string, otp: string, new_password: string): Promise<MessageResponse> {
     const res = await apiFetch(`${API_BASE}/auth/reset-password`, {
       auth: false,
       method: "POST",
       headers: this.getHeaders(),
-      body: JSON.stringify({ token, new_password }),
+      body: JSON.stringify({ email, otp, new_password }),
     });
 
     if (!res.ok) {
@@ -206,22 +229,17 @@ class AuthService {
     return res.json();
   }
 
-  async resendOTP(email: string): Promise<MessageResponse> {
+  async resendOTP(email: string): Promise<OTPDeliveryResponse> {
     const res = await apiFetch(`${API_BASE}/auth/verify-email/resend`, {
       auth: false,
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email }),
     });
-
-    if (!res.ok) {
-      throw new Error(await readErrorDetail(res, "Failed to resend verification code."));
-    }
-
-    return res.json();
+    return readDeliveryResponse(res, "Failed to resend verification code.");
   }
 
-  async requestVerifyEmail(email: string): Promise<MessageResponse> {
+  async requestVerifyEmail(email: string): Promise<OTPDeliveryResponse> {
     return this.resendOTP(email);
   }
 

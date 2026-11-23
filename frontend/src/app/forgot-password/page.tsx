@@ -1,23 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { authService } from "../../services/authService";
-import { Mail, ArrowLeft, CheckCircle2, ShieldAlert, KeyRound } from "lucide-react";
+import { authService, OTPDelivery } from "../../services/authService";
+import { OtpDeliveryNotice } from "../../components/auth/OtpDeliveryNotice";
+import { Mail, ArrowLeft, ArrowRight, ShieldAlert, KeyRound, RotateCw } from "lucide-react";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [issuedToken, setIssuedToken] = useState<string | null>(null);
+  const [delivery, setDelivery] = useState<OTPDelivery | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => setCooldown((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
+
+  const requestCode = async () => {
     setErrorMessage(null);
-    setSuccessMessage(null);
-    setIssuedToken(null);
-
     if (!email.trim()) {
       setErrorMessage("Please enter your registered email address.");
       return;
@@ -25,24 +30,29 @@ export default function ForgotPasswordPage() {
 
     setIsLoading(true);
     try {
-      const res = await authService.forgotPassword(email.trim());
-      setSuccessMessage(res.message);
-      if (res.detail) {
-        setIssuedToken(res.detail);
-      }
+      const res = await authService.forgotPassword(email.trim().toLowerCase());
+      setDelivery(res.otp_delivery);
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to issue password reset.");
+      setErrorMessage(err.message || "Failed to send a password reset code.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void requestCode();
+  };
+
+  const resetHref = `/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`;
 
   return (
     <div className="flex-1 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
 
       {/* Main Glassmorphic Container */}
       <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl z-10">
-        
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-3">
@@ -53,34 +63,9 @@ export default function ForgotPasswordPage() {
             Forgot Password?
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Enter your email to receive a password reset token
+            We&apos;ll email you a 6-digit code to choose a new password
           </p>
         </div>
-
-        {/* Success Alert */}
-        {successMessage && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs space-y-2">
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              Reset Request Processed
-            </div>
-            <p>{successMessage}</p>
-            {issuedToken && (
-              <div className="pt-2 border-t border-emerald-500/20">
-                <span className="text-[11px] text-slate-400 block mb-1">Development Reset Token:</span>
-                <code className="bg-slate-950 p-2 rounded text-[11px] text-emerald-300 font-mono block break-all select-all border border-emerald-500/20">
-                  {issuedToken}
-                </code>
-                <Link
-                  href={`/reset-password?token=${encodeURIComponent(issuedToken)}`}
-                  className="inline-block mt-3 text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline"
-                >
-                  Proceed to Reset Password &rarr;
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Error Alert */}
         {errorMessage && (
@@ -90,8 +75,39 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        {/* Form */}
-        {!successMessage && (
+        {delivery ? (
+          <div className="space-y-4">
+            <OtpDeliveryNotice delivery={delivery} email={email.trim()} />
+            {delivery === "email" && (
+              <p className="text-[11px] text-slate-500">
+                No email arrives if there is no account for this address.
+              </p>
+            )}
+
+            {delivery !== "failed" && (
+              <Link
+                href={resetHref}
+                className="w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm"
+              >
+                Enter the code
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+
+            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+              <span>Didn&apos;t receive the code?</span>
+              <button
+                type="button"
+                onClick={() => void requestCode()}
+                disabled={cooldown > 0 || isLoading}
+                className="inline-flex items-center gap-1.5 font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 disabled:cursor-not-allowed transition-colors"
+              >
+                <RotateCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
+              </button>
+            </div>
+          </div>
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
@@ -118,7 +134,7 @@ export default function ForgotPasswordPage() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                "Send Password Reset Link"
+                "Send Reset Code"
               )}
             </button>
           </form>
