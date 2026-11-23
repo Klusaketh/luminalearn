@@ -1,8 +1,13 @@
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
 
 from app.models.user import UserRole, VARKModality
 from app.schemas.user import UserResponse
+
+# How a one-time code reached the user: by email, printed to the API console (development
+# without SMTP), or not at all. The UI shows a different message for each.
+OTPDelivery = Literal["email", "console", "failed"]
 
 
 class GoogleAuthRequest(BaseModel):
@@ -46,7 +51,8 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str
+    email: EmailStr
+    otp: str = Field(..., pattern=r"^\d{6}$", description="The 6-digit reset code sent by email")
     new_password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
 
 
@@ -70,3 +76,13 @@ class ResendOTPRequest(BaseModel):
 class MessageResponse(BaseModel):
     message: str
     detail: str | None = None
+
+
+class OTPDeliveryResponse(MessageResponse):
+    """A response to a request that sends a one-time code, saying how the code was delivered."""
+    otp_delivery: OTPDelivery
+
+
+class RegisterResponse(UserResponse):
+    """The new (unverified) account plus how its verification code was delivered."""
+    otp_delivery: OTPDelivery

@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authService } from "../../services/authService";
+import { authService, OTPDelivery } from "../../services/authService";
+import { OtpDeliveryNotice, parseDelivery } from "../../components/auth/OtpDeliveryNotice";
 import {
   MailCheck,
   CheckCircle2,
@@ -29,6 +30,8 @@ function VerifyEmailForm() {
   const [isExpired, setIsExpired] = useState(false);
   const [isAttemptLocked, setIsAttemptLocked] = useState(false);
   const [cooldown, setCooldown] = useState(60);
+  // How the latest code was delivered; null when this page was opened without sending one.
+  const [delivery, setDelivery] = useState<OTPDelivery | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -38,6 +41,7 @@ function VerifyEmailForm() {
     if (urlEmail) {
       setEmail(urlEmail);
     }
+    setDelivery(parseDelivery(searchParams.get("delivery")));
     inputRefs.current[0]?.focus();
   }, [searchParams]);
 
@@ -151,10 +155,13 @@ function VerifyEmailForm() {
     setIsAttemptLocked(false);
 
     try {
-      await authService.resendOTP(email.trim().toLowerCase());
+      const res = await authService.resendOTP(email.trim().toLowerCase());
+      setDelivery(res.otp_delivery);
       setCooldown(60);
-      setDigits(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      if (res.otp_delivery !== "failed") {
+        setDigits(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      }
     } catch (err: any) {
       const msg = err.message || "Failed to resend verification code.";
       if (msg.toLowerCase().includes("already verified")) {
@@ -184,7 +191,7 @@ function VerifyEmailForm() {
           <p className="text-slate-400 text-sm mt-1">
             {email ? (
               <span>
-                Sent to <strong className="text-slate-200">{email}</strong>
+                The code for <strong className="text-slate-200">{email}</strong>
               </span>
             ) : (
               "Enter your registered email and the 6-digit code"
@@ -235,6 +242,8 @@ function VerifyEmailForm() {
           </div>
         ) : (
           <form onSubmit={handleVerify} className="space-y-6">
+            {delivery && <OtpDeliveryNotice delivery={delivery} email={email} />}
+
             {/* Email Input (if not passed via URL) */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">

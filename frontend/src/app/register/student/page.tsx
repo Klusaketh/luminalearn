@@ -43,13 +43,13 @@ export default function StudentRegistrationPage() {
     }
 
     try {
-      await registerStudent({
+      const delivery = await registerStudent({
         full_name: fullName.trim(),
         email: email.trim(),
         password,
         preferred_modality: modality,
       });
-      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}&delivery=${delivery}`);
     } catch (err: any) {
       setFormError(err.message || "Registration failed. Please check details.");
     }

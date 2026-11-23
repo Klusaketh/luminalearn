@@ -21,15 +21,43 @@ from app.models.user import User, UserRole, VARKModality
 from app.repositories.user_repository import user_repository
 from app.schemas.auth import (
     GoogleAuthRequest,
+    OTPDelivery,
     StudentRegisterRequest,
     TeacherRegisterRequest,
     TokenResponse,
 )
 from app.schemas.user import UserResponse
-from app.services.email_service import email_service
-from app.services.otp_service import otp_service
+from app.services.email_service import email_service, expected_delivery
+from app.services.otp_service import OTPPurpose, otp_service
 
 logger = logging.getLogger(__name__)
+
+EMAIL_DELIVERY_FAILED = "EMAIL_DELIVERY_FAILED"
+
+
+async def _issue_otp(
+    user: User,
+    redis: Redis | None,
+    purpose: OTPPurpose = "verify",
+    is_resend: bool = False,
+) -> OTPDelivery:
+    """
+    Create a fresh one-time code for the user, send it, and report how it was delivered.
+
+    In production a failed send is an error (503 EMAIL_DELIVERY_FAILED): the account stays as it
+    was (unverified after sign-up) and the user can ask for a new code once the cooldown ends.
+    In development the failure is reported in the response instead, so the UI can say so.
+    """
+    if redis is None:
+        delivery: OTPDelivery = "failed"
+    else:
+        otp = await otp_service.generate_and_store_otp(
+            user.email, redis, is_resend=is_resend, purpose=purpose
+        )
+        delivery = await email_service.send_otp_email(user.email, otp, user.full_name, purpose=purpose)
+    if delivery == "failed" and settings.ENVIRONMENT == "production":
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=EMAIL_DELIVERY_FAILED)
+    return delivery
 
 
 async def _cache_best_effort(operation: Awaitable[Any], action: str) -> Any:
@@ -49,7 +77,7 @@ class AuthService:
         db: AsyncSession,
         payload: StudentRegisterRequest,
         redis: Redis | None = None
-    ) -> User:
+    ) -> tuple[User, OTPDelivery]:
         """Register a new student account as unverified and dispatch verification OTP."""
         existing_user = await user_repository.get_by_email(db, payload.email)
         if existing_user:
@@ -69,18 +97,14 @@ class AuthService:
             is_verified=False
         )
 
-        if redis is not None:
-            otp = await otp_service.generate_and_store_otp(user.email, redis)
-            await email_service.send_otp_email(user.email, otp, user.full_name)
-
-        return user
+        return user, await _issue_otp(user, redis)
 
     async def register_teacher(
         self,
         db: AsyncSession,
         payload: TeacherRegisterRequest,
         redis: Redis | None = None
-    ) -> User:
+    ) -> tuple[User, OTPDelivery]:
         """Register a new teacher account as unverified and dispatch verification OTP."""
         existing_user = await user_repository.get_by_email(db, payload.email)
         if existing_user:
@@ -100,11 +124,7 @@ class AuthService:
             is_verified=False
         )
 
-        if redis is not None:
-            otp = await otp_service.generate_and_store_otp(user.email, redis)
-            await email_service.send_otp_email(user.email, otp, user.full_name)
-
-        return user
+        return user, await _issue_otp(user, redis)
 
     async def authenticate_user(
         self,
@@ -219,54 +239,40 @@ class AuthService:
         db: AsyncSession,
         email: str,
         redis: Redis | None = None
-    ) -> str:
-        """Generate a password reset token for the given email."""
+    ) -> OTPDelivery:
+        """
+        Email a 6-digit password reset code to the account's address.
+
+        The code only ever goes to the inbox: it is never returned in the response. For an
+        unknown address nothing is sent, and the reply reports the delivery a real send would,
+        so the response alone does not reveal whether an account exists.
+        """
         user = await user_repository.get_by_email(db, email)
         if not user:
-            # Return generic success to avoid email enumeration
-            return "If an account exists with that email, a password reset link has been issued."
-
-        reset_token = secrets.token_urlsafe(32)
-        if redis:
-            # Store reset token in Redis (15 mins TTL = 900 seconds)
-            await _cache_best_effort(
-                redis.setex(f"reset_token:{reset_token}", 900, str(user.id)),
-                "store the password reset token",
-            )
-
-        return reset_token
+            return expected_delivery()
+        return await _issue_otp(user, redis, purpose="reset", is_resend=True)
 
     async def reset_password(
         self,
         db: AsyncSession,
-        token: str,
+        email: str,
+        otp: str,
         new_password: str,
         redis: Redis | None = None
     ) -> None:
-        """Reset password using reset token."""
-        user_id_str = None
-        if redis:
-            user_id_str = await _cache_best_effort(redis.get(f"reset_token:{token}"), "read the password reset token")
+        """Set a new password after checking the emailed reset code (10-minute expiry, 5 attempts)."""
+        invalid = HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired password reset code. Please request a new code."
+        )
+        user = await user_repository.get_by_email(db, email)
+        if not user or redis is None:
+            raise invalid
 
-        if not user_id_str:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid or expired password reset token."
-            )
-
-        user_id = uuid.UUID(str(user_id_str))
-        user = await user_repository.get_by_id(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found."
-            )
+        await otp_service.verify_otp(user.email, otp, redis, purpose="reset")
 
         new_hash = get_password_hash(new_password)
         await user_repository.update_password(db, user, new_hash)
-
-        if redis:
-            await _cache_best_effort(redis.delete(f"reset_token:{token}"), "spend the password reset token")
 
     async def request_email_verification(
         self,
@@ -327,9 +333,9 @@ class AuthService:
         db: AsyncSession,
         email: str,
         redis: Redis
-    ) -> None:
+    ) -> OTPDelivery:
         """
-        Resend verification OTP.
+        Resend verification OTP and report how it was delivered.
         Enforces 60-second cooldown, invalidates old OTP, dispatches email.
         Never returns the OTP in response.
         """
@@ -346,11 +352,8 @@ class AuthService:
                 detail="Email address is already verified."
             )
 
-        # Generate fresh OTP and store keyed HMAC (enforces 60s cooldown, invalidates previous OTP)
-        otp = await otp_service.generate_and_store_otp(user.email, redis, is_resend=True)
-
-        # Dispatch via email service
-        await email_service.send_otp_email(user.email, otp, user.full_name)
+        # Fresh OTP (enforces the 60s cooldown and invalidates the previous code), then send it
+        return await _issue_otp(user, redis, is_resend=True)
 
     async def authenticate_or_register_google_user(
         self,

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import {
   authService,
+  EMAIL_DELIVERY_FAILED,
+  OTPDelivery,
   UserResponse,
   TokenResponse,
   StudentRegisterPayload,
@@ -37,8 +39,9 @@ interface AuthState {
     role?: "student" | "teacher",
     preferredModality?: "visual" | "auditory" | "read_write" | "kinesthetic"
   ) => Promise<UserResponse>;
-  registerStudent: (payload: StudentRegisterPayload) => Promise<void>;
-  registerTeacher: (payload: TeacherRegisterPayload) => Promise<void>;
+  /** Create the account and report how its verification code was delivered. */
+  registerStudent: (payload: StudentRegisterPayload) => Promise<OTPDelivery>;
+  registerTeacher: (payload: TeacherRegisterPayload) => Promise<OTPDelivery>;
   logout: () => Promise<void>;
   /** Verify the stored session once; concurrent callers share the same check. */
   initializeAuth: () => Promise<void>;
@@ -204,9 +207,15 @@ export const useAuthStore = create<AuthState>((set, get) => {
     registerStudent: async (payload) => {
       set({ isLoading: true, error: null });
       try {
-        await authService.registerStudent(payload);
+        const { otp_delivery } = await authService.registerStudent(payload);
         set({ isLoading: false, error: null });
+        return otp_delivery;
       } catch (err) {
+        // The account exists but its code email failed: the verify page offers Resend.
+        if (err instanceof Error && err.message === EMAIL_DELIVERY_FAILED) {
+          set({ isLoading: false, error: null });
+          return "failed";
+        }
         set({ error: err instanceof Error ? err.message : "Failed to register student.", isLoading: false });
         throw err;
       }
@@ -215,9 +224,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
     registerTeacher: async (payload) => {
       set({ isLoading: true, error: null });
       try {
-        await authService.registerTeacher(payload);
+        const { otp_delivery } = await authService.registerTeacher(payload);
         set({ isLoading: false, error: null });
+        return otp_delivery;
       } catch (err) {
+        if (err instanceof Error && err.message === EMAIL_DELIVERY_FAILED) {
+          set({ isLoading: false, error: null });
+          return "failed";
+        }
         set({ error: err instanceof Error ? err.message : "Failed to register teacher.", isLoading: false });
         throw err;
       }

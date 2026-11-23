@@ -13,7 +13,10 @@ from app.schemas.auth import (
     GoogleAuthRequest,
     LoginRequest,
     MessageResponse,
+    OTPDelivery,
+    OTPDeliveryResponse,
     RefreshTokenRequest,
+    RegisterResponse,
     ResendOTPRequest,
     ResetPasswordRequest,
     StudentRegisterRequest,
@@ -26,10 +29,28 @@ from app.services.auth_service import auth_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+_EMAIL_NOT_SET_UP = (
+    "Email isn't set up on this server. In development, the code is printed in the "
+    "terminal running the API."
+)
+_SEND_FAILED = "We couldn't send the email. Try Resend in a minute."
+
+
+def _verification_message(delivery: OTPDelivery) -> str:
+    return {
+        "email": "Verification code sent to your email address.",
+        "console": _EMAIL_NOT_SET_UP,
+        "failed": _SEND_FAILED,
+    }[delivery]
+
+
+def _registered(user: User, delivery: OTPDelivery) -> RegisterResponse:
+    return RegisterResponse(**UserResponse.model_validate(user).model_dump(), otp_delivery=delivery)
+
 
 @router.post(
     "/register/student",
-    response_model=UserResponse,
+    response_model=RegisterResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register Student Account"
 )
@@ -39,13 +60,13 @@ async def register_student(
     redis: Redis = Depends(get_redis)
 ) -> Any:
     """Register a new student account as unverified and dispatch verification OTP."""
-    user = await auth_service.register_student(db, payload, redis)
-    return user
+    user, delivery = await auth_service.register_student(db, payload, redis)
+    return _registered(user, delivery)
 
 
 @router.post(
     "/register/teacher",
-    response_model=UserResponse,
+    response_model=RegisterResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register Teacher Account"
 )
@@ -55,8 +76,8 @@ async def register_teacher(
     redis: Redis = Depends(get_redis)
 ) -> Any:
     """Register a new teacher account as unverified and dispatch verification OTP."""
-    user = await auth_service.register_teacher(db, payload, redis)
-    return user
+    user, delivery = await auth_service.register_teacher(db, payload, redis)
+    return _registered(user, delivery)
 
 
 @router.post(
@@ -160,34 +181,36 @@ async def logout(
 
 @router.post(
     "/forgot-password",
-    response_model=MessageResponse,
-    summary="Request Password Reset Token"
+    response_model=OTPDeliveryResponse,
+    summary="Email a Password Reset Code"
 )
 async def forgot_password(
     payload: ForgotPasswordRequest,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis)
 ) -> Any:
-    """Generate a password reset token for account recovery."""
-    reset_token = await auth_service.request_password_reset(db, payload.email, redis)
-    return MessageResponse(
-        message="If an account exists with this email, a password reset token has been issued.",
-        detail=reset_token if reset_token and not reset_token.startswith("If an account") else None
-    )
+    """Email a 6-digit reset code. The code is never part of the response."""
+    delivery = await auth_service.request_password_reset(db, payload.email, redis)
+    message = {
+        "email": "If an account exists for this email, a reset code has been sent to it.",
+        "console": _EMAIL_NOT_SET_UP,
+        "failed": _SEND_FAILED,
+    }[delivery]
+    return OTPDeliveryResponse(message=message, otp_delivery=delivery)
 
 
 @router.post(
     "/reset-password",
     response_model=MessageResponse,
-    summary="Reset Password with Token"
+    summary="Reset Password with the Emailed Code"
 )
 async def reset_password(
     payload: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis)
 ) -> Any:
-    """Reset user password using token."""
-    await auth_service.reset_password(db, payload.token, payload.new_password, redis)
+    """Set a new password using the 6-digit code from the reset email."""
+    await auth_service.reset_password(db, payload.email, payload.otp, payload.new_password, redis)
     return MessageResponse(message="Password reset successfully. You may now log in with your new password.")
 
 
@@ -223,7 +246,7 @@ async def confirm_verify_email(
 
 @router.post(
     "/verify-email/resend",
-    response_model=MessageResponse,
+    response_model=OTPDeliveryResponse,
     summary="Resend Verification OTP"
 )
 async def resend_verify_email(
@@ -232,13 +255,13 @@ async def resend_verify_email(
     redis: Redis = Depends(get_redis)
 ) -> Any:
     """Resend 6-digit verification code with 60-second cooldown."""
-    await auth_service.resend_email_otp(db, payload.email, redis)
-    return MessageResponse(message="Verification code sent to your email address.")
+    delivery = await auth_service.resend_email_otp(db, payload.email, redis)
+    return OTPDeliveryResponse(message=_verification_message(delivery), otp_delivery=delivery)
 
 
 @router.post(
     "/verify-email/request",
-    response_model=MessageResponse,
+    response_model=OTPDeliveryResponse,
     summary="Request Email Verification OTP"
 )
 async def request_verify_email(
@@ -247,8 +270,8 @@ async def request_verify_email(
     redis: Redis = Depends(get_redis)
 ) -> Any:
     """Request a fresh email verification code without exposing OTP in response."""
-    await auth_service.resend_email_otp(db, payload.email, redis)
-    return MessageResponse(message="Verification code sent to your email address.")
+    delivery = await auth_service.resend_email_otp(db, payload.email, redis)
+    return OTPDeliveryResponse(message=_verification_message(delivery), otp_delivery=delivery)
 
 
 @router.get(
