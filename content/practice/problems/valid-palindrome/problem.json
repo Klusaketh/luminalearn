@@ -1,0 +1,55 @@
+{
+  "title": "Valid Palindrome",
+  "difficulty": "Easy",
+  "order": 4,
+  "tags": [
+    "Two Pointers",
+    "Strings"
+  ],
+  "related_topic": "sliding-window-two-pointers",
+  "function": "is_palindrome",
+  "compare": "exact",
+  "hints": [
+    "Start one pointer at each end. What should happen when a pointer lands on a space or punctuation mark?",
+    "Move `i` forward past non-alphanumeric characters and `j` backward past them. Compare `s[i].lower()` with `s[j].lower()`; if they differ, it is not a palindrome.",
+    "Reversing a list in place uses the same two pointers: swap `a[i]` and `a[j]`, then move both towards the middle."
+  ],
+  "tests": [
+    {
+      "args": [
+        "A man, a plan, a canal: Panama"
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "race a car"
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        " "
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "0P"
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        "No 'x' in Nixon"
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "ab_a"
+      ],
+      "expected": true
+    }
+  ]
+}

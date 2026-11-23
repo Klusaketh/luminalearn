@@ -1,0 +1,145 @@
+{
+  "title": "Merge Intervals",
+  "difficulty": "Medium",
+  "order": 9,
+  "tags": [
+    "Sorting",
+    "Arrays"
+  ],
+  "related_topic": "mergesort-quicksort",
+  "function": "merge_intervals",
+  "compare": "exact",
+  "hints": [
+    "If the intervals were in order of their start points, which interval could the next one possibly overlap with?",
+    "Sort by start. Walk through them: if an interval starts at or before the end of the last merged interval, extend that end with `max`; otherwise begin a new merged interval.",
+    "Finding when a meeting room is free uses the same sort-then-sweep idea over the booked time slots."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            15,
+            18
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          6
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          15,
+          18
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            5
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            4
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            3,
+            5
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          0,
+          5
+        ]
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          [
+            5,
+            7
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          5,
+          7
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4,
+            5
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          10
+        ]
+      ]
+    }
+  ]
+}

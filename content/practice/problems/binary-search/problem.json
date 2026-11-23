@@ -1,0 +1,102 @@
+{
+  "title": "Binary Search",
+  "difficulty": "Easy",
+  "order": 5,
+  "tags": [
+    "Binary Search"
+  ],
+  "related_topic": "binary-search-invariants",
+  "function": "search",
+  "compare": "exact",
+  "hints": [
+    "Comparing `target` with the middle element tells you which half cannot contain it. Which half is that?",
+    "Keep `lo` and `hi` so that the target, if present, is always in `nums[lo..hi]`. Loop while `lo <= hi`: check `mid = (lo + hi) // 2`, then move `lo = mid + 1` or `hi = mid - 1`.",
+    "Finding a word in a printed dictionary works the same way: open near the middle, decide which half the word is in, and repeat on that half."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          -1,
+          0,
+          3,
+          5,
+          9,
+          12
+        ],
+        9
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          -1,
+          0,
+          3,
+          5,
+          9,
+          12
+        ],
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [],
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          5
+        ],
+        5
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          3
+        ],
+        3
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14
+        ],
+        2
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14
+        ],
+        15
+      ],
+      "expected": -1
+    }
+  ]
+}

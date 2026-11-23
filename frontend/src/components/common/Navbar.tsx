@@ -27,6 +27,7 @@ const WORKSPACE_LINKS: NavItem[] = [
   },
   { label: "Tutor", href: "/tutor", match: (p) => p.startsWith("/tutor") },
   { label: "Quiz", href: "/quiz", match: (p) => p.startsWith("/quiz") },
+  { label: "Practice", href: "/practice", match: (p) => p.startsWith("/practice") },
 ];
 
 export const Navbar: React.FC = () => {

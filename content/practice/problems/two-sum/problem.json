@@ -1,0 +1,108 @@
+{
+  "title": "Two Sum",
+  "difficulty": "Easy",
+  "order": 1,
+  "tags": [
+    "Arrays",
+    "Hashing"
+  ],
+  "related_topic": "hash-functions-collisions",
+  "function": "two_sum",
+  "compare": "exact",
+  "hints": [
+    "For each number `x`, which other value would complete the pair?",
+    "Walk through the list once and remember each value's index in a dictionary. Before storing `x`, check whether `target - x` is already in it.",
+    "The same trick finds a duplicate: keep a set of values seen so far and check each new value against it before adding it."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          2,
+          7,
+          11,
+          15
+        ],
+        9
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          3,
+          2,
+          4
+        ],
+        6
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "args": [
+        [
+          3,
+          3
+        ],
+        6
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          -1,
+          -2,
+          -3,
+          -4,
+          -5
+        ],
+        -8
+      ],
+      "expected": [
+        2,
+        4
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          4,
+          3,
+          0
+        ],
+        0
+      ],
+      "expected": [
+        0,
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          5,
+          9,
+          14,
+          20
+        ],
+        34
+      ],
+      "expected": [
+        3,
+        4
+      ]
+    }
+  ]
+}

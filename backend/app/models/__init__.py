@@ -7,6 +7,7 @@ from app.models.content import (
     Topic,
 )
 from app.models.onboarding import StudentOnboarding
+from app.models.practice import PracticeSubmission
 from app.models.quiz import QuizAttempt, QuizQuestion, QuizSession, StudentTopicMastery
 from app.models.user import Base, User, UserRole, VARKModality
 
@@ -16,6 +17,7 @@ __all__ = [
     "Course",
     "Lesson",
     "Module",
+    "PracticeSubmission",
     "QuizAttempt",
     "QuizQuestion",
     "QuizSession",

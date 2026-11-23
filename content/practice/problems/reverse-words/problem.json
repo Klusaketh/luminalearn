@@ -1,0 +1,54 @@
+{
+  "title": "Reverse Words in a Sentence",
+  "difficulty": "Easy",
+  "order": 3,
+  "tags": [
+    "Strings"
+  ],
+  "related_topic": "string-manipulation-encodings",
+  "function": "reverse_words",
+  "compare": "exact",
+  "hints": [
+    "What does `str.split()` return when you call it with no arguments on a string with extra spaces?",
+    "`s.split()` gives the words with all extra whitespace removed. Reverse that list, then join it with single spaces.",
+    "To capitalise every word, the same split-transform-join pattern works: `\" \".join(w.capitalize() for w in s.split())`."
+  ],
+  "tests": [
+    {
+      "args": [
+        "the sky is blue"
+      ],
+      "expected": "blue is sky the"
+    },
+    {
+      "args": [
+        "  hello world  "
+      ],
+      "expected": "world hello"
+    },
+    {
+      "args": [
+        "a good   example"
+      ],
+      "expected": "example good a"
+    },
+    {
+      "args": [
+        "single"
+      ],
+      "expected": "single"
+    },
+    {
+      "args": [
+        "   "
+      ],
+      "expected": ""
+    },
+    {
+      "args": [
+        ""
+      ],
+      "expected": ""
+    }
+  ]
+}

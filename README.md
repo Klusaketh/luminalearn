@@ -19,6 +19,7 @@ LuminaLearn AI is an adaptive learning platform built around a **Socratic AI tut
 | **Code diagnostics** | Pasted Python code is analysed with the `ast` module (missing base cases, repeated subproblems, complexity) and the tutor responds with guiding questions. |
 | **Adaptive quizzes** | Questions are calibrated with IRT (2PL). Wrong answers are diagnosed as specific misconceptions, mastery updates live with BKT, and a retention forecast schedules spaced reviews. |
 | **Voice** | Talk to the tutor and hear replies (Gemini speech-to-text and text-to-speech over a WebSocket). |
+| **Coding practice** | 12 interview-style Python problems with a real code editor. Code runs **in the learner's browser** (Pyodide/WebAssembly), never on the server, with a time limit for endless loops. Each problem has tests, a three-step hint ladder and an "Ask the tutor" button that sends the code and first failing test to the Socratic tutor. Progress is saved per learner. See [`content/practice/README.md`](content/practice/README.md). |
 | **Curriculum** | 4 disciplines, 22 subjects, 279 topics, with fully written lessons (theory, worked examples, common mistakes, practice questions). Coverage is tracked in [`docs/SUBJECTS_COVERAGE.md`](docs/SUBJECTS_COVERAGE.md). |
 | **Accounts & security** | Email OTP verification, Google sign-in, Argon2id password hashing, short-lived JWT sessions, role-based access, per-learner rate limits. |
 | **Keeps working offline** | Every AI specialist has a deterministic offline engine, so tutoring continues with no API key or when every Gemini model is unavailable. |
@@ -46,7 +47,7 @@ LuminaLearn AI is an adaptive learning platform built around a **Socratic AI tut
 luminalearn/
 ├── ai/          # Gemini gateway, Socratic agents, prompts, curriculum RAG
 ├── backend/     # FastAPI app (app/), tests (tests/), Dockerfile
-├── content/     # Curriculum source: subjects, syllabi, overviews and lessons (Markdown)
+├── content/     # Curriculum (subjects, syllabi, lessons) and coding-practice problems
 ├── database/    # PostgreSQL schema reference
 ├── docker/      # Docker Compose stack for local development
 ├── docs/        # Architecture, standards, research, deployment guide, notes and IEEE paper
@@ -90,7 +91,7 @@ docker compose -f docker/docker-compose.dev.yml up --build
 
 ```bash
 cd backend
-pytest -q          # 404 tests; runs on offline AI engines and a throwaway database
+pytest -q          # 451 tests; runs on offline AI engines and a throwaway database
 ruff check .
 mypy app
 

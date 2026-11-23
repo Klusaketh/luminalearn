@@ -1,0 +1,127 @@
+{
+  "title": "Number of Islands",
+  "difficulty": "Medium",
+  "order": 12,
+  "tags": [
+    "Graphs",
+    "BFS / DFS"
+  ],
+  "related_topic": "bfs-dfs-traversals",
+  "function": "num_islands",
+  "compare": "exact",
+  "hints": [
+    "Each time you find a land cell you have not visited yet, you have found a new island. How do you make sure you never count that island's other cells again?",
+    "Scan every cell. On unvisited land, add 1 to the count, then flood-fill: visit every land cell reachable up, down, left or right (with a stack or a queue) and mark it as seen.",
+    "The paint-bucket tool in an image editor is the same flood fill: it spreads to every neighbouring pixel of the same colour."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            "1",
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "1",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        [
+          [
+            "1",
+            "1",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          [
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0"
+          ]
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          [
+            "1",
+            "0",
+            "1",
+            "0",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        [
+          [
+            "1"
+          ],
+          [
+            "0"
+          ],
+          [
+            "1"
+          ]
+        ]
+      ],
+      "expected": 2
+    }
+  ]
+}

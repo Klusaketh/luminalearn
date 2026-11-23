@@ -1,0 +1,61 @@
+{
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "order": 2,
+  "tags": [
+    "Stacks",
+    "Strings"
+  ],
+  "related_topic": "monotonic-stacks",
+  "function": "is_valid",
+  "compare": "exact",
+  "hints": [
+    "Which opening bracket must a closing bracket match: the first one, or the most recent unmatched one?",
+    "Push each opening bracket onto a stack. On a closing bracket, the stack must be non-empty and its top must be the matching opener. At the end the stack must be empty.",
+    "A browser's Back button works the same way: the page you return to is always the most recent one you have not already gone back from."
+  ],
+  "tests": [
+    {
+      "args": [
+        "()[]{}"
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "([{}])"
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "(]"
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        "([)]"
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        "(("
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        "))"
+      ],
+      "expected": false
+    }
+  ]
+}
