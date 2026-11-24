@@ -2,10 +2,12 @@
 LuminaLearn AI — Coding practice (sandbox) service.
 
 Problems live in content/practice/problems/<slug>/ (see content/practice/README.md). Learner code runs
-in the browser with Pyodide; this service serves problems and records learners' results.
+in the browser (Python with Pyodide, JavaScript in a Web Worker); this service serves problems with the
+judging harness for each language and records learners' results.
 """
 
 import json
+import re
 import uuid
 from dataclasses import dataclass
 from functools import lru_cache
@@ -23,6 +25,14 @@ from app.models.practice import PracticeSubmission
 PRACTICE_ROOT = Path(__file__).resolve().parents[3] / "content" / "practice"
 PROBLEMS_ROOT = PRACTICE_ROOT / "problems"
 RELATED_SUBJECT = "data-structures-and-algorithms"
+# Language id -> source file extension. Python is required for every problem; others are optional.
+LANGUAGES = {"python": "py", "javascript": "js"}
+HARNESS_FILES = {"python": "harness.py", "javascript": "harness.js"}
+
+
+def js_function_name(name: str) -> str:
+    """two_sum -> twoSum: JavaScript starters use camelCase names."""
+    return re.sub(r"_([a-z0-9])", lambda m: m.group(1).upper(), name)
 
 
 @dataclass(frozen=True)
@@ -38,8 +48,15 @@ class PracticeProblem:
     hints: tuple[str, ...]
     tests: tuple[dict[str, Any], ...]
     statement: str
-    starter_code: str
-    solution: str
+    starters: dict[str, str]
+    solutions: dict[str, str]
+
+    @property
+    def languages(self) -> list[str]:
+        return [language for language in LANGUAGES if language in self.starters and language in self.solutions]
+
+    def function_name_for(self, language: str) -> str:
+        return js_function_name(self.function_name) if language == "javascript" else self.function_name
 
 
 def _load_problem(folder: Path) -> PracticeProblem:
@@ -56,9 +73,17 @@ def _load_problem(folder: Path) -> PracticeProblem:
         hints=tuple(meta["hints"]),
         tests=tuple(meta["tests"]),
         statement=(folder / "statement.md").read_text(encoding="utf-8"),
-        starter_code=(folder / "starter.py").read_text(encoding="utf-8"),
-        solution=(folder / "solution.py").read_text(encoding="utf-8"),
+        starters=_sources(folder, "starter"),
+        solutions=_sources(folder, "solution"),
     )
+
+
+def _sources(folder: Path, stem: str) -> dict[str, str]:
+    return {
+        language: (folder / f"{stem}.{extension}").read_text(encoding="utf-8")
+        for language, extension in LANGUAGES.items()
+        if (folder / f"{stem}.{extension}").is_file()
+    }
 
 
 @lru_cache(maxsize=1)
@@ -70,8 +95,12 @@ def load_problems() -> dict[str, PracticeProblem]:
 
 
 @lru_cache(maxsize=1)
+def harness_sources() -> dict[str, str]:
+    return {language: (PRACTICE_ROOT / name).read_text(encoding="utf-8") for language, name in HARNESS_FILES.items()}
+
+
 def harness_source() -> str:
-    return (PRACTICE_ROOT / "harness.py").read_text(encoding="utf-8")
+    return harness_sources()["python"]
 
 
 def get_problem(slug: str) -> PracticeProblem:
@@ -104,6 +133,7 @@ def _summary(problem: PracticeProblem, progress: dict[str, Any] | None) -> dict[
         "difficulty": problem.difficulty,
         "tags": list(problem.tags),
         "order": problem.order,
+        "languages": problem.languages,
         "solved": progress.get("solved", False),
         "attempts": progress.get("attempts", 0),
     }
@@ -136,22 +166,31 @@ async def problem_detail(db: AsyncSession, user_id: uuid.UUID, slug: str) -> dic
     return {
         **_summary(problem, progress),
         "statement": problem.statement,
-        "starter_code": problem.starter_code,
+        "starter_code": problem.starters["python"],
         "function_name": problem.function_name,
         "compare": problem.compare,
         "hints": list(problem.hints),
         "tests": list(problem.tests),
         "harness": harness_source(),
+        "starters": {language: problem.starters[language] for language in problem.languages},
+        "function_names": {language: problem.function_name_for(language) for language in problem.languages},
+        "harnesses": {language: harness_sources()[language] for language in problem.languages},
         "related_topic": await _related_topic(db, problem.related_topic),
         "best_passed": progress.get("best_passed", 0),
     }
 
 
-async def record_submission(db: AsyncSession, user_id: uuid.UUID, slug: str, code: str, passed: int, total: int) -> dict[str, Any]:
+async def record_submission(
+    db: AsyncSession, user_id: uuid.UUID, slug: str, code: str, passed: int, total: int, language: str = "python"
+) -> dict[str, Any]:
     problem = get_problem(slug)
     if total != len(problem.tests) or passed > total:
         raise HTTPException(status_code=422, detail="RESULT_DOES_NOT_MATCH_PROBLEM")
-    db.add(PracticeSubmission(user_id=user_id, problem_slug=slug, code=code, passed=passed, total=total, solved=passed == total))
+    if language not in problem.languages:
+        raise HTTPException(status_code=422, detail="LANGUAGE_NOT_AVAILABLE")
+    db.add(PracticeSubmission(
+        user_id=user_id, problem_slug=slug, language=language, code=code, passed=passed, total=total, solved=passed == total
+    ))
     await db.commit()
     progress = (await _progress(db, user_id))[slug]
     return {"solved": progress["solved"], "attempts": progress["attempts"], "best_passed": progress["best_passed"], "total": total}

@@ -1,0 +1,92 @@
+{
+  "title": "Coin Change",
+  "difficulty": "Medium",
+  "order": 20,
+  "tags": [
+    "Dynamic Programming"
+  ],
+  "related_topic": "memoization-vs-tabulation",
+  "function": "coin_change",
+  "compare": "exact",
+  "hints": [
+    "If you knew the best answer for every smaller amount, how would you get the answer for `amount`?",
+    "Let `best[a]` be the fewest coins for amount `a`, with `best[0] = 0`. For each `a` from 1 up, try every coin `c <= a`: `best[a] = min(best[a], best[a - c] + 1)`. Unreachable amounts stay at infinity.",
+    "Parallel example: the fewest steps to climb to stair `n` taking 1, 3 or 4 stairs at a time is 1 + the fewest steps to reach stair `n-1`, `n-3` or `n-4`, whichever is smallest."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          5
+        ],
+        11
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        [
+          2
+        ],
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          3,
+          4
+        ],
+        6
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          2,
+          5,
+          10,
+          1
+        ],
+        27
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          186,
+          419,
+          83,
+          408
+        ],
+        6249
+      ],
+      "expected": 20
+    },
+    {
+      "args": [
+        [
+          3,
+          7
+        ],
+        5
+      ],
+      "expected": -1
+    }
+  ]
+}

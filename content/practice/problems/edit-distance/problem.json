@@ -1,0 +1,75 @@
+{
+  "title": "Edit Distance",
+  "difficulty": "Hard",
+  "order": 30,
+  "tags": [
+    "Dynamic Programming",
+    "Strings"
+  ],
+  "related_topic": "memoization-vs-tabulation",
+  "function": "min_distance",
+  "compare": "exact",
+  "hints": [
+    "Look at the last characters of both words. If they are equal, what is left to do? If not, what are the three possible last operations?",
+    "Let `dp[i][j]` be the distance between the first `i` characters of `word1` and the first `j` of `word2`. Then `dp[i][0] = i`, `dp[0][j] = j`, and `dp[i][j] = dp[i-1][j-1]` when the characters match, else `1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])`.",
+    "Parallel example: the cheapest way to turn one playlist into another by adding, removing or swapping songs builds up the same table, comparing one song from each list at a time."
+  ],
+  "tests": [
+    {
+      "args": [
+        "horse",
+        "ros"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "intention",
+        "execution"
+      ],
+      "expected": 5
+    },
+    {
+      "args": [
+        "",
+        "abc"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "abc",
+        ""
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "same",
+        "same"
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        "kitten",
+        "sitting"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "a",
+        "b"
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        "sunday",
+        "saturday"
+      ],
+      "expected": 3
+    }
+  ]
+}

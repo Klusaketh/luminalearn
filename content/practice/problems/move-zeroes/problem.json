@@ -1,0 +1,109 @@
+{
+  "title": "Move Zeroes",
+  "difficulty": "Easy",
+  "order": 15,
+  "tags": [
+    "Arrays",
+    "Two Pointers"
+  ],
+  "related_topic": "sliding-window-two-pointers",
+  "function": "move_zeroes",
+  "compare": "exact",
+  "hints": [
+    "Where should the next non-zero value you meet go?",
+    "Keep a write index `w`, starting at 0. Scan with a read index; whenever the value is non-zero, put it at position `w` and advance `w`. Afterwards, fill positions `w` to the end with zeroes.",
+    "Parallel example: to remove every space from a list of characters in place, copy each non-space character forward to a write position, then cut off the tail."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          1,
+          0,
+          3,
+          12
+        ]
+      ],
+      "expected": [
+        1,
+        3,
+        12,
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          0
+        ]
+      ],
+      "expected": [
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          4,
+          2,
+          0
+        ]
+      ],
+      "expected": [
+        4,
+        2,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          -1,
+          0,
+          0,
+          2,
+          -3
+        ]
+      ],
+      "expected": [
+        -1,
+        2,
+        -3,
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

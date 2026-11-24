@@ -49,14 +49,14 @@ function PracticeList() {
       <p className="text-sm font-medium text-indigo-300">Coding practice</p>
       <h1 className="mt-2 font-display text-4xl text-white sm:text-5xl">Practise, run, get unstuck</h1>
       <p className="mt-3 max-w-2xl text-slate-300">
-        Solve interview-style problems in Python. Your code runs instantly in your browser against real tests, and when
+        Solve interview-style problems in Python or JavaScript. Your code runs instantly in your browser against real tests, and when
         you are stuck the Socratic tutor guides you with questions instead of handing you the answer.
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
           { icon: Code2, title: "Real editor", text: "Syntax highlighting, auto-indent, Ctrl+Enter to run." },
-          { icon: Cpu, title: "Runs in your browser", text: "Python via WebAssembly. Nothing runs on our servers." },
+          { icon: Cpu, title: "Runs in your browser", text: "Python via WebAssembly and JavaScript in a sandboxed worker. Nothing runs on our servers." },
           { icon: ShieldCheck, title: "Hints, not answers", text: "A three-step hint ladder and the Socratic tutor." },
         ].map(({ icon: Icon, title, text }) => (
           <div key={title} className="rounded-2xl bg-white/[0.02] p-4 ring-1 ring-white/[0.07]">

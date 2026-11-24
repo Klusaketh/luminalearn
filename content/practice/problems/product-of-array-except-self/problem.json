@@ -1,0 +1,125 @@
+{
+  "title": "Product of Array Except Self",
+  "difficulty": "Medium",
+  "order": 18,
+  "tags": [
+    "Arrays",
+    "Prefix Sums"
+  ],
+  "related_topic": "space-complexity-tradeoffs",
+  "function": "product_except_self",
+  "compare": "exact",
+  "hints": [
+    "The product of everything except `nums[i]` splits into two parts. What are they?",
+    "Make one pass left to right storing in `answer[i]` the product of everything **before** `i`. Then pass right to left with a running product of everything **after** `i`, multiplying it in.",
+    "Parallel example: to find, for each house on a street, the total number of people living in all *other* houses, add a running total from the left to a running total from the right."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "expected": [
+        24,
+        12,
+        8,
+        6
+      ]
+    },
+    {
+      "args": [
+        [
+          -1,
+          1,
+          0,
+          -3,
+          3
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        9,
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        3,
+        2
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0
+        ]
+      ],
+      "expected": [
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          5,
+          0,
+          2
+        ]
+      ],
+      "expected": [
+        0,
+        10,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          -1,
+          1,
+          -1
+        ]
+      ],
+      "expected": [
+        1,
+        -1,
+        1,
+        -1
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "expected": [
+        16,
+        16,
+        16,
+        16,
+        16
+      ]
+    }
+  ]
+}

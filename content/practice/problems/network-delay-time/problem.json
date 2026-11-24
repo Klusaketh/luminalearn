@@ -1,0 +1,163 @@
+{
+  "title": "Network Delay Time",
+  "difficulty": "Hard",
+  "order": 28,
+  "tags": [
+    "Graphs",
+    "Shortest Paths",
+    "Heap"
+  ],
+  "related_topic": "shortest-path-algorithms",
+  "function": "network_delay_time",
+  "compare": "exact",
+  "hints": [
+    "When does the last node hear the signal? Think about the shortest travel time to each node.",
+    "Run Dijkstra from `k`: a min-heap of `(time, node)`, starting with `(0, k)`. Pop the smallest time; if the node is already settled skip it, otherwise settle it and push its neighbours with `time + w`. The answer is the largest settled time, or `-1` if fewer than `n` nodes were settled.",
+    "Parallel example: news spreading through a village by phone calls of different lengths reaches the last person at the time of the slowest *fastest* route; always continuing from whoever heard the news earliest finds those routes."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            2,
+            1,
+            1
+          ],
+          [
+            2,
+            3,
+            1
+          ],
+          [
+            3,
+            4,
+            1
+          ]
+        ],
+        4,
+        2
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            1
+          ]
+        ],
+        2,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            1
+          ]
+        ],
+        2,
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            1
+          ],
+          [
+            2,
+            3,
+            2
+          ],
+          [
+            1,
+            3,
+            4
+          ]
+        ],
+        3,
+        1
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            0
+          ]
+        ],
+        2,
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            5
+          ],
+          [
+            1,
+            3,
+            2
+          ],
+          [
+            3,
+            2,
+            1
+          ],
+          [
+            2,
+            4,
+            1
+          ],
+          [
+            3,
+            4,
+            6
+          ]
+        ],
+        4,
+        1
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            1
+          ],
+          [
+            2,
+            1,
+            3
+          ]
+        ],
+        2,
+        2
+      ],
+      "expected": 3
+    }
+  ]
+}

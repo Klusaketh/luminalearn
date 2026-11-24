@@ -1,0 +1,61 @@
+{
+  "title": "N-Queens (Count Solutions)",
+  "difficulty": "Hard",
+  "order": 29,
+  "tags": [
+    "Backtracking",
+    "Recursion"
+  ],
+  "related_topic": "backtracking-search",
+  "function": "total_n_queens",
+  "compare": "exact",
+  "hints": [
+    "Every row holds exactly one queen. If you place them row by row, what do you need to remember to know whether a square is safe?",
+    "Recurse on the row number. Keep three sets: used columns, used `row - col` diagonals and used `row + col` anti-diagonals. For each column in the current row that is free in all three, add it, recurse to the next row, then remove it. Count each time you get past the last row.",
+    "Parallel example: seating guests at a wedding table row by row so that no two rivals sit in the same row, column or diagonal line of sight: place one guest, and back up as soon as the next row has no safe seat."
+  ],
+  "tests": [
+    {
+      "args": [
+        4
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        3
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        2
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        5
+      ],
+      "expected": 10
+    },
+    {
+      "args": [
+        6
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        8
+      ],
+      "expected": 92
+    }
+  ]
+}

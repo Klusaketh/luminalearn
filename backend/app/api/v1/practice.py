@@ -47,4 +47,6 @@ async def submit(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    return await practice_service.record_submission(db, current_user.id, slug, payload.code, payload.passed, payload.total)
+    return await practice_service.record_submission(
+        db, current_user.id, slug, payload.code, payload.passed, payload.total, payload.language
+    )

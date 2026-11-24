@@ -4,35 +4,37 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, MessagesSquare } from "lucide-react";
 import { AgentBadge } from "@/components/tutor/AgentBadge";
 import { MarkdownMessage } from "@/components/tutor/MarkdownMessage";
-import { callRepr, gotRepr, pyRepr } from "@/components/practice/format";
-import type { RunOutcome } from "@/hooks/usePythonRunner";
-import type { PracticeProblemDetail } from "@/services/practiceService";
+import { callRepr, gotRepr, valueRepr } from "@/components/practice/format";
+import type { RunOutcome } from "@/hooks/useCodeRunner";
+import { LANGUAGE_LABELS, type PracticeLanguage, type PracticeProblemDetail } from "@/services/practiceService";
 import { tutorService, type RouteInfo } from "@/services/tutorService";
 
 /** Describes what went wrong in the last run, in words the tutor (and the learner) can use. */
-function describeOutcome(problem: PracticeProblemDetail, outcome: RunOutcome | null): string {
+function describeOutcome(problem: PracticeProblemDetail, outcome: RunOutcome | null, language: PracticeLanguage): string {
+  const name = LANGUAGE_LABELS[language];
   if (!outcome) return "I have not run the tests yet.";
   if (outcome.kind === "timeout") return "When I run the tests, my code never finishes; it seems to loop forever.";
-  if (outcome.kind === "error") return "The Python runtime failed to run my code.";
+  if (outcome.kind === "error") return `The ${name} runtime failed to run my code.`;
   const { report } = outcome;
-  if (report.error) return `My code does not run. Python says: ${report.error}`;
+  if (report.error) return `My code does not run. ${name} says: ${report.error}`;
   const failed = report.results.find((r) => !r.passed);
   if (!failed) return "All the tests pass. Can my solution be simpler or faster?";
   const test = problem.tests[failed.index];
-  const call = callRepr(problem.function_name, test.args);
+  const call = callRepr(problem.function_names[language] ?? problem.function_name, test.args, language);
   return failed.error
     ? `This test raises an error: ${call} gives ${failed.error}`
-    : `This test fails: ${call} should return ${pyRepr(test.expected)} but my code returns ${gotRepr(failed.got)}.`;
+    : `This test fails: ${call} should return ${valueRepr(test.expected, language)} but my code returns ${gotRepr(failed.got, language)}.`;
 }
 
 interface AskTutorProps {
   problem: PracticeProblemDetail;
   code: string;
   outcome: RunOutcome | null;
+  language: PracticeLanguage;
 }
 
 /** Sends the learner's code and the first failing test to the Socratic tutor, which guides without solving. */
-export function AskTutor({ problem, code, outcome }: AskTutorProps) {
+export function AskTutor({ problem, code, outcome, language }: AskTutorProps) {
   const [reply, setReply] = useState("");
   const [route, setRoute] = useState<RouteInfo | null>(null);
   const [busy, setBusy] = useState(false);
@@ -51,10 +53,10 @@ export function AskTutor({ problem, code, outcome }: AskTutorProps) {
     setRoute(null);
 
     const message = [
-      `I'm practising the coding problem "${problem.title}".`,
-      describeOutcome(problem, outcome),
+      `I'm practising the coding problem "${problem.title}" in ${LANGUAGE_LABELS[language]}.`,
+      describeOutcome(problem, outcome, language),
       "Here is my code:",
-      "```python",
+      "```" + language,
       code.trimEnd(),
       "```",
       "Please guide me towards the fix with a question or a hint. Don't give me the full solution.",
@@ -73,7 +75,7 @@ export function AskTutor({ problem, code, outcome }: AskTutorProps) {
     } finally {
       if (abortRef.current === controller) setBusy(false);
     }
-  }, [code, outcome, problem]);
+  }, [code, language, outcome, problem]);
 
   return (
     <section aria-labelledby="ask-tutor-heading" className="rounded-2xl bg-white/[0.02] p-4 ring-1 ring-white/[0.07]">

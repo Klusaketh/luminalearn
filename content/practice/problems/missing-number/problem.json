@@ -1,0 +1,83 @@
+{
+  "title": "Missing Number",
+  "difficulty": "Easy",
+  "order": 16,
+  "tags": [
+    "Arrays",
+    "Math"
+  ],
+  "related_topic": "space-complexity-tradeoffs",
+  "function": "missing_number",
+  "compare": "exact",
+  "hints": [
+    "You know exactly which numbers should be there. What single quantity would change if one of them were removed?",
+    "Compute the sum of `0..n` with the formula $n(n+1)/2$, then subtract the sum of the list. What is left is the missing number.",
+    "Parallel example: if a class of 30 students has roll numbers 1 to 30 and the attendance sheet adds up to 450 instead of 465, the absent student is number 15."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          3,
+          0,
+          1
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          0,
+          1
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          9,
+          6,
+          4,
+          2,
+          3,
+          5,
+          7,
+          0,
+          1
+        ]
+      ],
+      "expected": 8
+    },
+    {
+      "args": [
+        [
+          0
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          1
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          0,
+          6
+        ]
+      ],
+      "expected": 5
+    }
+  ]
+}
