@@ -100,6 +100,22 @@ class SupervisorAgent:
                 hint_tier=tier,
             )
 
+        scores, signals = self._score_intents(request, text, answer_demand)
+
+        agent = max(scores, key=lambda name: scores[name])
+        total = sum(scores.values())
+        confidence = round(max(0.34, min(0.98, scores[agent] / total if total else 0.5)), 2)
+        return RoutingDecision(
+            agent=agent,
+            confidence=confidence,
+            rationale=self._rationale(agent, signals, request, tier),
+            signals=tuple(signals) or ("default_socratic_stance",),
+            hint_tier=tier,
+        )
+
+    @staticmethod
+    def _score_intents(request: TutorRequest, text: str, answer_demand: bool) -> tuple[dict[AgentName, float], list[str]]:
+        """Adds up the intent signals found in the message; the highest score wins."""
         scores: dict[AgentName, float] = {
             "socratic_tutor": 0.6,  # the faculty's default teaching stance
             "concept_explainer": 0.0,
@@ -136,17 +152,7 @@ class SupervisorAgent:
         if request.mastery is not None and request.mastery < 0.30 and "explanation_requested" in signals:
             scores["concept_explainer"] += 0.5
             signals.append("novice_needs_foundations")
-
-        agent = max(scores, key=lambda name: scores[name])
-        total = sum(scores.values())
-        confidence = round(max(0.34, min(0.98, scores[agent] / total if total else 0.5)), 2)
-        return RoutingDecision(
-            agent=agent,
-            confidence=confidence,
-            rationale=self._rationale(agent, signals, request, tier),
-            signals=tuple(signals) or ("default_socratic_stance",),
-            hint_tier=tier,
-        )
+        return scores, signals
 
     @staticmethod
     def _rationale(agent: AgentName, signals: list[str], request: TutorRequest, tier: int) -> str:
