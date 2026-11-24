@@ -182,4 +182,4 @@ The homogeneous solution is $\alpha 2^n$. Since 3 is not a characteristic root, 
 ## Further learning
 
 - **Next:** *Graph Theory Fundamentals* introduces structures whose properties are often counted with recurrences.
-- **Related:** *Call Stack and Recurrence Trees* in Data Structures & Algorithms solves divide-and-conquer recurrences.
+- **Related:** *Call Stack & Recurrence Trees* in Data Structures & Algorithms solves divide-and-conquer recurrences.

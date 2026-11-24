@@ -180,4 +180,4 @@ Count the ways to choose $n$ people from a group of $n$ women and $n$ men: direc
 ## Further learning
 
 - **Next:** *Induction Proof Techniques* proves formulas such as $\sum_k \binom{n}{k} = 2^n$ in another way.
-- **Related:** *Discrete Distributions* in Probability builds the binomial distribution from $\binom{n}{k}$.
+- **Related:** *Discrete Distributions: Bernoulli, Binomial, Geometric & Poisson* in Probability builds the binomial distribution from $\binom{n}{k}$.

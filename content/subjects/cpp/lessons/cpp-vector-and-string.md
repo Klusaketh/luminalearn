@@ -194,4 +194,4 @@ With plain `push_back`, the vector reallocates about 20 times (with doubling, $2
 ## Further learning
 
 - **Next:** *Smart Pointers & RAII Paradigm* explains the automatic clean-up that vector relies on.
-- **Related:** *Static and Dynamic Arrays* in Data Structures & Algorithms analyses dynamic array growth.
+- **Related:** *Static vs Dynamic Arrays* in Data Structures & Algorithms analyses dynamic array growth.

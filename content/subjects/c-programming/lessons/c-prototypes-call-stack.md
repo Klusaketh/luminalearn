@@ -194,4 +194,4 @@ The recursive version uses one stack frame per node, so it needs a million frame
 ## Further learning
 
 - **Next:** *Scope, Linkage & Storage Classes* explains how long variables live and where they can be seen.
-- **Related:** *Call Stack and Recurrence Trees* in Data Structures & Algorithms analyses the cost of recursion.
+- **Related:** *Call Stack & Recurrence Trees* in Data Structures & Algorithms analyses the cost of recursion.

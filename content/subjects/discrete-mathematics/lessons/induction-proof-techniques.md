@@ -178,4 +178,4 @@ Base case: 2 is prime, so it is a product of one prime. Step: assume every integ
 ## Further learning
 
 - **Next:** *Recurrence Relations* solves the equations that induction is often used to verify.
-- **Related:** *Binary Search and Loop Invariants* in Data Structures & Algorithms uses induction-style invariant proofs.
+- **Related:** *Binary Search & Invariants* in Data Structures & Algorithms uses induction-style invariant proofs.

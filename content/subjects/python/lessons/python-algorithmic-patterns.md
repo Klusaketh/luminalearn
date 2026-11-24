@@ -163,5 +163,5 @@ First sort by the secondary key, salary descending: `staff.sort(key=lambda e: e.
 
 ## Further learning
 
-- **Next:** *Breadth-First Search and Depth-First Search* in Data Structures & Algorithms develops the BFS idea used here.
-- **Related:** *Min and Max Heap Implementation* explains how `heapq` keeps the smallest item at the root.
+- **Next:** *Breadth-First Search & Depth-First Search* in Data Structures & Algorithms develops the BFS idea used here.
+- **Related:** *Min & Max Heap Implementation* explains how `heapq` keeps the smallest item at the root.

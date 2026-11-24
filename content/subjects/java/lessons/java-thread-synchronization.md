@@ -219,4 +219,4 @@ If thread 1 acquires `a` and thread 2 acquires `b` at about the same time, each 
 ## Further learning
 
 - **Next:** *JVM Architecture & Bytecode* revisits the per-thread stacks and shared heap that make these issues possible.
-- **Related:** *Process Synchronization and Critical Sections* in Operating Systems covers the theory behind locks and race conditions.
+- **Related:** *Critical Section Problem & Mutexes* in Operating Systems covers the theory behind locks and race conditions.

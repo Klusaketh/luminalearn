@@ -172,4 +172,4 @@ C defines `a[i]` as `*(a + i)`. Pointer addition is commutative, so `a + i` equa
 ## Further learning
 
 - **Next:** *Null-Terminated String Manipulation* treats strings as character arrays.
-- **Related:** *Static and Dynamic Arrays* in Data Structures & Algorithms compares fixed arrays with growable ones.
+- **Related:** *Static vs Dynamic Arrays* in Data Structures & Algorithms compares fixed arrays with growable ones.

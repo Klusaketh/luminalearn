@@ -20,7 +20,7 @@ RAG = CurriculumRAGService(documents_dir=None)
 # (learner question, words that identify the lesson that should be retrieved)
 GROUNDED_QUESTIONS = [
     # Data structures and algorithms
-    ("why is appending to a python list O(1) on average even though it sometimes copies everything", ("Amortized Analysis", "Static and Dynamic Arrays")),
+    ("why is appending to a python list O(1) on average even though it sometimes copies everything", ("Amortized Analysis", "Static and Dynamic Arrays", "Lists, Dictionaries & Comprehensions")),
     ("what does big O notation actually measure", "Big-O"),
     ("how do I find the middle of a linked list in one pass", "Fast and Slow Pointer"),
     ("check whether brackets in a string are balanced", "Monotonic Stacks and Bracket Matching"),
@@ -47,7 +47,7 @@ GROUNDED_QUESTIONS = [
     ("round robin versus shortest job first scheduling", "CPU Scheduling"),
     ("what happens on a page fault with demand paging", "Demand Paging"),
     ("LRU versus FIFO page replacement and belady's anomaly", "Page Replacement"),
-    ("how does a page table translate a virtual address", "Paging and Page Tables"),
+    ("how does a page table translate a virtual address", ("Paging and Page Tables", "Main Memory, Virtual Memory & TLBs")),
     ("what is stored in a process control block", "Process Control Block"),
     ("how does a system call switch from user mode to kernel mode", "System Calls and Dual-Mode"),
     ("SCAN and C-SCAN disk scheduling", "Disk Scheduling"),

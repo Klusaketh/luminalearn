@@ -249,4 +249,4 @@ Keep three pointers: `prev = NULL`, `cur = head`, and `next`. While `cur` is not
 ## Further learning
 
 - **Next:** *Binary & Text File Streams* shows how to save the data held in such structures.
-- **Related:** *Singly and Doubly Linked Lists* in Data Structures & Algorithms compares list variants and their costs.
+- **Related:** *Singly & Doubly Linked Lists* in Data Structures & Algorithms compares list variants and their costs.

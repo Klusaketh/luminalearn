@@ -164,4 +164,4 @@ One huge-page TLB entry covers 512 times as much memory as a 4 KiB entry, so a T
 ## Further learning
 
 - **Next:** *I/O Techniques: Polling, Interrupts & DMA* covers how devices move data into this memory.
-- **Related:** *Paging and Page Tables* and *Demand Paging* in Operating Systems explain the software side of virtual memory.
+- **Related:** *Paging & Page Tables* and *Demand Paging & Page Fault Handling* in Operating Systems explain the software side of virtual memory.

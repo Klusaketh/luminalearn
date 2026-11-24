@@ -58,9 +58,17 @@ def _stem(token: str) -> str:
     return token
 
 
+# Code operators carry meaning in programming questions ("== vs is", "what does += do"), but the word
+# pattern would drop them, so they become word tokens first. Operators containing > or | are omitted
+# because lesson markup stripping removes those characters from indexed text.
+_OPERATOR_TOKENS = {"==": "opeq", "!=": "opneq", "<=": "oplte", "&&": "opand", "++": "opincr", "+=": "opaddeq"}
+_OPERATOR_PATTERN = re.compile("|".join(re.escape(op) for op in sorted(_OPERATOR_TOKENS, key=len, reverse=True)))
+
+
 def tokenize(text: str) -> list[str]:
-    """Lowercased, stop-word filtered, stemmed terms."""
-    return [_stem(t) for t in _TOKEN_PATTERN.findall(text.lower()) if t not in _STOPWORDS]
+    """Lowercased, stop-word filtered, stemmed terms (code operators become words)."""
+    text = _OPERATOR_PATTERN.sub(lambda m: f" {_OPERATOR_TOKENS[m.group()]} ", text.lower())
+    return [_stem(t) for t in _TOKEN_PATTERN.findall(text) if t not in _STOPWORDS]
 
 
 def _stable_hash(value: str) -> int:

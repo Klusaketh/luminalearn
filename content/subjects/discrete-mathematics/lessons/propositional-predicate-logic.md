@@ -175,4 +175,4 @@ Formally the statement is $\forall \varepsilon > 0\, \exists \delta > 0\, \foral
 ## Further learning
 
 - **Next:** *Proof Techniques* uses these rules to build convincing arguments.
-- **Related:** *Boolean Algebra and Logic Gates* in Digital Logic applies the same equivalences to circuits.
+- **Related:** *De Morgan's Laws & Canonical Forms* in Digital Logic applies the same equivalences to circuits.

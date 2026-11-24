@@ -187,4 +187,4 @@ Take a longest path $v_1, v_2, \dots, v_k$ in the tree (it exists because the tr
 ## Further learning
 
 - **Next:** *Modular Arithmetic, GCD & Primes* moves from structures to number theory.
-- **Related:** *Graph Representations* and *BFS and DFS Traversals* in Data Structures & Algorithms implement these ideas.
+- **Related:** *Graph Representations* and *Breadth-First Search & Depth-First Search* in Data Structures & Algorithms implement these ideas.

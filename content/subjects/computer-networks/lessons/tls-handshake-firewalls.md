@@ -196,7 +196,7 @@ The firewall must perform "SSL/TLS Inspection" (or "Break and Inspect"). It term
 
 ## Further learning
 
--   **Next:** *Network Security Basics* provides a broader overview of organizational security policies and the human element of network defense.
+-   **Related:** *Access Control & OS Security Fundamentals* in Operating Systems explains how systems decide who may do what, complementing the network-level defences in this lesson.
 -   **Related:** *TCP 3-Way Handshake & Flow Control* is essential for understanding how the underlying transport layer functions before TLS even begins.
 -   **Related:** *BGP & Inter-Domain Autonomous Routing* explains how traffic moves between networks, which is the level where DDoS mitigation and Anycast routing operate.
 -   **Textbook:** James Kurose and Keith Ross, *Computer Networking: A Top-Down Approach*.

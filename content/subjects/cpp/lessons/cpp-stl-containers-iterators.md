@@ -206,4 +206,4 @@ With `std::map`, each of the $10^7$ insert-or-increment operations costs $O(\log
 ## Further learning
 
 - **Next:** *STL Algorithms & Lambda Expressions* applies algorithms to these containers.
-- **Related:** *Balanced Search Trees* and *Hash Functions & Collision Handling* in Data Structures & Algorithms explain how `map` and `unordered_map` work inside.
+- **Related:** *Balanced Search Trees (AVL & Red-Black)* and *Hash Functions & Collision Handling* in Data Structures & Algorithms explain how `map` and `unordered_map` work inside.
