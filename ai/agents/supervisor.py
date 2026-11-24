@@ -49,6 +49,12 @@ PROBLEM_CUES = (
     "integrate", "differentiate", "how many", "value of", "homework", "exercise", "stuck", "hint",
     "check my", "is it correct", "is this right", "my answer", "i got",
 )
+# A question that asks for a fact ("Which enzyme fixes carbon dioxide?", "Who proposed the relational model?")
+# deserves a direct, cited answer. Problems to work through still go to the Socratic Tutor.
+_FACT_QUESTION = re.compile(
+    r"^\s*(?:which|what|who|whom|whose|when|where|why|how (?:is|are|was|were|does|did)|name|list|state|mention)\b",
+    re.IGNORECASE,
+)
 ANSWER_DEMAND_CUES = (
     "just tell me", "give me the answer", "tell me the answer", "what's the answer", "what is the answer",
     "just give", "final answer", "the solution", "solve it for me", "do it for me", "skip the questions",
@@ -94,6 +100,22 @@ class SupervisorAgent:
                 hint_tier=tier,
             )
 
+        scores, signals = self._score_intents(request, text, answer_demand)
+
+        agent = max(scores, key=lambda name: scores[name])
+        total = sum(scores.values())
+        confidence = round(max(0.34, min(0.98, scores[agent] / total if total else 0.5)), 2)
+        return RoutingDecision(
+            agent=agent,
+            confidence=confidence,
+            rationale=self._rationale(agent, signals, request, tier),
+            signals=tuple(signals) or ("default_socratic_stance",),
+            hint_tier=tier,
+        )
+
+    @staticmethod
+    def _score_intents(request: TutorRequest, text: str, answer_demand: bool) -> tuple[dict[AgentName, float], list[str]]:
+        """Adds up the intent signals found in the message; the highest score wins."""
         scores: dict[AgentName, float] = {
             "socratic_tutor": 0.6,  # the faculty's default teaching stance
             "concept_explainer": 0.0,
@@ -115,6 +137,9 @@ class SupervisorAgent:
         if _has_any(text, EXPLAIN_CUES):
             scores["concept_explainer"] += 1.5
             signals.append("explanation_requested")
+        if _FACT_QUESTION.match(request.message):
+            scores["concept_explainer"] += 1.2
+            signals.append("fact_question")
         if _has_any(text, PROBLEM_CUES):
             scores["socratic_tutor"] += 1.4
             signals.append("problem_solving")
@@ -127,17 +152,7 @@ class SupervisorAgent:
         if request.mastery is not None and request.mastery < 0.30 and "explanation_requested" in signals:
             scores["concept_explainer"] += 0.5
             signals.append("novice_needs_foundations")
-
-        agent = max(scores, key=lambda name: scores[name])
-        total = sum(scores.values())
-        confidence = round(max(0.34, min(0.98, scores[agent] / total if total else 0.5)), 2)
-        return RoutingDecision(
-            agent=agent,
-            confidence=confidence,
-            rationale=self._rationale(agent, signals, request, tier),
-            signals=tuple(signals) or ("default_socratic_stance",),
-            hint_tier=tier,
-        )
+        return scores, signals
 
     @staticmethod
     def _rationale(agent: AgentName, signals: list[str], request: TutorRequest, tier: int) -> str:
@@ -152,6 +167,8 @@ class SupervisorAgent:
             return f"{reason}, so the Code Diagnostic agent will look for bugs and complexity hot-spots."
         if agent == "analogy_specialist":
             return "You asked for an intuitive comparison, so the Analogy Specialist will map this onto everyday experience."
+        if agent == "concept_explainer" and "explanation_requested" not in signals and "fact_question" in signals:
+            return "You asked a factual question, so the Concept Explainer will answer it directly and show its sources."
         if agent == "concept_explainer":
             style = request.modality.replace("_", "/")
             return f"You asked to understand a concept, so the Concept Explainer will teach it in your {style} learning style.{mastery_note}"

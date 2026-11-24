@@ -1,6 +1,9 @@
 import { API_BASE, apiFetch, readErrorDetail } from "./apiClient";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
+export type PracticeLanguage = "python" | "javascript";
+
+export const LANGUAGE_LABELS: Record<PracticeLanguage, string> = { python: "Python", javascript: "JavaScript" };
 
 export interface PracticeProblemSummary {
   slug: string;
@@ -10,6 +13,7 @@ export interface PracticeProblemSummary {
   order: number;
   solved: boolean;
   attempts: number;
+  languages: PracticeLanguage[];
 }
 
 export interface PracticeTestCase {
@@ -25,6 +29,10 @@ export interface PracticeProblemDetail extends PracticeProblemSummary {
   hints: string[];
   tests: PracticeTestCase[];
   harness: string;
+  /** Per language: the editor's starting code, the function the tests call, and the judging harness. */
+  starters: Partial<Record<PracticeLanguage, string>>;
+  function_names: Partial<Record<PracticeLanguage, string>>;
+  harnesses: Partial<Record<PracticeLanguage, string>>;
   related_topic: { id: string; title: string } | null;
   best_passed: number;
 }
@@ -42,7 +50,7 @@ export interface PracticeSubmissionResult {
   total: number;
 }
 
-/** One test's outcome, as reported by content/practice/harness.py running in the browser. */
+/** One test's outcome, as reported by content/practice/harness.py (or harness.js) running in the browser. */
 export interface TestOutcome {
   index: number;
   passed: boolean;
@@ -72,7 +80,10 @@ export const practiceService = {
     return getJson(`/practice/problems/${encodeURIComponent(slug)}`, "Could not load this problem.", { signal });
   },
 
-  submit(slug: string, body: { code: string; passed: number; total: number }): Promise<PracticeSubmissionResult> {
+  submit(
+    slug: string,
+    body: { code: string; passed: number; total: number; language: PracticeLanguage },
+  ): Promise<PracticeSubmissionResult> {
     return getJson(`/practice/problems/${encodeURIComponent(slug)}/submissions`, "Could not save your result.", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

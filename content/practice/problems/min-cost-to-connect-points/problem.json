@@ -1,0 +1,134 @@
+{
+  "title": "Min Cost to Connect All Points",
+  "difficulty": "Medium",
+  "order": 26,
+  "tags": [
+    "Graphs",
+    "Minimum Spanning Tree",
+    "Union-Find"
+  ],
+  "related_topic": "mst-disjoint-sets",
+  "function": "min_cost_connect_points",
+  "compare": "exact",
+  "hints": [
+    "Connecting $n$ points needs exactly $n - 1$ links if there are no wasted cycles. Which links would you consider first?",
+    "Kruskal: list every pair with its distance, sort by distance, and add a pair whenever its two points are not yet connected (check with union-find). Stop after $n - 1$ links. Prim's algorithm, growing one tree from point 0, also works.",
+    "Parallel example: to lay the least cable connecting five villages, keep choosing the shortest possible cable that joins two villages not already connected, ignoring cables that would close a loop."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            7,
+            0
+          ]
+        ]
+      ],
+      "expected": 20
+    },
+    {
+      "args": [
+        [
+          [
+            3,
+            12
+          ],
+          [
+            -2,
+            5
+          ],
+          [
+            -4,
+            1
+          ]
+        ]
+      ],
+      "expected": 18
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          [
+            -1000000,
+            -1000000
+          ],
+          [
+            1000000,
+            1000000
+          ]
+        ]
+      ],
+      "expected": 4000000
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            5,
+            5
+          ]
+        ]
+      ],
+      "expected": 12
+    }
+  ]
+}

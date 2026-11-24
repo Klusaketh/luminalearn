@@ -2,14 +2,21 @@ import { BookMarked } from "lucide-react";
 import type { Citation } from "@/services/tutorService";
 import { cn } from "@/utils/cn";
 
-/** Verified curriculum sources behind an answer (grounded RAG provenance). */
+/** Section name the server gives passages from the learner's uploaded PDFs. */
+const UPLOADED_SECTION = "Uploaded document";
+
+/** Verified sources behind an answer (grounded RAG provenance): curriculum lessons and the learner's own documents. */
 export function CitationList({ citations, highlighted, idPrefix }: { citations: Citation[]; highlighted?: number | null; idPrefix: string }) {
   if (citations.length === 0) return null;
+  const fromDocuments = citations.some((c) => c.section === UPLOADED_SECTION);
+  const fromCurriculum = citations.some((c) => c.section !== UPLOADED_SECTION);
+  const heading =
+    fromDocuments && fromCurriculum ? "Sources from your documents and curriculum" : fromDocuments ? "Sources from your documents" : "Sources from your curriculum";
   return (
     <section aria-label="Sources" className="mt-4 border-t border-white/[0.06] pt-3">
       <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-slate-300">
         <BookMarked className="h-3.5 w-3.5 text-indigo-300" aria-hidden="true" />
-        Sources from your curriculum
+        {heading}
       </p>
       <ol className="space-y-1.5">
         {citations.map((citation) => (

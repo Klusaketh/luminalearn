@@ -1,0 +1,106 @@
+{
+  "title": "Kth Largest Element",
+  "difficulty": "Medium",
+  "order": 21,
+  "tags": [
+    "Heap",
+    "Sorting"
+  ],
+  "related_topic": "heap-implementation",
+  "function": "find_kth_largest",
+  "compare": "exact",
+  "hints": [
+    "If you kept only the `k` largest values seen so far, which of them would be the answer at the end?",
+    "Keep a min-heap of at most `k` values. Push each number; whenever the heap holds more than `k`, pop its smallest. At the end the heap's minimum is the `k`-th largest. (In JavaScript, sorting a copy is fine if you have no heap.)",
+    "Parallel example: to find the third-fastest runner as results arrive, keep a podium of three; a new time only gets on if it beats the slowest person on the podium."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          3,
+          2,
+          1,
+          5,
+          6,
+          4
+        ],
+        2
+      ],
+      "expected": 5
+    },
+    {
+      "args": [
+        [
+          3,
+          2,
+          3,
+          1,
+          2,
+          4,
+          5,
+          5,
+          6
+        ],
+        4
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          2,
+          1
+        ],
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          -1,
+          -1,
+          -2
+        ],
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          7,
+          7,
+          7,
+          7
+        ],
+        3
+      ],
+      "expected": 7
+    },
+    {
+      "args": [
+        [
+          5,
+          9,
+          -3,
+          0,
+          12,
+          8
+        ],
+        6
+      ],
+      "expected": -3
+    }
+  ]
+}

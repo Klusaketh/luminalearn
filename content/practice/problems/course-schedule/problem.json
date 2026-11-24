@@ -1,0 +1,142 @@
+{
+  "title": "Course Schedule",
+  "difficulty": "Medium",
+  "order": 22,
+  "tags": [
+    "Graphs",
+    "Topological Sort"
+  ],
+  "related_topic": "bfs-dfs-traversals",
+  "function": "can_finish",
+  "compare": "exact",
+  "hints": [
+    "Draw the courses as a directed graph. What shape in the graph makes finishing impossible?",
+    "Count each course's unmet prerequisites (its in-degree). Start a queue with every course that has none; each time you take a course, lower the count of the courses that depend on it and enqueue any that reach zero. You succeed if you take every course (Kahn's algorithm).",
+    "Parallel example: getting dressed: socks before shoes and trousers before shoes. Put on anything with no remaining requirement, cross it off, and repeat; if you get stuck with clothes left, the rules contain a loop."
+  ],
+  "tests": [
+    {
+      "args": [
+        2,
+        [
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        2,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        1,
+        []
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        4,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        3,
+        [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            0
+          ]
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "args": [
+        5,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        4,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      ],
+      "expected": false
+    }
+  ]
+}

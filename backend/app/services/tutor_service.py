@@ -9,7 +9,7 @@ stream as Server-Sent Events.
 import json
 import logging
 import uuid
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -22,6 +22,7 @@ from ai.agents import (
     TutorEvent,
     TutorRequest,
 )
+from ai.rag.curriculum_rag import CurriculumRAGService
 from app.core.config import settings
 from app.core.rate_limit import SlidingWindowRateLimiter
 from app.models.quiz import StudentTopicMastery
@@ -96,9 +97,14 @@ class TutorService:
             learner_name=user.full_name.split(" ")[0] if user and user.full_name else None,
         )
 
-    async def sse_stream(self, orchestrator: SocraticOrchestrator, tutor_request: TutorRequest) -> AsyncIterator[bytes]:
+    async def sse_stream(
+        self,
+        orchestrator: SocraticOrchestrator,
+        tutor_request: TutorRequest,
+        documents: Sequence[CurriculumRAGService] = (),
+    ) -> AsyncIterator[bytes]:
         try:
-            async for event in orchestrator.stream(tutor_request):
+            async for event in orchestrator.stream(tutor_request, documents):
                 yield encode_sse(event)
         except Exception:
             # The stream has already started, so an HTTP error is impossible: end with a typed frame.

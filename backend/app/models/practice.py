@@ -11,7 +11,7 @@ class PracticeSubmission(Base):
     """
     One run of a learner's code against a coding-practice problem.
 
-    The code runs in the learner's browser (Pyodide), so `passed` and `total` are reported by the
+    The code runs in the learner's browser (Pyodide for Python, a Web Worker for JavaScript), so `passed` and `total` are reported by the
     client. They drive progress display only; nothing security-sensitive depends on them.
     """
 
@@ -23,6 +23,7 @@ class PracticeSubmission(Base):
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     problem_slug: Mapped[str] = mapped_column(String(100), nullable=False)
+    language: Mapped[str] = mapped_column(String(20), nullable=False, default="python", server_default="python")
     passed: Mapped[int] = mapped_column(Integer, nullable=False)
     total: Mapped[int] = mapped_column(Integer, nullable=False)
     solved: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

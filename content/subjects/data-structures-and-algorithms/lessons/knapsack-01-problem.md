@@ -252,6 +252,6 @@ The ratios are 1, 1.33, 1.25, and 1.4 per kilogram, so greedy takes (5, 7) first
 
 ## Further learning
 
-- **Next:** this completes the Data Structures & Algorithms core course. Revisit *Asymptotic Notations* to connect the course's analysis tools with the algorithms you have now studied.
+- **Next:** this completes the Data Structures & Algorithms core course. Revisit *Big-O, Big-Omega & Theta Notations* to connect the course's analysis tools with the algorithms you have now studied.
 - **Related:** *Memoization vs Tabulation* covers the general techniques used here.
 - **Related:** *Greedy Choice & Optimal Substructure* explains why the fractional version needs no table at all.

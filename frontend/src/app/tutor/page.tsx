@@ -11,6 +11,7 @@ import { useVoiceSession } from "@/hooks/useVoiceSession";
 import { useNarration } from "@/hooks/useNarration";
 import { DialogueFeed } from "@/components/tutor/DialogueFeed";
 import { Composer } from "@/components/tutor/Composer";
+import { DocumentTray } from "@/components/tutor/DocumentTray";
 import { VarkSwitcher } from "@/components/tutor/VarkSwitcher";
 import { VoiceStage } from "@/components/tutor/VoiceStage";
 import { ContextPanel } from "@/components/tutor/ContextPanel";
@@ -150,7 +151,8 @@ function TutorWorkspace() {
     <div className="flex flex-col items-center px-2 pb-6 pt-2 text-center sm:pt-14">
       <h2 className="font-display text-3xl leading-tight text-white sm:text-5xl">What are you working on?</h2>
       <p className="mt-3 max-w-md text-[15px] leading-relaxed text-slate-400">
-        Ask anything. The faculty answers with the question that gets you unstuck, never with the answer itself.
+        Ask anything. The faculty answers with the question that gets you unstuck, never with the answer itself. Attach a
+        PDF of your notes to ask doubts about it.
       </p>
       <div className="mt-8 grid w-full max-w-xl grid-cols-1 gap-2.5 sm:grid-cols-2">
         {STARTERS.map((starter, index) => (
@@ -215,7 +217,8 @@ function TutorWorkspace() {
           <div className="flex justify-center">
             <VarkSwitcher value={modality} onChange={onModalityChange} />
           </div>
-          <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-3xl space-y-2">
+            <DocumentTray />
             <Composer
               value={draft}
               onChange={setDraft}

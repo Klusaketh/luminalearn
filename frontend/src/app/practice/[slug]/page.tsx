@@ -10,8 +10,13 @@ import { LessonMarkdown } from "@/components/subjects/LessonMarkdown";
 import { AskTutor } from "@/components/practice/AskTutor";
 import { TestResults } from "@/components/practice/TestResults";
 import { DIFFICULTY_TONE } from "@/components/practice/format";
-import { usePythonRunner, type RunOutcome } from "@/hooks/usePythonRunner";
-import { practiceService, type PracticeProblemDetail } from "@/services/practiceService";
+import { useCodeRunner, type RunOutcome } from "@/hooks/useCodeRunner";
+import {
+  LANGUAGE_LABELS,
+  practiceService,
+  type PracticeLanguage,
+  type PracticeProblemDetail,
+} from "@/services/practiceService";
 import { celebrateMastery } from "@/utils/confetti";
 import { cn } from "@/utils/cn";
 
@@ -22,24 +27,35 @@ const CodeEditor = dynamic(() => import("@/components/practice/CodeEditor"), {
 
 const HINT_LABELS = ["Nudge", "Scaffold", "Parallel example"];
 
-/** Drafts survive reloads in this browser only; storage can be unavailable (private mode), so it is optional. */
-function draftKey(slug: string) {
-  return `lumina.practice.${slug}`;
+/**
+ * Drafts (one per problem and language) and the preferred language survive reloads in this browser
+ * only; storage can be unavailable (private mode), so it is optional.
+ */
+const LANGUAGE_KEY = "lumina.practice.language";
+function draftKey(slug: string, language: PracticeLanguage) {
+  return language === "python" ? `lumina.practice.${slug}` : `lumina.practice.${slug}.${language}`;
 }
-function readDraft(slug: string): string | null {
+function readStored(key: string): string | null {
   try {
-    return window.localStorage.getItem(draftKey(slug));
+    return window.localStorage.getItem(key);
   } catch {
     return null;
   }
 }
-function writeDraft(slug: string, code: string | null) {
+function writeStored(key: string, value: string | null) {
   try {
-    if (code === null) window.localStorage.removeItem(draftKey(slug));
-    else window.localStorage.setItem(draftKey(slug), code);
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, value);
   } catch {
     // Drafts are a convenience; ignore storage failures.
   }
+}
+function preferredLanguage(available: PracticeLanguage[]): PracticeLanguage {
+  const stored = readStored(LANGUAGE_KEY) as PracticeLanguage | null;
+  return stored && available.includes(stored) ? stored : available[0] ?? "python";
+}
+function starterFor(problem: PracticeProblemDetail, language: PracticeLanguage): string {
+  return problem.starters[language] ?? problem.starter_code;
 }
 
 function Workspace({ slug }: { slug: string }) {
@@ -50,16 +66,19 @@ function Workspace({ slug }: { slug: string }) {
   const [hintsShown, setHintsShown] = useState(0);
   const [solved, setSolved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const runner = usePythonRunner();
+  const [language, setLanguage] = useState<PracticeLanguage>("python");
+  const runner = useCodeRunner(language);
 
   useEffect(() => {
     const controller = new AbortController();
     practiceService
       .get(slug, controller.signal)
       .then((detail) => {
+        const chosen = preferredLanguage(detail.languages?.length ? detail.languages : ["python"]);
         setProblem(detail);
         setSolved(detail.solved);
-        setCode(readDraft(slug) ?? detail.starter_code);
+        setLanguage(chosen);
+        setCode(readStored(draftKey(slug, chosen)) ?? starterFor(detail, chosen));
       })
       .catch((err: unknown) => {
         if (!controller.signal.aborted) setLoadError(err instanceof Error ? err.message : "Could not load this problem.");
@@ -70,19 +89,30 @@ function Workspace({ slug }: { slug: string }) {
   const onChange = useCallback(
     (value: string) => {
       setCode(value);
-      writeDraft(slug, value);
+      writeStored(draftKey(slug, language), value);
     },
-    [slug],
+    [slug, language],
+  );
+
+  const switchLanguage = useCallback(
+    (next: PracticeLanguage) => {
+      if (!problem || next === language) return;
+      setLanguage(next);
+      writeStored(LANGUAGE_KEY, next);
+      setCode(readStored(draftKey(slug, next)) ?? starterFor(problem, next));
+      setOutcome(null);
+    },
+    [language, problem, slug],
   );
 
   const runTests = useCallback(async () => {
     if (!problem || runner.status === "running") return;
     const result = await runner.run({
       code,
-      functionName: problem.function_name,
+      functionName: problem.function_names[language] ?? problem.function_name,
       tests: problem.tests,
       compare: problem.compare,
-      harness: problem.harness,
+      harness: problem.harnesses[language] ?? problem.harness,
     });
     setOutcome(result);
     if (result.kind !== "report" || result.report.error) return;
@@ -91,13 +121,13 @@ function Workspace({ slug }: { slug: string }) {
     const total = problem.tests.length;
     if (passed === total && !solved) void celebrateMastery();
     try {
-      const saved = await practiceService.submit(problem.slug, { code, passed, total });
+      const saved = await practiceService.submit(problem.slug, { code, passed, total, language });
       setSolved(saved.solved);
       setSaveError(null);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Could not save your result.");
     }
-  }, [code, problem, runner, solved]);
+  }, [code, language, problem, runner, solved]);
 
   if (loadError) {
     return (
@@ -114,8 +144,14 @@ function Workspace({ slug }: { slug: string }) {
   if (!problem) return <div className="mx-auto min-h-[60vh] w-full max-w-7xl animate-pulse px-4 py-12" aria-busy="true" />;
 
   const running = runner.status === "running";
+  const languageName = LANGUAGE_LABELS[language];
+  const languages = problem.languages?.length ? problem.languages : (["python"] as PracticeLanguage[]);
   const runtimeNote =
-    runner.status === "loading" ? "Starting Python in your browser…" : runner.status === "failed" ? "Python could not start in this browser." : "Python ready · Ctrl+Enter to run";
+    runner.status === "loading"
+      ? `Starting ${languageName} in your browser…`
+      : runner.status === "failed"
+        ? `${languageName} could not start in this browser.`
+        : `${languageName} ready · Ctrl+Enter to run`;
 
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
@@ -182,7 +218,36 @@ function Workspace({ slug }: { slug: string }) {
         </GlassPanel>
 
         <section aria-label="Code editor and tests" className="space-y-4">
-          <CodeEditor value={code} onChange={onChange} onRun={() => void runTests()} label={`Python solution for ${problem.title}`} />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div role="radiogroup" aria-label="Programming language" className="inline-flex rounded-xl bg-white/[0.04] p-1 ring-1 ring-white/[0.08]">
+              {languages.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  role="radio"
+                  aria-checked={language === option}
+                  onClick={() => switchLanguage(option)}
+                  disabled={running}
+                  className={cn(
+                    "rounded-lg px-3.5 py-1.5 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:opacity-60",
+                    language === option ? "bg-indigo-500 text-white shadow" : "text-slate-300 hover:text-white",
+                  )}
+                >
+                  {LANGUAGE_LABELS[option]}
+                </button>
+              ))}
+            </div>
+            <code className="rounded-lg bg-black/30 px-2.5 py-1 font-mono text-[12.5px] text-slate-300">
+              {problem.function_names[language] ?? problem.function_name}(…)
+            </code>
+          </div>
+          <CodeEditor
+            value={code}
+            onChange={onChange}
+            onRun={() => void runTests()}
+            language={language}
+            label={`${languageName} solution for ${problem.title}`}
+          />
 
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -197,8 +262,8 @@ function Workspace({ slug }: { slug: string }) {
             <button
               type="button"
               onClick={() => {
-                setCode(problem.starter_code);
-                writeDraft(slug, null);
+                setCode(starterFor(problem, language));
+                writeStored(draftKey(slug, language), null);
                 setOutcome(null);
               }}
               className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] px-4 py-2.5 text-sm text-slate-200 ring-1 ring-white/[0.08] hover:bg-white/[0.07]"
@@ -211,10 +276,15 @@ function Workspace({ slug }: { slug: string }) {
 
           <GlassPanel className="p-5">
             <h2 className="mb-3 text-sm font-semibold text-white">Tests</h2>
-            <TestResults tests={problem.tests} functionName={problem.function_name} outcome={outcome} />
+            <TestResults
+              tests={problem.tests}
+              functionName={problem.function_names[language] ?? problem.function_name}
+              language={language}
+              outcome={outcome}
+            />
           </GlassPanel>
 
-          <AskTutor problem={problem} code={code} outcome={outcome} />
+          <AskTutor problem={problem} code={code} outcome={outcome} language={language} />
         </section>
       </div>
     </main>

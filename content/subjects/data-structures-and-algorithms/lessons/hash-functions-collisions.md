@@ -243,4 +243,4 @@ Resizes happen when the number of keys passes $m, 2m, 4m, \dots$, and each one r
 
 - **Next:** *Binary Tree Traversals* begins the tree structures that, unlike hash tables, keep keys in order.
 - **Related:** *Pattern Matching Basics* mentions Rabin-Karp, which applies rolling hashes to string search.
-- **Related:** *Binary Search Trees (BST)* and *Balanced Search Trees* offer ordered alternatives with $O(\log n)$ operations.
+- **Related:** *Binary Search Trees (BST)* and *Balanced Search Trees (AVL & Red-Black)* offer ordered alternatives with $O(\log n)$ operations.

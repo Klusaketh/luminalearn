@@ -329,26 +329,77 @@ def _blank_strings_and_comments(code: str) -> str:
 _CLOSERS = {")": "(", "]": "[", "}": "{"}
 
 
-def _scan_brackets_and_loops(lines: list[str]) -> tuple[CodeFinding | None, int]:
-    """Matches brackets and tracks how many `{` blocks opened by for/while loops are nested."""
-    stack: list[tuple[str, int, bool]] = []  # (bracket, line, opened_a_loop_body)
-    loop_depth = max_loop_depth = 0
-    pending_loop = False
+_LOOP_HEADER = re.compile(r"\b(?:for|while)\s*\(")
+_LOOP_CALLBACK = re.compile(r"\.(?:forEach|map|filter|reduce|some|every|find|findIndex|flatMap)\s*\(")
+
+
+def _scan_brackets_and_loops(lines: list[str]) -> tuple[CodeFinding | None, int]:  # noqa: C901 - one pass over the characters
+    """
+    Matches brackets and measures how deeply loops nest. A loop body is a `{}` block, a single
+    statement (`for (...) total += x;`, including another loop), or a JavaScript array callback
+    such as `.forEach((x) => { ... })`.
+    """
+    stack: list[tuple[str, int, str]] = []  # (bracket, line, role): role is plain / header / callback / body
+    braceless: list[int] = []  # stack depth at which each single-statement loop body started
+    active = max_loop_depth = 0
+    awaiting_body = False  # a loop header's `)` just closed; the next token starts its body
+    callback_depth: int | None = None  # stack depth just inside an array-method call's parentheses
+
+    def end_braceless(depth: int) -> None:
+        nonlocal active
+        while braceless and braceless[-1] >= depth:
+            braceless.pop()
+            active -= 1
+
     for line_no, line in enumerate(lines, 1):
-        pending_loop = pending_loop or bool(re.search(r"\b(for|while)\s*\(", line))
-        for char in line:
+        headers = {m.end() - 1 for m in _LOOP_HEADER.finditer(line)}
+        callbacks = {m.end() - 1 for m in _LOOP_CALLBACK.finditer(line)}
+        for column, char in enumerate(line):
+            if char.isspace():
+                continue
+            opens_body = False
+            if awaiting_body:
+                awaiting_body = False
+                opens_body = char == "{"
+                if char == ";":  # empty body: `while (x);` or the tail of a do-while
+                    max_loop_depth = max(max_loop_depth, active + 1)
+                    continue
+                if char != "{":
+                    braceless.append(len(stack))
+                    active += 1
+                    max_loop_depth = max(max_loop_depth, active)
             if char in "([{":
-                opens_loop = char == "{" and pending_loop
-                pending_loop = pending_loop and char != "{"
-                stack.append((char, line_no, opens_loop))
-                loop_depth += opens_loop
-                max_loop_depth = max(max_loop_depth, loop_depth)
+                if opens_body or (char == "{" and callback_depth == len(stack)):
+                    role = "body"
+                elif char == "(" and column in headers:
+                    role = "header"
+                elif char == "(" and column in callbacks:
+                    role = "callback"
+                else:
+                    role = "plain"
+                stack.append((char, line_no, role))
+                if role == "callback":
+                    callback_depth = len(stack)
+                    max_loop_depth = max(max_loop_depth, active + 1)  # `xs.map((x) => x * 2)` loops too
+                if role == "body":
+                    active += 1
+                    max_loop_depth = max(max_loop_depth, active)
             elif char in _CLOSERS:
                 if not stack or stack[-1][0] != _CLOSERS[char]:
                     return CodeFinding("error", line_no, "Unbalanced brackets",
                                        f"Line {line_no} closes `{char}` without a matching opener.",
                                        "Which bracket was this meant to close?"), max_loop_depth
-                loop_depth -= stack.pop()[2]
+                _, _, role = stack.pop()
+                if role == "body":
+                    active -= 1
+                if role == "callback" and callback_depth == len(stack) + 1:
+                    callback_depth = None
+                if role == "header":
+                    awaiting_body = True
+                elif char == "}":
+                    end_braceless(len(stack))
+            elif char == ";":
+                end_braceless(len(stack))
     if stack:
         char, line_no, _ = stack[-1]
         return CodeFinding("error", line_no, "Unbalanced brackets",
@@ -396,6 +447,7 @@ def numbered(code: str) -> str:
 
 class CodeDiagnosticAgent(SpecialistAgent):
     name = "code_diagnostic"
+    temperature = 0.2
 
     def role_prompt(self, ctx: AgentContext) -> str:
         return CODE_DIAGNOSTIC

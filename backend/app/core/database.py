@@ -52,6 +52,7 @@ _ADDITIVE_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("question_type", "VARCHAR(50) NOT NULL DEFAULT 'multiple_choice'"),
         ("source_reference", "VARCHAR(255)"),
     ],
+    "practice_submissions": [("language", "VARCHAR(20) NOT NULL DEFAULT 'python'")],
 }
 
 

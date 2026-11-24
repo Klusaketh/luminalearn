@@ -301,4 +301,4 @@ Invariant: every element of `a[:lo]` is less than `x`, and every element of `a[h
 
 - **Next:** *Elementary & Linear-Time Sorting* covers how to produce the sorted arrays that binary search relies on.
 - **Related:** *Binary Search Trees (BST)* applies the same halving idea to a dynamic, pointer-based structure.
-- **Related:** *Asymptotic Notations* explains why $O(\log n)$ grows so slowly.
+- **Related:** *Big-O, Big-Omega & Theta Notations* explains why $O(\log n)$ grows so slowly.

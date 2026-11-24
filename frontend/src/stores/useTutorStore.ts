@@ -6,7 +6,11 @@ import type {
   LabWidget,
   Modality,
   RouteInfo,
+  TutorDocument,
 } from "@/services/tutorService";
+
+/** The server answers from at most five documents per question. */
+export const MAX_ACTIVE_DOCUMENTS = 5;
 
 export type MessageStatus = "streaming" | "done" | "error" | "interrupted";
 export type VoiceState = "off" | "connecting" | "listening" | "thinking" | "speaking";
@@ -36,6 +40,13 @@ interface TutorState {
   /** Extra hints requested in the current thread; climbs the Socratic hint ladder. */
   hintLevel: number;
   voiceState: VoiceState;
+  /** Uploaded study documents, and the ones the tutor should answer from. */
+  documents: TutorDocument[];
+  activeDocumentIds: string[];
+  setDocuments: (documents: TutorDocument[]) => void;
+  addDocument: (document: TutorDocument) => void;
+  removeDocument: (id: string) => void;
+  toggleDocument: (id: string) => void;
   addMessage: (message: TutorMessage) => void;
   patchMessage: (id: string, patch: Partial<TutorMessage>) => void;
   appendText: (id: string, text: string) => void;
@@ -59,6 +70,30 @@ export const useTutorStore = create<TutorState>((set) => ({
   modality: "read_write",
   hintLevel: 0,
   voiceState: "off",
+  documents: [],
+  activeDocumentIds: [],
+
+  setDocuments: (documents) =>
+    set((state) => ({
+      documents,
+      activeDocumentIds: state.activeDocumentIds.filter((id) => documents.some((d) => d.id === id)),
+    })),
+  addDocument: (document) =>
+    set((state) => ({
+      documents: [document, ...state.documents.filter((d) => d.id !== document.id)],
+      activeDocumentIds: [document.id, ...state.activeDocumentIds.filter((id) => id !== document.id)].slice(0, MAX_ACTIVE_DOCUMENTS),
+    })),
+  removeDocument: (id) =>
+    set((state) => ({
+      documents: state.documents.filter((d) => d.id !== id),
+      activeDocumentIds: state.activeDocumentIds.filter((active) => active !== id),
+    })),
+  toggleDocument: (id) =>
+    set((state) => ({
+      activeDocumentIds: state.activeDocumentIds.includes(id)
+        ? state.activeDocumentIds.filter((active) => active !== id)
+        : [...state.activeDocumentIds, id].slice(-MAX_ACTIVE_DOCUMENTS),
+    })),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
   patchMessage: (id, patch) =>

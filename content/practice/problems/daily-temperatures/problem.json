@@ -1,0 +1,125 @@
+{
+  "title": "Daily Temperatures",
+  "difficulty": "Medium",
+  "order": 19,
+  "tags": [
+    "Stack",
+    "Monotonic Stack"
+  ],
+  "related_topic": "monotonic-stacks",
+  "function": "daily_temperatures",
+  "compare": "exact",
+  "hints": [
+    "When you meet a warm day, which earlier days does it answer at once?",
+    "Keep a stack of indices whose warmer day has not been found yet; their temperatures decrease from bottom to top. For each new day, pop every index with a lower temperature and record the distance, then push the new index.",
+    "Parallel example: in a queue of people, to find for each person the next taller person behind them, keep a stack of people still waiting and let each newcomer settle everyone shorter on the stack."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          73,
+          74,
+          75,
+          71,
+          69,
+          72,
+          76,
+          73
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        4,
+        2,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          30,
+          40,
+          50,
+          60
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          30,
+          20,
+          10
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          50
+        ]
+      ],
+      "expected": [
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          70,
+          70,
+          71
+        ]
+      ],
+      "expected": [
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "args": [
+        [
+          55,
+          38,
+          53,
+          81,
+          61,
+          93,
+          97,
+          32,
+          43,
+          78
+        ]
+      ],
+      "expected": [
+        3,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "title": "Best Time to Buy and Sell Stock",
+  "difficulty": "Easy",
+  "order": 13,
+  "tags": [
+    "Arrays",
+    "Two Pointers"
+  ],
+  "related_topic": "sliding-window-two-pointers",
+  "function": "max_profit",
+  "compare": "exact",
+  "hints": [
+    "If you knew you were selling today, which earlier day would you want to have bought on?",
+    "Walk through the prices once, keeping two values: the lowest price seen so far and the best profit so far. For each price, compare `price - lowest` with the best.",
+    "Parallel example: to find the largest drop `a[i] - a[j]` with `i < j`, keep the highest value seen so far and compare each new value against it."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          7,
+          1,
+          5,
+          3,
+          6,
+          4
+        ]
+      ],
+      "expected": 5
+    },
+    {
+      "args": [
+        [
+          7,
+          6,
+          4,
+          3,
+          1
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          5
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          2,
+          4,
+          1
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          3,
+          3,
+          3
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          2,
+          0,
+          1,
+          7
+        ]
+      ],
+      "expected": 7
+    }
+  ]
+}

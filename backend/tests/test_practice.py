@@ -2,6 +2,8 @@
 
 import json
 import runpy
+import shutil
+import subprocess
 
 import pytest
 from httpx import AsyncClient
@@ -22,6 +24,32 @@ def judge(code: str, problem) -> dict:
     return json.loads(HARNESS["run_tests"](code, problem.function_name, json.dumps(list(problem.tests)), problem.compare))
 
 
+# Loads harness.js exactly as the browser worker does (`new Function(source + "return runTests")`) and
+# judges one solution per stdin line.
+NODE_JUDGE = r"""
+const fs = require("fs");
+const harness = fs.readFileSync(process.argv[1], "utf8");
+const runTests = new Function(harness + "\nreturn runTests;")();
+const lines = fs.readFileSync(0, "utf8").split("\n").filter(Boolean);
+console.log(JSON.stringify(lines.map((line) => {
+  const job = JSON.parse(line);
+  return JSON.parse(runTests(job.code, job.fn, JSON.stringify(job.tests), job.compare));
+})));
+"""
+
+
+def judge_js(jobs: list[tuple[str, str, list, str]]) -> list[dict]:
+    """Runs (code, function, tests, compare) jobs through harness.js with Node, in one process."""
+    if shutil.which("node") is None:
+        pytest.skip("node is not installed")
+    payload = "\n".join(json.dumps({"code": c, "fn": f, "tests": t, "compare": m}) for c, f, t, m in jobs)
+    result = subprocess.run(
+        ["node", "-e", NODE_JUDGE, str(PRACTICE_ROOT / "harness.js")],
+        input=payload, capture_output=True, text=True, timeout=120, check=True,
+    )
+    return json.loads(result.stdout)
+
+
 # ---------------------------------------------------------------------- content
 
 
@@ -32,7 +60,7 @@ def test_problem_set_is_present():
 
 @pytest.mark.parametrize("problem", PROBLEMS, ids=[p.slug for p in PROBLEMS])
 def test_reference_solution_passes_every_test(problem):
-    report = judge(problem.solution, problem)
+    report = judge(problem.solutions["python"], problem)
     assert report["error"] is None, report["error"]
     failed = [r for r in report["results"] if not r["passed"]]
     assert not failed, failed
@@ -40,9 +68,47 @@ def test_reference_solution_passes_every_test(problem):
 
 @pytest.mark.parametrize("problem", PROBLEMS, ids=[p.slug for p in PROBLEMS])
 def test_starter_code_is_not_already_a_solution(problem):
-    report = judge(problem.starter_code, problem)
+    report = judge(problem.starters["python"], problem)
     assert report["error"] is None, "the starter must define the function the tests call"
     assert not all(r["passed"] for r in report["results"])
+
+
+def test_every_problem_offers_python_and_javascript():
+    assert all(p.languages == ["python", "javascript"] for p in PROBLEMS), [p.slug for p in PROBLEMS if len(p.languages) < 2]
+
+
+def test_javascript_reference_solutions_pass_and_starters_do_not():
+    jobs = []
+    for p in PROBLEMS:
+        for kind in ("solutions", "starters"):
+            jobs.append((getattr(p, kind)["javascript"], p.function_name_for("javascript"), list(p.tests), p.compare))
+    reports = judge_js(jobs)
+    for index, p in enumerate(PROBLEMS):
+        solution, starter = reports[2 * index], reports[2 * index + 1]
+        assert solution["error"] is None, (p.slug, solution["error"])
+        assert all(r["passed"] for r in solution["results"]), (p.slug, [r for r in solution["results"] if not r["passed"]])
+        assert starter["error"] is None, (p.slug, "the JavaScript starter must define the function")
+        assert not all(r["passed"] for r in starter["results"]), p.slug
+
+
+def test_javascript_harness_reports_errors_output_and_comparisons():
+    reports = judge_js([
+        ("function f(a) {\n  return a.b.c;\n}", "f", [{"args": [1], "expected": 1}], "exact"),
+        ("function f( {", "f", [{"args": [], "expected": 1}], "exact"),
+        ("const g = 1;", "f", [{"args": [], "expected": 1}], "exact"),
+        ("function f(x) { console.log('checking', x); return new Set([3, 1, x]); }", "f", [{"args": [2], "expected": [1, 2, 3]}], "exact"),
+        ("function f(a) { a.push(0); return a; }", "f", [{"args": [[1]], "expected": [1, 0]}] * 2, "exact"),
+        ("function f() { return [[2], [1]]; }", "f", [{"args": [], "expected": [[1], [2]]}], "unordered"),
+        ("async function f() { return 1; }", "f", [{"args": [], "expected": 1}], "exact"),
+    ])
+    runtime, syntax, missing, printed, isolated, unordered, asynchronous = reports
+    assert runtime["results"][0]["error"].startswith("TypeError") and "(line 2)" in runtime["results"][0]["error"]
+    assert syntax["error"].startswith("SyntaxError") and syntax["results"] == []
+    assert "Define a function named f(...)" in missing["error"]
+    assert printed["results"][0]["passed"] and printed["results"][0]["stdout"] == "checking 2\n"
+    assert all(r["passed"] for r in isolated["results"]), "each test gets fresh arguments"
+    assert unordered["results"][0]["passed"]
+    assert "async" in asynchronous["results"][0]["error"]
 
 
 @pytest.mark.parametrize("problem", PROBLEMS, ids=[p.slug for p in PROBLEMS])
@@ -112,6 +178,11 @@ async def test_list_and_detail_never_expose_solutions(authed_client: AsyncClient
     detail = (await authed_client.get("/api/v1/practice/problems/two-sum")).json()
     assert detail["function_name"] == "two_sum" and len(detail["hints"]) == 3
     assert "def run_tests" in detail["harness"]
+    assert detail["languages"] == ["python", "javascript"]
+    assert detail["function_names"] == {"python": "two_sum", "javascript": "twoSum"}
+    assert "function twoSum(nums, target)" in detail["starters"]["javascript"]
+    assert "function runTests" in detail["harnesses"]["javascript"]
+    assert "seen.get(target" not in json.dumps(detail)
     assert detail["related_topic"]["title"] == "Hash Functions & Collision Handling"
     assert "solution" not in detail and "seen[target - x]" not in json.dumps(detail)
 
@@ -147,3 +218,13 @@ async def test_submission_must_match_the_problem(authed_client: AsyncClient):
     wrong_total = await authed_client.post(url, json={"code": "x", "passed": 1, "total": 99})
     too_many = await authed_client.post(url, json={"code": "x", "passed": 9, "total": len(load_problems()["two-sum"].tests)})
     assert wrong_total.status_code == 422 and too_many.status_code == 422
+    unknown = await authed_client.post(url, json={"code": "x", "passed": 1, "total": 7, "language": "cobol"})
+    assert unknown.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_javascript_submissions_count_towards_progress(authed_client: AsyncClient):
+    total = len(load_problems()["two-sum"].tests)
+    url = "/api/v1/practice/problems/two-sum/submissions"
+    res = await authed_client.post(url, json={"code": "function twoSum() {}", "passed": total, "total": total, "language": "javascript"})
+    assert res.status_code == 200 and res.json()["solved"] is True

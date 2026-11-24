@@ -1,0 +1,68 @@
+{
+  "title": "Longest Common Subsequence",
+  "difficulty": "Medium",
+  "order": 25,
+  "tags": [
+    "Dynamic Programming",
+    "Strings"
+  ],
+  "related_topic": "memoization-vs-tabulation",
+  "function": "longest_common_subsequence",
+  "compare": "exact",
+  "hints": [
+    "Compare the first characters of `a` and `b`. If they match, what can you say? If they don't, which two smaller problems remain?",
+    "Let `dp[i][j]` be the answer for `a[i:]` and `b[j:]`. If `a[i] == b[j]` then `dp[i][j] = 1 + dp[i+1][j+1]`, otherwise `dp[i][j] = max(dp[i+1][j], dp[i][j+1])`. Fill the table from the ends backwards.",
+    "Parallel example: the longest run of songs that two friends' playlists play in the same order is found the same way: match the current songs if equal, otherwise skip a song in one playlist or the other and keep the better result."
+  ],
+  "tests": [
+    {
+      "args": [
+        "abcde",
+        "ace"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "abc",
+        "abc"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "abc",
+        "def"
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        "a",
+        "a"
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        "bsbininm",
+        "jmjkbkjkv"
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        "oxcpqrsvwf",
+        "shmtulqrypy"
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        "abcba",
+        "abcbcba"
+      ],
+      "expected": 5
+    }
+  ]
+}

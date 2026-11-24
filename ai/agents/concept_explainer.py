@@ -310,6 +310,7 @@ def mermaid_flowchart(nodes: tuple[tuple[str, str], ...], edges: tuple[tuple[str
 
 class ConceptExplainerAgent(SpecialistAgent):
     name = "concept_explainer"
+    temperature = 0.3
 
     def role_prompt(self, ctx: AgentContext) -> str:
         modality = ctx.request.modality

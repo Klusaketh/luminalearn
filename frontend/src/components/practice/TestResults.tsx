@@ -2,15 +2,16 @@
 
 import React from "react";
 import { AlertTriangle, CheckCircle2, Clock3, XCircle } from "lucide-react";
-import type { RunOutcome } from "@/hooks/usePythonRunner";
-import { RUN_TIME_LIMIT_MS } from "@/hooks/usePythonRunner";
-import type { PracticeTestCase } from "@/services/practiceService";
-import { callRepr, gotRepr, pyRepr } from "@/components/practice/format";
+import type { RunOutcome } from "@/hooks/useCodeRunner";
+import { RUN_TIME_LIMIT_MS } from "@/hooks/useCodeRunner";
+import { LANGUAGE_LABELS, type PracticeLanguage, type PracticeTestCase } from "@/services/practiceService";
+import { callRepr, gotRepr, valueRepr } from "@/components/practice/format";
 import { cn } from "@/utils/cn";
 
 interface TestResultsProps {
   tests: PracticeTestCase[];
   functionName: string;
+  language: PracticeLanguage;
   outcome: RunOutcome | null;
 }
 
@@ -24,7 +25,7 @@ function Output({ label, text }: { label: string; text: string }) {
 }
 
 /** Per-test outcome of the last run, or the list of tests before any run. */
-export function TestResults({ tests, functionName, outcome }: TestResultsProps) {
+export function TestResults({ tests, functionName, language, outcome }: TestResultsProps) {
   if (outcome?.kind === "timeout") {
     return (
       <p role="status" className="flex items-start gap-2.5 rounded-2xl bg-amber-500/10 px-4 py-3 text-sm text-amber-100 ring-1 ring-amber-400/25">
@@ -37,7 +38,7 @@ export function TestResults({ tests, functionName, outcome }: TestResultsProps) 
     return (
       <p role="alert" className="flex items-start gap-2.5 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-100 ring-1 ring-rose-400/25">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-        The Python runtime failed: {outcome.message}
+        The {LANGUAGE_LABELS[language]} runtime failed: {outcome.message}
       </p>
     );
   }
@@ -94,12 +95,12 @@ export function TestResults({ tests, functionName, outcome }: TestResultsProps) 
                   <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-slate-600" aria-hidden="true" />
                 )}
                 <div className="min-w-0 flex-1 font-mono text-[13px]">
-                  <p className="break-all text-slate-200">{callRepr(functionName, test.args)}</p>
+                  <p className="break-all text-slate-200">{callRepr(functionName, test.args, language)}</p>
                   <p className="mt-1 text-slate-400">
-                    expected <span className="text-slate-200">{pyRepr(test.expected)}</span>
+                    expected <span className="text-slate-200">{valueRepr(test.expected, language)}</span>
                     {result && !result.passed && !result.error && (
                       <>
-                        {" · "}got <span className="text-rose-200">{gotRepr(result.got)}</span>
+                        {" · "}got <span className="text-rose-200">{gotRepr(result.got, language)}</span>
                       </>
                     )}
                   </p>

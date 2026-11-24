@@ -1,0 +1,117 @@
+{
+  "title": "Search in Rotated Sorted Array",
+  "difficulty": "Medium",
+  "order": 23,
+  "tags": [
+    "Binary Search",
+    "Arrays"
+  ],
+  "related_topic": "binary-search-invariants",
+  "function": "search_rotated",
+  "compare": "exact",
+  "hints": [
+    "Cut the list at its middle. At least one of the two halves is still sorted. How can you tell which?",
+    "Binary search with `lo`, `hi`, `mid`. If `nums[lo] <= nums[mid]`, the left half is sorted: go left exactly when `nums[lo] <= target < nums[mid]`. Otherwise the right half is sorted: go right exactly when `nums[mid] < target <= nums[hi]`.",
+    "Parallel example: in a sorted bookshelf that someone cut and swapped around, open the middle; one side is still in order, and checking whether your book's title falls inside that side's range tells you which side to search."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          4,
+          5,
+          6,
+          7,
+          0,
+          1,
+          2
+        ],
+        0
+      ],
+      "expected": 4
+    },
+    {
+      "args": [
+        [
+          4,
+          5,
+          6,
+          7,
+          0,
+          1,
+          2
+        ],
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "args": [
+        [
+          3,
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          5,
+          1,
+          3
+        ],
+        5
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          6,
+          7,
+          8,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        8
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        4
+      ],
+      "expected": 3
+    }
+  ]
+}
