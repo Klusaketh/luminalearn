@@ -1,6 +1,9 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Development-only signing key. Production refuses to start with it (see app/core/startup_checks.py).
+DEFAULT_SECRET_KEY = "DEV_SUPER_SECRET_KEY_CHANGE_IN_PROD_MIN_32_BYTES"
+
 
 class Settings(BaseSettings):
     """
@@ -27,8 +30,12 @@ class Settings(BaseSettings):
         default=["http://localhost:3000", "http://127.0.0.1:3000"]
     )
 
+    # Public address of the web app. Password-reset links are built from this setting only, never from
+    # request headers, so a forged Host header cannot redirect a reset link to another site.
+    FRONTEND_URL: str = Field(default="http://localhost:3000")
+
     # Security & Tokens
-    SECRET_KEY: str = Field(default="DEV_SUPER_SECRET_KEY_CHANGE_IN_PROD_MIN_32_BYTES")
+    SECRET_KEY: str = Field(default=DEFAULT_SECRET_KEY)
     ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=15)
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7)
@@ -89,6 +96,12 @@ class Settings(BaseSettings):
     # Socratic Tutor & Voice abuse protection (turns per learner per rolling window)
     TUTOR_RATE_LIMIT_WINDOW_SECONDS: int = Field(default=600)
     TUTOR_RATE_LIMIT_AUTHENTICATED: int = Field(default=200)
+
+    # Account protection, per email address per rolling window
+    LOGIN_FAILURE_LIMIT: int = Field(default=10, description="Failed sign-ins before the email is paused")
+    LOGIN_FAILURE_WINDOW_SECONDS: int = Field(default=900)
+    PASSWORD_RESET_LIMIT: int = Field(default=3, description="Reset emails per address per window")
+    PASSWORD_RESET_WINDOW_SECONDS: int = Field(default=3600)
 
     @property
     def REDIS_URI(self) -> str:

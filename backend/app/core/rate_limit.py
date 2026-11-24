@@ -31,6 +31,22 @@ class SlidingWindowRateLimiter:
             self._prune(now)
         return None
 
+    def retry_after(self, key: str, limit: int) -> float | None:
+        """Like hit(), but only checks: None when another event is allowed, else seconds to wait."""
+        now = time.monotonic()
+        events = self._events.get(key)
+        if not events:
+            return None
+        while events and now - events[0] >= self.window_s:
+            events.popleft()
+        if len(events) >= limit:
+            return max(1.0, self.window_s - (now - events[0]))
+        return None
+
+    def clear(self, key: str) -> None:
+        """Forgets every event for a key (for example after a successful sign-in)."""
+        self._events.pop(key, None)
+
     def _prune(self, now: float) -> None:
         stale = [key for key, events in self._events.items() if not events or now - events[-1] >= self.window_s]
         for key in stale:
