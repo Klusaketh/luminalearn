@@ -99,6 +99,8 @@ objectives:
 ## Further learning
 ```
 
+Lessons drafted with `scripts/draft_lessons.py` carry `review: ai-draft` in their front matter. They passed the same audit and code checks as hand-written lessons; remove the line once a person has reviewed the lesson.
+
 All eight sections are required, in this order. The page shows the title and objectives, so the body has no `# H1`.
 
 - Math: `$inline$` and `$$display$$` (KaTeX).
