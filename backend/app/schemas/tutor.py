@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -21,6 +23,9 @@ class TutorChatRequest(BaseModel):
     hint_level: int = Field(default=0, ge=0, le=3, description="Extra hints requested in this thread")
     agent: TutorAgentName | None = Field(default=None, description="Explicitly request one specialist")
     history: list[TutorHistoryTurn] = Field(default_factory=list, max_length=24)
+    document_ids: list[uuid.UUID] = Field(
+        default_factory=list, max_length=5, description="The learner's uploaded documents to answer from"
+    )
 
 
 class TutorSpeakRequest(BaseModel):
@@ -42,3 +47,14 @@ class TutorStatusResponse(BaseModel):
     gateway: dict[str, Any]
     agents: list[AgentProfileResponse]
     voice_websocket_path: str
+
+
+class TutorDocumentResponse(BaseModel):
+    """A study document the learner uploaded for the tutor (its text stays on the server)."""
+    model_config = {"from_attributes": True}
+
+    id: uuid.UUID
+    filename: str
+    page_count: int
+    char_count: int
+    created_at: datetime

@@ -42,6 +42,7 @@ export function useTutorChat() {
           hint_level: store.hintLevel,
           agent: options.agent ?? null,
           history,
+          document_ids: store.activeDocumentIds,
         },
         controller.signal
       );

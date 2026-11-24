@@ -89,7 +89,20 @@ export interface TutorChatPayload {
   hint_level?: number;
   agent?: AgentName | null;
   history?: Array<{ role: "student" | "tutor"; text: string }>;
+  /** The learner's uploaded documents to answer from (max 5). */
+  document_ids?: string[];
 }
+
+/** A PDF the learner uploaded for the tutor; only its extracted text is kept on the server. */
+export interface TutorDocument {
+  id: string;
+  filename: string;
+  page_count: number;
+  char_count: number;
+  created_at: string;
+}
+
+export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
 export class TutorRequestError extends Error {
   constructor(message: string, public readonly status: number, public readonly retryAfterSeconds?: number) {
@@ -164,6 +177,28 @@ class TutorService {
       if (last) yield last;
     } finally {
       reader.releaseLock();
+    }
+  }
+
+  async listDocuments(signal?: AbortSignal): Promise<TutorDocument[]> {
+    const res = await apiFetch(`${API_BASE}/tutor/documents`, { signal });
+    if (!res.ok) throw new TutorRequestError(await readErrorDetail(res, "Your documents could not be loaded."), res.status);
+    return res.json();
+  }
+
+  /** Uploads a PDF; the server extracts its text page by page. */
+  async uploadDocument(file: File): Promise<TutorDocument> {
+    const form = new FormData();
+    form.append("file", file, file.name);
+    const res = await apiFetch(`${API_BASE}/tutor/documents`, { method: "POST", body: form, timeoutMs: 90_000 });
+    if (!res.ok) throw new TutorRequestError(await readErrorDetail(res, "That PDF could not be uploaded."), res.status);
+    return res.json();
+  }
+
+  async deleteDocument(id: string): Promise<void> {
+    const res = await apiFetch(`${API_BASE}/tutor/documents/${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 404) {
+      throw new TutorRequestError(await readErrorDetail(res, "That document could not be deleted."), res.status);
     }
   }
 

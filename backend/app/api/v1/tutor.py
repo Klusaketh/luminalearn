@@ -3,9 +3,10 @@ LuminaLearn AI — Multi-Agent Socratic Tutor API Endpoints.
 Module: backend/app/api/v1/tutor.py
 """
 
+import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +18,7 @@ from app.models.user import User
 from app.schemas.tutor import (
     AgentProfileResponse,
     TutorChatRequest,
+    TutorDocumentResponse,
     TutorSpeakRequest,
     TutorStatusResponse,
 )
@@ -25,6 +27,7 @@ from app.services.ai_runtime import (
     tutor_orchestrator,
     tutor_rate_limiter,
 )
+from app.services.document_service import document_service
 from app.services.speech_text import speech_text
 from app.services.tutor_service import (
     enforce_rate_limit,
@@ -89,13 +92,49 @@ async def stream_chat(
     Every turn is personalized with the learner's BKT mastery and VARK modality.
     """
     enforce_rate_limit(tutor_rate_limiter, user)
-    # Resolve personalization before streaming begins: the DB session is released when this handler returns.
+    # Resolve personalization and documents before streaming begins: the DB session is released when
+    # this handler returns.
     tutor_request = await tutor_service.build_request(db, payload, user)
+    documents = await document_service.load_indexes(db, user.id, payload.document_ids)
     return StreamingResponse(
-        tutor_service.sse_stream(tutor_orchestrator, tutor_request),
+        tutor_service.sse_stream(tutor_orchestrator, tutor_request, documents),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@router.post(
+    "/documents",
+    response_model=TutorDocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload a PDF for the tutor to answer from",
+)
+async def upload_document(
+    file: UploadFile = File(..., description="A PDF with selectable text (max 15 MB, 300 pages)"),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_active_user),
+) -> Any:
+    """Extracts the PDF's text page by page so tutor answers can quote and cite it. The file itself is not kept."""
+    enforce_rate_limit(tutor_rate_limiter, user)
+    return await document_service.create(db, user.id, file)
+
+
+@router.get("/documents", response_model=list[TutorDocumentResponse], summary="List my tutor documents")
+async def list_documents(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_active_user),
+) -> Any:
+    return await document_service.list_for_user(db, user.id)
+
+
+@router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a tutor document")
+async def delete_document(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_active_user),
+) -> Response:
+    await document_service.delete(db, user.id, document_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(

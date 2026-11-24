@@ -45,10 +45,21 @@ class AgentContext:
         return self.request.channel == "voice"
 
 
+UPLOADED_SECTION = "Uploaded document"
+
+
 def format_sources(chunks: list[CurriculumChunk]) -> str:
     if not chunks:
         return "Verified curriculum context: none matched this question."
     lines = ["Verified curriculum context (cite by number):"]
+    if any(chunk.section == UPLOADED_SECTION for chunk in chunks):
+        lines.insert(0, (
+            "The learner attached their own study documents; passages marked 'Uploaded document' come from them. "
+            "Answer questions about that material from those passages first and cite them by number (the citation "
+            "names the file and page). Quote definitions and figures exactly as the document gives them. If the "
+            "passages do not contain the answer, say that the document does not cover it before using general "
+            "knowledge, and if the document looks mistaken, say so politely and explain the standard view."
+        ))
     for index, chunk in enumerate(chunks, 1):
         lines.append(f"[{index}] {chunk.citation}: {chunk.content}")
     return "\n".join(lines)
@@ -80,6 +91,9 @@ class SpecialistAgent(ABC):
     name: AgentName
     enforces_socratic_rule = False
     emits_hints = False
+    # Upper bound on sampling temperature for this specialist (None: the faculty default). Factual
+    # specialists run cooler so definitions, numbers, and code stay exact.
+    temperature: float | None = None
 
     @abstractmethod
     def role_prompt(self, ctx: AgentContext) -> str:

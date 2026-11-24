@@ -11,6 +11,7 @@ Course material can be added without code changes: drop Markdown or text files i
 """
 
 import hashlib
+import json
 import math
 import re
 from collections import Counter
@@ -18,11 +19,22 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 DOCUMENTS_DIR = Path(__file__).resolve().parent / "documents"
+# The written curriculum (content/subjects/<slug>/overview.md and lessons/*.md). In the Docker image this
+# resolves to /srv/content/subjects, which the backend Dockerfile copies.
+CONTENT_SUBJECTS_DIR = Path(__file__).resolve().parents[2] / "content" / "subjects"
+# Uploaded documents are small corpora with weak term statistics, so they use a lower relevance floor.
+DOCUMENT_THRESHOLD = 0.15
+WINDOW_WORDS = 110
+WINDOW_OVERLAP = 15
+_FRONT_MATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+_QUESTION_MARKERS = re.compile(r"^:::\s*(?:question\s+\w+|answer)?\s*$", re.MULTILINE)
+_MARKUP = re.compile(r"[#*`>|]")
 
 _STOPWORDS = frozenset(
     "a an and are as at be by can do does for from has have how i if in into is it its me my "
     "of on or so that the their then there these this to was we what when where which why "
-    "will with you your about please explain tell show give help".split()
+    "will with you your about please explain tell show give help even though sometimes everything also "
+    "just really actually get got thing things lot want know mean".split()
 )
 _TOKEN_PATTERN = re.compile(r"[a-z][a-z0-9]+")
 
@@ -37,6 +49,12 @@ def _stem(token: str) -> str:
         return token[:-1]
     if token.endswith("s") and not token.endswith(("us", "ss")):
         return token[:-1]
+    # Light verb folding so "appending"/"append" and "visited"/"visit" share a term. A stem shorter than
+    # four letters is kept whole ("string" stays "string", "need" stays "need").
+    if token.endswith("ing") and len(token) - 3 >= 4:
+        return token[:-3]
+    if token.endswith("ed") and len(token) - 2 >= 4 and not token.endswith("eed"):
+        return token[:-2]
     return token
 
 
@@ -83,12 +101,29 @@ class CurriculumRAGService:
     BM25_B = 0.75
     BM25_SATURATION = 4.0
 
-    def __init__(self, documents_dir: Path | None = DOCUMENTS_DIR) -> None:
+    def __init__(
+        self,
+        documents_dir: Path | None = DOCUMENTS_DIR,
+        lessons_dir: Path | None = CONTENT_SUBJECTS_DIR,
+        include_seed: bool = True,
+    ) -> None:
         self.chunks: list[CurriculumChunk] = []
-        self._load_vetted_curriculum()
+        if include_seed:
+            self._load_vetted_curriculum()
         if documents_dir is not None:
             self._load_documents(documents_dir)
+        if lessons_dir is not None:
+            self._load_lessons(lessons_dir)
         self._index_chunks()
+
+    @classmethod
+    def from_pages(cls, *, title: str, pages: list[tuple[int, str]], subject: str = "Your documents") -> "CurriculumRAGService":
+        """An index over one uploaded document, one or more windows per page, citing the page number."""
+        index = cls(documents_dir=None, lessons_dir=None, include_seed=False)
+        for page, text in pages:
+            index._add_windows(topic=title, subject=subject, source_title=title, section="Uploaded document", page=page, text=text)
+        index._index_chunks()
+        return index
 
     # ------------------------------------------------------------------ indexing
 
@@ -119,12 +154,14 @@ class CurriculumRAGService:
     def _index_chunks(self) -> None:
         """Computes dense vectors and BM25 statistics for all loaded curriculum chunks."""
         self._chunk_terms: list[Counter[str]] = []
+        self._title_terms: list[frozenset[str]] = []
         document_frequency: Counter[str] = Counter()
         for chunk in self.chunks:
             combined = f"{chunk.topic} {chunk.subject} {chunk.section} {chunk.content}"
             chunk.embedding = self._generate_dense_vector(combined)
             terms = Counter(tokenize(combined))
             self._chunk_terms.append(terms)
+            self._title_terms.append(frozenset(tokenize(f"{chunk.topic} {chunk.section}")))
             document_frequency.update(terms.keys())
         total = len(self.chunks) or 1
         self._idf = {
@@ -163,6 +200,7 @@ class CurriculumRAGService:
         min_thresh = threshold if threshold is not None else self.RELEVANCE_THRESHOLD
         query_vec = self._generate_dense_vector(query)
         query_terms = tokenize(query)
+        unique_terms = set(query_terms)
         candidates: list[CurriculumChunk] = []
 
         norm_topic = topic.strip().lower() if topic else None
@@ -171,9 +209,17 @@ class CurriculumRAGService:
             if norm_topic and norm_topic not in chunk.topic.lower() and chunk.topic.lower() not in norm_topic:
                 continue
 
+            matched = [term for term in unique_terms if self._chunk_terms[index].get(term)]
+            # One matching word only counts when the chunk is about it (the word is in its lesson title or
+            # section): "semaphore" grounds the Semaphores lesson, "tie" in "tie a tie" grounds nothing.
+            if len(matched) == 1 and matched[0] not in self._title_terms[index]:
+                continue
             dense_sim = self._cosine_similarity(query_vec, chunk.embedding)
             bm25 = self._bm25(query_terms, index)
-            sparse_sim = bm25 / (bm25 + self.BM25_SATURATION)
+            # Weight keyword evidence by how much of the question the chunk covers: in a large corpus a
+            # single rare word ("capital", "best") must not ground an unrelated question.
+            coverage = len(matched) / len(unique_terms) if unique_terms else 0.0
+            sparse_sim = bm25 / (bm25 + self.BM25_SATURATION) * coverage
             hybrid_score = round(self.DENSE_WEIGHT * dense_sim + (1 - self.DENSE_WEIGHT) * sparse_sim, 4)
 
             if hybrid_score >= min_thresh:
@@ -239,6 +285,51 @@ class CurriculumRAGService:
                 content=" ".join(content.split()),
             )
         )
+
+    def _add_windows(self, *, topic: str, subject: str, source_title: str, section: str, page: int | None, text: str) -> None:
+        """Adds overlapping ~110-word windows of `text` as chunks (short fragments are skipped)."""
+        words = _MARKUP.sub(" ", _QUESTION_MARKERS.sub(" ", text)).split()
+        for start in range(0, len(words), WINDOW_WORDS):
+            window = words[max(0, start - WINDOW_OVERLAP): start + WINDOW_WORDS]
+            if len(window) >= 12:
+                self._add_chunk(topic=topic, subject=subject, source_title=source_title, section=section, page=page, content=" ".join(window))
+
+    def _load_lessons(self, directory: Path) -> None:
+        """
+        Ingests the written curriculum: each subject's overview and every lesson, one chunk group per
+        `## Section`, cited as the lesson title and section so learners can open the lesson.
+        """
+        if not directory.is_dir():
+            return
+        for subject_dir in sorted(p for p in directory.iterdir() if p.is_dir()):
+            subject = subject_dir.name.replace("-", " ").title()
+            syllabus = subject_dir / "syllabus.json"
+            if syllabus.is_file():
+                try:
+                    subject = json.loads(syllabus.read_text(encoding="utf-8")).get("name", subject)
+                except (ValueError, OSError):
+                    pass
+            files: list[tuple[Path, str | None]] = [(subject_dir / "overview.md", f"{subject} (subject overview)")]
+            files += [(path, None) for path in sorted((subject_dir / "lessons").glob("*.md"))]
+            for path, fixed_title in files:
+                if not path.is_file():
+                    continue
+                raw = path.read_text(encoding="utf-8", errors="replace")
+                body = raw
+                title: str | None = fixed_title
+                front = _FRONT_MATTER.match(raw)
+                if front:
+                    body = raw[front.end():]
+                    match = re.search(r"^title:\s*(.+)$", front.group(1), re.MULTILINE)
+                    title = title or (match.group(1).strip().strip("\"'") if match else None)
+                lesson_title = title or path.stem.replace("-", " ").title()
+                sections = re.split(r"^##\s+(.+)$", body, flags=re.MULTILINE)
+                pairs = [("Introduction", sections[0])] + list(zip(sections[1::2], sections[2::2], strict=False))
+                for heading, text in pairs:
+                    self._add_windows(
+                        topic=lesson_title, subject=subject, source_title=f"LuminaLearn lesson: {lesson_title}",
+                        section=heading.strip(), page=None, text=text,
+                    )
 
     def _load_documents(self, directory: Path) -> None:
         """

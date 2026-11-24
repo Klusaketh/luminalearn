@@ -49,6 +49,12 @@ PROBLEM_CUES = (
     "integrate", "differentiate", "how many", "value of", "homework", "exercise", "stuck", "hint",
     "check my", "is it correct", "is this right", "my answer", "i got",
 )
+# A question that asks for a fact ("Which enzyme fixes carbon dioxide?", "Who proposed the relational model?")
+# deserves a direct, cited answer. Problems to work through still go to the Socratic Tutor.
+_FACT_QUESTION = re.compile(
+    r"^\s*(?:which|what|who|whom|whose|when|where|why|how (?:is|are|was|were|does|did)|name|list|state|mention)\b",
+    re.IGNORECASE,
+)
 ANSWER_DEMAND_CUES = (
     "just tell me", "give me the answer", "tell me the answer", "what's the answer", "what is the answer",
     "just give", "final answer", "the solution", "solve it for me", "do it for me", "skip the questions",
@@ -115,6 +121,9 @@ class SupervisorAgent:
         if _has_any(text, EXPLAIN_CUES):
             scores["concept_explainer"] += 1.5
             signals.append("explanation_requested")
+        if _FACT_QUESTION.match(request.message):
+            scores["concept_explainer"] += 1.2
+            signals.append("fact_question")
         if _has_any(text, PROBLEM_CUES):
             scores["socratic_tutor"] += 1.4
             signals.append("problem_solving")
@@ -152,6 +161,8 @@ class SupervisorAgent:
             return f"{reason}, so the Code Diagnostic agent will look for bugs and complexity hot-spots."
         if agent == "analogy_specialist":
             return "You asked for an intuitive comparison, so the Analogy Specialist will map this onto everyday experience."
+        if agent == "concept_explainer" and "explanation_requested" not in signals and "fact_question" in signals:
+            return "You asked a factual question, so the Concept Explainer will answer it directly and show its sources."
         if agent == "concept_explainer":
             style = request.modality.replace("_", "/")
             return f"You asked to understand a concept, so the Concept Explainer will teach it in your {style} learning style.{mastery_note}"

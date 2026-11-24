@@ -15,8 +15,9 @@ voice layer forwards over its WebSocket.
 """
 
 import logging
+import re
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -43,11 +44,25 @@ from ai.llm.gemini_gateway import (
     LLMUnavailableError,
 )
 from ai.prompts.templates import PROMPT_VERSION
-from ai.rag.curriculum_rag import CurriculumChunk, CurriculumRAGService
+from ai.rag.curriculum_rag import (
+    DOCUMENT_THRESHOLD,
+    CurriculumChunk,
+    CurriculumRAGService,
+)
 
 logger = logging.getLogger("luminalearn.ai.orchestrator")
 
 GROUNDING_THRESHOLD = 0.25
+DOCUMENT_PASSAGES = 4
+OVERVIEW_PASSAGES = 6
+# "Summarise this PDF" shares no keywords with the PDF itself, so such requests get passages spread
+# across the whole document instead of keyword matches.
+_DOCUMENT_OVERVIEW = re.compile(
+    r"\b(summar\w*|overview|outline|tl;?dr|main (?:points?|ideas?)|key (?:points?|ideas?|takeaways?|concepts?)"
+    r"|what (?:is|'s) (?:this|it|the (?:pdf|document|file|paper|chapter|notes))(?: all)? about"
+    r"|(?:explain|teach me|go through) (?:this|the|my) (?:pdf|document|file|paper|chapter|notes))\b",
+    re.IGNORECASE,
+)
 _HISTORY_TURNS = 8
 _TURN_CHARS = 1500
 _INTERRUPTED_NOTE = "\n\n_The model connection dropped here, so the hint ladder below picks up where it stopped._"
@@ -83,6 +98,15 @@ def build_contents(request: TutorRequest) -> list[dict[str, Any]]:
     if contents and contents[0]["role"] == "model":
         contents.insert(0, {"role": "user", "parts": [{"text": "(continuing our tutoring session)"}]})
     return contents
+
+
+def _spread_across(documents: Sequence[CurriculumRAGService], count: int) -> list[CurriculumChunk]:
+    """Up to `count` passages spaced evenly through the documents, in reading order."""
+    passages = [chunk for index in documents for chunk in index.chunks]
+    if len(passages) <= count:
+        return passages
+    step = len(passages) / count
+    return [passages[int(i * step)] for i in range(count)]
 
 
 def citation_payload(chunks: list[CurriculumChunk]) -> list[dict[str, Any]]:
@@ -165,13 +189,33 @@ class SocraticOrchestrator:
     def llm_enabled(self) -> bool:
         return self.gateway is not None and self.gateway.enabled
 
-    async def stream(self, request: TutorRequest) -> AsyncIterator[TutorEvent]:
+    def ground(
+        self, query: str, documents: Sequence[CurriculumRAGService] = ()
+    ) -> tuple[list[CurriculumChunk], bool]:
+        """Evidence for one turn: passages from the learner's documents first, then the curriculum."""
+        curriculum = self.rag.retrieve(query=query, top_k=3, threshold=GROUNDING_THRESHOLD)
+        if not documents:
+            return curriculum, self.rag.has_sufficient_grounding(curriculum)
+        matches = sorted(
+            (chunk for index in documents for chunk in index.retrieve(query=query, top_k=DOCUMENT_PASSAGES, threshold=DOCUMENT_THRESHOLD)),
+            key=lambda chunk: chunk.score,
+            reverse=True,
+        )[:DOCUMENT_PASSAGES]
+        if _DOCUMENT_OVERVIEW.search(query) and len(matches) < DOCUMENT_PASSAGES:
+            seen = {chunk.id for chunk in matches}
+            spread = [chunk for chunk in _spread_across(documents, OVERVIEW_PASSAGES) if chunk.id not in seen]
+            matches = (matches + spread)[:OVERVIEW_PASSAGES]
+        chunks = matches + curriculum[: 2 if matches else 3]
+        return chunks, bool(matches) or self.rag.has_sufficient_grounding(curriculum)
+
+    async def stream(
+        self, request: TutorRequest, documents: Sequence[CurriculumRAGService] = ()
+    ) -> AsyncIterator[TutorEvent]:
         started = time.perf_counter()
 
         # ground
         query = f"{request.topic or ''} {request.message}".strip()
-        chunks = self.rag.retrieve(query=query, top_k=3, threshold=GROUNDING_THRESHOLD)
-        grounded = self.rag.has_sufficient_grounding(chunks)
+        chunks, grounded = self.ground(query, documents)
 
         # route
         decision = self.supervisor.route(request)
@@ -217,7 +261,7 @@ class SocraticOrchestrator:
             async for raw in self.gateway.stream_text(
                 build_contents(ctx.request),
                 system_instruction=turn.agent.system_prompt(ctx),
-                temperature=self.temperature,
+                temperature=self.temperature if turn.agent.temperature is None else min(self.temperature, turn.agent.temperature),
                 max_output_tokens=700 if ctx.is_voice else 2048,
                 thinking=turn.agent.thinking(ctx),
                 first_token_timeout_s=9.0 if ctx.is_voice else 14.0,
